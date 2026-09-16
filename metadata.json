@@ -1,0 +1,6 @@
+{
+  "name": "EduManage",
+  "description": "Unified administrative operating system for schools, multi-campus academies, and higher education networks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
