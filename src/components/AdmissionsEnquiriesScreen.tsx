@@ -268,7 +268,7 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
     <div className="min-h-screen bg-background text-on-surface font-body-md antialiased flex">
       {/* 1. FIXED LEFT SIDEBAR (260px) */}
       <aside
-        className={`fixed left-0 top-0 bottom-0 bg-surface-container-lowest border-r border-outline-variant/40 z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out ${
+        className={`fixed left-0 top-12 bottom-0 bg-surface-container-lowest border-r border-outline-variant/40 z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out ${
           !isSidebarOpen
             ? 'w-[260px] -translate-x-full'
             : isSidebarCollapsed
@@ -710,11 +710,9 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
           !isSidebarOpen ? 'pl-0' : isSidebarCollapsed ? 'pl-[72px]' : 'pl-[260px]'
         }`}
       >
-        {/* TOP FIXED HEADER */}
+        {/* TOP RESPONSIVE HEADER (Sticky below global navigation) */}
         <header
-          className={`fixed top-0 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 z-30 flex items-center justify-between px-space-lg shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out ${
-            !isSidebarOpen ? 'left-0' : isSidebarCollapsed ? 'left-[72px]' : 'left-[260px]'
-          }`}
+          className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 flex items-center justify-between px-space-lg shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out"
         >
           {/* Left Brand / Campus View / Search */}
           <div className="flex items-center gap-2 sm:gap-space-md min-w-0">
@@ -890,7 +888,7 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
         </header>
 
         {/* 3. MAIN PAGE CONTENT */}
-        <main className="w-full pt-16 bg-background min-h-screen">
+        <main className="w-full pt-3 sm:pt-4 bg-background min-h-screen">
           <div className="p-space-lg lg:p-margin-desktop space-y-space-lg max-w-[1600px] mx-auto w-full">
             {/* Breadcrumb & Top Bar Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">

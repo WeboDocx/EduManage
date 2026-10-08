@@ -67,7 +67,7 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
       )}
 
       <aside
-        className={`fixed left-0 top-0 h-full w-[260px] bg-surface-container-lowest shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between select-none border-r border-outline-variant/30 transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-12 bottom-0 w-[260px] bg-surface-container-lowest shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between select-none border-r border-outline-variant/30 transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -282,10 +282,8 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
       <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
         isSidebarOpen ? 'pl-0 lg:pl-[260px]' : 'pl-0'
       }`}>
-        {/* Fixed Top Header */}
-        <header className={`fixed top-0 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-4 sm:px-space-xl border-b border-outline-variant/20 transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? 'left-0 lg:left-[260px]' : 'left-0'
-        }`}>
+        {/* Top Responsive Header (Sticky below global navigation) */}
+        <header className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] flex items-center justify-between px-4 sm:px-space-xl border-b border-outline-variant/20 transition-all duration-300 ease-in-out">
           {/* Breadcrumbs */}
           <div className="flex items-center gap-space-md">
             {/* Sidebar Toggle Button (Desktop & Mobile) */}
@@ -386,7 +384,7 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
         {/* ========================================================================= */}
         {/* 3. STUDENT PORTAL MAIN WORKSPACE CANVAS */}
         {/* ========================================================================= */}
-        <main className="w-full pt-16 bg-background min-h-screen px-space-xl py-space-xl">
+        <main className="w-full pt-3 sm:pt-4 bg-background min-h-screen px-space-md sm:px-space-xl py-space-md sm:py-space-xl">
           <div className="flex flex-col w-full space-y-space-xl">
             {/* Urgent Action Banner with Micro-interaction */}
             <div className="relative overflow-hidden rounded-xl bg-surface-container shadow-xs p-space-lg border border-outline-variant/20">

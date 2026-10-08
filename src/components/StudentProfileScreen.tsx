@@ -290,7 +290,7 @@ export const StudentProfileScreen: React.FC<StudentProfileScreenProps> = ({
       )}
 
       <aside
-        className={`fixed left-0 top-0 bottom-0 w-[260px] bg-surface-container-lowest border-r border-outline-variant/40 z-50 flex flex-col justify-between shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-12 bottom-0 w-[260px] bg-surface-container-lowest border-r border-outline-variant/40 z-50 flex flex-col justify-between shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -645,10 +645,8 @@ export const StudentProfileScreen: React.FC<StudentProfileScreenProps> = ({
       <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
         isSidebarOpen ? 'pl-0 lg:pl-[260px]' : 'pl-0'
       }`}>
-        {/* FIXED TOP HEADER */}
-        <header className={`fixed top-0 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 z-30 flex items-center justify-between px-3 sm:px-space-lg shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? 'left-0 lg:left-[260px]' : 'left-0'
-        }`}>
+        {/* RESPONSIVE TOP HEADER (Sticky below global navigation) */}
+        <header className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 flex items-center justify-between px-3 sm:px-space-lg shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out">
           <div className="flex items-center gap-2 sm:gap-space-md min-w-0">
             {/* Show/Hide Sidebar Toggle Button (Visible on all screens) */}
             <button
@@ -780,7 +778,7 @@ export const StudentProfileScreen: React.FC<StudentProfileScreenProps> = ({
         </header>
 
         {/* 3. MAIN STUDENT PROFILE VIEWPORT */}
-        <main className="w-full pt-16 bg-background min-h-screen">
+        <main className="w-full pt-3 sm:pt-4 bg-background min-h-screen">
           <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
             {/* Top Breadcrumb Navigation */}
             <div className="flex flex-wrap items-center justify-between gap-4">

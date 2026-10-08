@@ -318,14 +318,14 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
       {/* Mobile backdrop */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 top-12 bg-black/40 backdrop-blur-xs z-40 lg:hidden transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed left-0 top-0 bottom-0 w-[260px] bg-surface-container-lowest border-r border-outline-variant/30 z-50 flex flex-col justify-between shadow-lg lg:shadow-[0_1px_6px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-12 bottom-0 w-[260px] bg-surface-container-lowest border-r border-outline-variant/30 z-50 flex flex-col justify-between shadow-lg lg:shadow-[0_1px_6px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -502,11 +502,9 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
           isSidebarOpen ? 'pl-0 lg:pl-[260px]' : 'pl-0'
         }`}
       >
-        {/* FIXED RESPONSIVE TOP HEADER */}
+        {/* RESPONSIVE TOP HEADER (Sticky below global navigation) */}
         <header
-          className={`fixed top-0 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/30 z-30 flex items-center justify-between px-3 sm:px-6 shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out ${
-            isSidebarOpen ? 'left-0 lg:left-[260px]' : 'left-0'
-          }`}
+          className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/30 flex items-center justify-between px-3 sm:px-6 shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out"
         >
           {/* Left: Sidebar Toggle + Brand / Branch */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -523,11 +521,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
               </span>
             </button>
 
-            {/* Logo & Institute Name */}
+            {/* Logo & Institute Name (Hidden on extra small mobile since top navbar has EduManage brand) */}
             <button
               type="button"
               onClick={() => onNavigate('landing')}
-              className="flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity text-left group"
+              className="hidden sm:flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity text-left group"
               title="EduManage Home"
             >
               <img
@@ -539,7 +537,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
                 <span className="font-bold text-xs sm:text-sm text-on-surface tracking-tight leading-tight truncate">
                   Apex Institute
                 </span>
-                <span className="text-[10px] text-outline leading-none font-medium hidden sm:block">
+                <span className="text-[10px] text-outline leading-none font-medium hidden md:block">
                   EduManage Academic OS
                 </span>
               </div>
@@ -655,7 +653,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
         </header>
 
         {/* 3. DASHBOARD MAIN CONTENT */}
-        <main className="w-full pt-16 bg-background min-h-[calc(100vh-4rem)]">
+        <main className="w-full pt-3 sm:pt-4 bg-background min-h-[calc(100vh-4rem)]">
           <div className="p-3 sm:p-5 lg:p-6 flex flex-col gap-5 w-full max-w-[1400px] mx-auto">
             {/* Top Minimal Greeting & Action Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">

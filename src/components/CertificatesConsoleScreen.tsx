@@ -311,7 +311,7 @@ export const CertificatesConsoleScreen: React.FC<CertificatesConsoleScreenProps>
       )}
 
       <aside
-        className={`fixed left-0 top-0 h-full w-64 bg-surface-container-lowest shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between overflow-y-auto transition-transform duration-300 ease-in-out border-r border-outline-variant/30 ${
+        className={`fixed left-0 top-12 bottom-0 w-64 bg-surface-container-lowest shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between overflow-y-auto transition-transform duration-300 ease-in-out border-r border-outline-variant/30 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -481,10 +481,8 @@ export const CertificatesConsoleScreen: React.FC<CertificatesConsoleScreenProps>
       <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
         isSidebarOpen ? 'pl-0 lg:pl-64' : 'pl-0'
       }`}>
-        {/* Top Fixed Header */}
-        <header className={`fixed top-0 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-4 sm:px-gutter-desktop flex items-center justify-between gap-space-md border-b border-outline-variant/30 transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? 'left-0 lg:left-64' : 'left-0'
-        }`}>
+        {/* Top Responsive Header (Sticky below global navigation) */}
+        <header className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] px-4 sm:px-gutter-desktop flex items-center justify-between gap-space-md border-b border-outline-variant/30 transition-all duration-300 ease-in-out">
           <div className="flex items-center gap-space-md flex-1 max-w-2xl">
             {/* Sidebar Toggle Button (Desktop & Mobile) */}
             <button
@@ -578,7 +576,7 @@ export const CertificatesConsoleScreen: React.FC<CertificatesConsoleScreenProps>
         </header>
 
         {/* 3. MAIN CONTENT VIEWPORT */}
-        <main className="w-full pt-16 bg-background min-h-screen">
+        <main className="w-full pt-3 sm:pt-4 bg-background min-h-screen">
           <div className="flex flex-col w-full">
             <div className="relative w-full px-gutter-desktop py-space-lg flex flex-col gap-space-lg max-w-[1600px] mx-auto">
               {/* Top Context & Header Row */}

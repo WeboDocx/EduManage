@@ -331,7 +331,7 @@ export const SuperAdminConsole: React.FC<SuperAdminConsoleProps> = ({ onNavigate
       {/* 2. MAIN ADMIN CONSOLE CONTENT AREA */}
       <main className="flex-1 min-w-0 flex flex-col">
         {/* Top Header Bar */}
-        <header className="h-16 px-4 md:px-8 border-b border-outline-variant/30 bg-surface-container-lowest flex items-center justify-between gap-4 sticky top-7 z-40">
+        <header className="h-16 px-4 md:px-8 border-b border-outline-variant/30 bg-surface-container-lowest flex items-center justify-between gap-4 sticky top-12 z-40">
           <div className="flex items-center gap-2 text-xs">
             {/* Sidebar Toggle Button */}
             <button

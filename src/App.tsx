@@ -49,7 +49,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-surface font-sans antialiased selection:bg-primary-fixed selection:text-on-primary-fixed transition-colors duration-200">
+    <div className="min-h-screen bg-background text-on-surface font-sans antialiased selection:bg-primary-fixed selection:text-on-primary-fixed transition-colors duration-200 pb-16 md:pb-0">
         {/* Global Navigation & Screen Switcher */}
         <Navigation
           currentScreen={currentScreen}
@@ -256,7 +256,7 @@ export default function App() {
 
       {/* Global Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-[100] max-w-md bg-on-surface text-surface-container-lowest px-4 py-3 rounded-xl shadow-2xl border border-outline-variant/30 flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed bottom-20 md:bottom-6 right-3 md:right-6 left-3 sm:left-auto z-[100] max-w-md bg-on-surface text-surface-container-lowest px-4 py-3 rounded-xl shadow-2xl border border-outline-variant/30 flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-200">
           <div className="w-7 h-7 rounded-full bg-secondary-fixed text-secondary flex items-center justify-center shrink-0">
             <span className="material-symbols-outlined text-sm">check_circle</span>
           </div>

@@ -239,19 +239,30 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
       {/* SINGLE PRIMARY TOP NAVIGATION BAR (Consolidated, No Secondary Navbar, No Horizontal Scrollbar) */}
       <nav
         ref={navContainerRef}
-        className="bg-inverse-surface text-inverse-on-surface text-xs py-2 px-3 sm:px-5 sticky top-0 z-[60] border-b border-surface-container-highest/20 flex items-center justify-between gap-2 sm:gap-3 shadow-md"
+        className="bg-inverse-surface text-inverse-on-surface text-xs h-12 px-2.5 sm:px-4 md:px-5 sticky top-0 z-[60] border-b border-surface-container-highest/20 flex items-center justify-between gap-1.5 sm:gap-2 shadow-md flex-nowrap select-none"
         aria-label="Main Navigation"
       >
-        {/* Left Side: Sidebar toggle + Brand + Landing with #anchors dropdown + Create Institution + Dropdowns */}
-        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 flex-wrap">
-          {/* Quick Sidebar Toggle on left (only visible on dashboard/admin screens) */}
+        {/* Left Side: Mobile Menu trigger + Brand + Desktop Sidebar toggle & Dropdowns */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 flex-nowrap min-w-0">
+          {/* Mobile Menu Trigger Button (Visible on mobile & tablet < lg) */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className="lg:hidden p-2 rounded-lg bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border border-white/20 flex items-center justify-center cursor-pointer min-w-[38px] min-h-[38px] active:scale-95 transition-all flex-shrink-0"
+            aria-label="Open navigation drawer"
+            title="Open All Modules Menu"
+          >
+            <span className="material-symbols-outlined text-[20px]">menu</span>
+          </button>
+
+          {/* Quick Sidebar Toggle (Visible on desktop/laptop for screens with sidebar) */}
           {hasSidebarScreen && (
             <button
               onClick={() => {
                 toggleSidebar();
                 onShowToast?.(isSidebarOpen ? 'Sidebar hide ho gaya' : 'Sidebar show ho gaya');
               }}
-              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center justify-center transition-all cursor-pointer border flex-shrink-0 ${
+              className={`hidden lg:flex p-1.5 rounded-lg text-xs font-semibold items-center justify-center transition-all cursor-pointer border flex-shrink-0 ${
                 isSidebarOpen
                   ? 'bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border-white/20'
                   : 'bg-primary text-white border-primary shadow-xs ring-2 ring-primary/40'
@@ -268,28 +279,32 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
           {/* Logo / Brandmark with EduManage branding */}
           <button
             onClick={handleSelectLanding}
-            className="flex items-center gap-1.5 sm:gap-2 text-white font-bold tracking-tight hover:opacity-90 transition-opacity cursor-pointer mr-0.5 group"
+            className="flex items-center gap-1.5 sm:gap-2 text-white font-bold tracking-tight hover:opacity-90 transition-opacity cursor-pointer mr-0.5 group flex-shrink-0"
             title="EduManage Home"
           >
             <img
               alt="EduManage Logo"
-              className="h-6.5 w-6.5 object-contain rounded-md shadow-xs group-hover:scale-105 transition-transform flex-shrink-0"
+              className="h-6 w-6 sm:h-6.5 sm:w-6.5 object-contain rounded-md shadow-xs group-hover:scale-105 transition-transform flex-shrink-0"
               src={BRAND_HOTLINKS.logo}
               onError={(e) => {
-                // Fallback to svg asset if needed
                 (e.currentTarget as HTMLImageElement).src = '/edumanage-logo.svg';
               }}
             />
-            <span className="font-headline-sm text-xs sm:text-sm font-bold tracking-tight text-white flex items-center">
-              <span>Edu</span>
-              <span className="text-blue-400 font-extrabold">Manage</span>
-            </span>
+            <div className="flex flex-col text-left leading-none">
+              <span className="font-headline-sm text-xs sm:text-sm font-bold tracking-tight text-white flex items-center">
+                <span>Edu</span>
+                <span className="text-blue-400 font-extrabold">Manage</span>
+              </span>
+              <span className="hidden xs:inline sm:hidden text-[9px] text-blue-200/70 font-mono font-medium truncate max-w-[90px] mt-0.5">
+                Apex OS
+              </span>
+            </div>
           </button>
 
-          <div className="h-4 w-[1px] bg-white/15 hidden sm:block"></div>
+          <div className="h-4 w-[1px] bg-white/15 hidden md:block"></div>
 
-          {/* MAIN PAGES */}
-          <div className="flex items-center gap-1 sm:gap-1.5">
+          {/* MAIN PAGES (Desktop only: Hidden on mobile to keep bar 1-line clean) */}
+          <div className="hidden md:flex items-center gap-1 sm:gap-1.5">
             {/* 1. Landing Page with #Anchors Dropdown */}
             <div className="relative">
               <div
@@ -379,15 +394,14 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
               title="Create Institution - Step 1"
             >
               <span className="material-symbols-outlined text-[15px]">add_business</span>
-              <span className="hidden md:inline">Create Institution</span>
-              <span className="md:hidden">Create</span>
+              <span>Create Institution</span>
             </button>
           </div>
 
-          <div className="h-4 w-[1px] bg-white/15 hidden md:block"></div>
+          <div className="h-4 w-[1px] bg-white/15 hidden lg:block"></div>
 
           {/* DROPDOWN MENUS (Desktop/Tablet) for Admin, Super Admin, Academics, Portals */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-1">
             {/* Admin Pages Dropdown */}
             {renderDropdown('Admin Pages', 'admin', 'admin_panel_settings', adminItems, isAdminActive)}
 
@@ -402,8 +416,8 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
           </div>
         </div>
 
-        {/* Right Side: Global Search Bar + Quick Action CTA + Admin Hub + Theme Toggle + Sarah Profile + Mobile Menu */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+        {/* Right Side: Global Search Bar + Notification Center + Theme Toggle + Sarah Profile */}
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0 flex-nowrap">
           {/* Global Search Bar (Quick jump to students, courses, or admin pages) */}
           <GlobalSearchBar
             onNavigate={handleSelectScreen}
@@ -416,42 +430,30 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
             onShowToast={onShowToast}
           />
 
-          {/* Quick CTA: Start Free Trial / Create Institution */}
-          <button
-            onClick={() => {
-              handleSelectScreen('register');
-              onShowToast?.('Opening Step 1: Create Institution registration');
-            }}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-container text-white text-xs font-semibold hover:bg-primary transition-all active:scale-[0.98] shadow-sm cursor-pointer"
-            title="Start Free Registration"
-          >
-            <span className="material-symbols-outlined text-[14px]">rocket_launch</span>
-            <span>Start Free</span>
-          </button>
-
-          {/* Quick Hub shortcut: If not on dashboard/admin, allow 1-click switch to Admin Hub */}
-          {currentScreen !== 'dashboard' && currentScreen !== 'admin' && (
-            <button
-              onClick={() => handleSelectScreen('dashboard')}
-              className="hidden lg:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-outline-variant hover:text-white hover:bg-surface-container-highest/30 text-xs font-semibold transition-all cursor-pointer"
-              title="Open Admin Dashboard"
-            >
-              <span className="material-symbols-outlined text-[14px]">dashboard</span>
-              <span>Dashboard</span>
-            </button>
-          )}
-
           {/* Theme Toggle (Dark / Light) */}
           <ThemeToggle
             variant="compact"
             onToggleCallback={(mode) => onShowToast?.(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode (saved)`)}
           />
 
-          {/* User Profile Avatar with fast tooltip */}
+          {/* Quick CTA: Start Free Trial / Create Institution (Visible on desktop) */}
+          <button
+            onClick={() => {
+              handleSelectScreen('register');
+              onShowToast?.('Opening Step 1: Create Institution registration');
+            }}
+            className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-container text-white text-xs font-semibold hover:bg-primary transition-all active:scale-[0.98] shadow-sm cursor-pointer"
+            title="Start Free Registration"
+          >
+            <span className="material-symbols-outlined text-[14px]">rocket_launch</span>
+            <span>Start Free</span>
+          </button>
+
+          {/* User Profile Avatar with fast tooltip (Desktop/Tablet) */}
           <button
             onClick={() => handleSelectScreen('admin')}
             title="Dr. Sarah Jenkins (Super Admin) - Click for Admin Console"
-            className="relative ring-2 ring-transparent hover:ring-primary rounded-full transition-all cursor-pointer flex-shrink-0 ml-0.5"
+            className="hidden sm:block relative ring-2 ring-transparent hover:ring-primary rounded-full transition-all cursor-pointer flex-shrink-0 ml-0.5"
           >
             <img
               alt="Dr. Sarah Jenkins"
@@ -460,148 +462,420 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
             />
             <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-secondary ring-1 ring-inverse-surface"></span>
           </button>
+        </div>
+      </nav>
 
-          {/* Mobile Screen Selector Trigger (Pages Menu) */}
-          <div className="md:hidden relative">
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer ${
-                mobileMenuOpen
-                  ? 'bg-primary text-white border-primary'
-                  : 'bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border-white/20'
-              }`}
-              aria-label="Toggle navigation menu"
-            >
-              <span className="material-symbols-outlined text-[17px]">
-                {mobileMenuOpen ? 'close' : 'menu'}
-              </span>
-              <span className="text-[11px] font-medium">Pages</span>
-            </button>
+      {/* MOBILE FULL SLIDE-OVER NAVIGATION DRAWER */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden">
+          {/* Dimmed Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[70] transition-opacity animate-in fade-in duration-200"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
 
-            {/* Mobile Dropdown Menu Sheet */}
-            {mobileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-80 max-w-[90vw] rounded-2xl bg-surface-container-lowest text-on-surface border border-outline-variant/30 shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 backdrop-blur-xl max-h-[80vh] overflow-y-auto">
-                <div className="flex items-center justify-between pb-2 border-b border-surface-container mb-2">
-                  <span className="font-bold text-xs text-on-surface">Navigate EduManage</span>
-                  <span className="text-[10px] text-outline font-mono">Mobile View</span>
+          {/* Slide-over Drawer Panel */}
+          <div
+            className="fixed inset-y-0 right-0 w-[88vw] max-w-[350px] bg-surface-container-lowest text-on-surface z-[80] shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile Navigation Menu"
+          >
+            {/* Drawer Header */}
+            <div className="h-14 px-4 bg-surface-container-low/80 border-b border-outline-variant/20 flex items-center justify-between flex-shrink-0">
+              <div
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={handleSelectLanding}
+              >
+                <img
+                  alt="EduManage Logo"
+                  className="h-6 w-6 object-contain rounded-md"
+                  src={BRAND_HOTLINKS.logo}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = '/edumanage-logo.svg';
+                  }}
+                />
+                <div className="flex flex-col">
+                  <span className="font-bold text-xs text-on-surface leading-tight">
+                    Edu<span className="text-primary font-extrabold">Manage</span>
+                  </span>
+                  <span className="text-[10px] text-outline font-medium">Apex Academic OS</span>
                 </div>
+              </div>
 
-                {/* Landing Showcase & Anchors */}
-                <div className="mb-3">
-                  <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1 flex items-center justify-between">
-                    <span>Landing Showcase</span>
-                    <span className="text-[9px] font-mono">#anchors</span>
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
+                aria-label="Close menu"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Quick Profile & Current Screen Status */}
+            <div className="p-3 bg-surface-container-lowest border-b border-outline-variant/15 flex flex-col gap-2.5 flex-shrink-0">
+              {/* Active Screen Indicator */}
+              <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-primary/10 border border-primary/20 text-xs">
+                <span className="text-[10px] uppercase font-bold text-primary tracking-wider flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                  Active Screen
+                </span>
+                <span className="text-[11px] font-bold text-on-surface capitalize truncate max-w-[170px]">
+                  {currentScreen.replace('-', ' ')}
+                </span>
+              </div>
+
+              {/* In-drawer Quick Search Bar Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container border border-outline-variant/30 text-on-surface-variant hover:text-on-surface text-xs transition-colors cursor-pointer group"
+              >
+                <span className="material-symbols-outlined text-[17px] text-primary">search</span>
+                <span className="flex-1 text-left text-outline truncate group-hover:text-on-surface">
+                  Search students, courses, pages...
+                </span>
+                <kbd className="text-[9px] font-mono px-1 py-0.5 rounded bg-surface-container-high text-outline">
+                  ⌘K
+                </kbd>
+              </button>
+
+              {/* In-Drawer Interactive Theme Switcher Row */}
+              <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-surface-container-low border border-outline-variant/20">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px] text-primary">dark_mode</span>
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs font-bold text-on-surface">Theme Mode</span>
+                    <span className="text-[10px] text-outline">Dark / Light preview</span>
                   </div>
-                  <button
-                    onClick={handleSelectLanding}
-                    className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium flex items-center gap-2 mb-1 ${
-                      currentScreen === 'landing' ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">home</span>
-                    <span className="font-bold">Landing Home (Top)</span>
-                  </button>
-
-                  <div className="pl-2 space-y-0.5 border-l-2 border-surface-container ml-2 my-1">
-                    {LANDING_ANCHORS.map((anchor) => (
-                      <button
-                        key={anchor.id}
-                        onClick={() => handleSelectAnchor(anchor.id)}
-                        className="w-full text-left px-2 py-1 rounded text-[11px] flex items-center justify-between hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors"
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <span className="material-symbols-outlined text-[13px]">{anchor.icon}</span>
-                          <span>{anchor.label}</span>
-                        </span>
-                        <span className="text-[9px] font-mono text-outline">#{anchor.id}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => handleSelectScreen('register')}
-                    className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium flex items-center gap-2 mt-1 ${
-                      currentScreen === 'register' ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">add_business</span>
-                    Create Institution (Step 1)
-                  </button>
                 </div>
+                <ThemeToggle
+                  variant="compact"
+                  onToggleCallback={(mode) => onShowToast?.(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode`)}
+                />
+              </div>
 
-                {/* Admin Pages */}
-                <div className="mb-3 border-t border-surface-container pt-2">
-                  <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1">Admin Pages</div>
+              {/* Quick Jump Buttons */}
+              <div className="grid grid-cols-2 gap-2 pt-0.5">
+                <button
+                  type="button"
+                  onClick={() => handleSelectScreen('dashboard')}
+                  className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg bg-primary text-on-primary text-xs font-semibold shadow-xs hover:bg-primary-container transition-colors cursor-pointer min-h-[40px]"
+                >
+                  <span className="material-symbols-outlined text-[16px]">dashboard</span>
+                  <span>Dashboard</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectScreen('register')}
+                  className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high border border-outline-variant/30 text-xs font-semibold transition-colors cursor-pointer min-h-[40px]"
+                >
+                  <span className="material-symbols-outlined text-[16px] text-primary">add_business</span>
+                  <span>New Campus</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable Navigation Modules in Drawer */}
+            <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4 text-xs divide-y divide-outline-variant/10">
+              {/* 1. Core Administrative Modules */}
+              <div className="pt-1">
+                <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1 mb-1">
+                  Core Admin Modules ({adminItems.length})
+                </div>
+                <div className="space-y-0.5">
                   {adminItems.map(item => (
                     <button
                       key={item.id}
                       onClick={() => handleSelectScreen(item.id)}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 mb-0.5 ${
-                        currentScreen === item.id ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
+                      className={`w-full text-left px-2.5 py-2.5 rounded-lg text-xs font-medium flex items-center gap-2.5 transition-colors cursor-pointer min-h-[42px] ${
+                        currentScreen === item.id
+                          ? 'bg-primary text-white font-bold shadow-xs'
+                          : 'hover:bg-surface-container text-on-surface'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
-                      <span className="flex-1 truncate">{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Super Admin */}
-                <div className="mb-3 border-t border-surface-container pt-2">
-                  <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1">Super Admin</div>
-                  {superAdminItems.map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleSelectScreen(item.id)}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 mb-0.5 ${
-                        currentScreen === item.id ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
-                      <span className="flex-1 truncate">{item.label}</span>
-                      {item.badge && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/10 text-amber-500 font-bold">{item.badge}</span>}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Academics */}
-                <div className="mb-3 border-t border-surface-container pt-2">
-                  <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1">Academics & Exams</div>
-                  {academicItems.map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleSelectScreen(item.id)}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 mb-0.5 ${
-                        currentScreen === item.id ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
-                      <span className="flex-1 truncate">{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Portals */}
-                <div className="border-t border-surface-container pt-2">
-                  <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1">Portals</div>
-                  {portalItems.map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleSelectScreen(item.id)}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 mb-0.5 ${
-                        currentScreen === item.id ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
-                      }`}
-                    >
-                      <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
-                      <span className="flex-1 truncate">{item.label}</span>
+                      <span className={`material-symbols-outlined text-[18px] ${currentScreen === item.id ? 'text-white' : 'text-primary'}`}>
+                        {item.icon}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="block truncate">{item.label}</span>
+                        {item.description && (
+                          <span className={`text-[10px] block truncate ${currentScreen === item.id ? 'text-white/80' : 'text-outline'}`}>
+                            {item.description}
+                          </span>
+                        )}
+                      </div>
+                      {currentScreen === item.id && (
+                        <span className="material-symbols-outlined text-[15px]">check</span>
+                      )}
                     </button>
                   ))}
                 </div>
               </div>
-            )}
+
+              {/* 2. Academics & Exams */}
+              <div className="pt-3">
+                <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1 mb-1">
+                  Academics & Examination ({academicItems.length})
+                </div>
+                <div className="space-y-0.5">
+                  {academicItems.map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSelectScreen(item.id)}
+                      className={`w-full text-left px-2.5 py-2.5 rounded-lg text-xs font-medium flex items-center gap-2.5 transition-colors cursor-pointer min-h-[42px] ${
+                        currentScreen === item.id
+                          ? 'bg-primary text-white font-bold shadow-xs'
+                          : 'hover:bg-surface-container text-on-surface'
+                      }`}
+                    >
+                      <span className={`material-symbols-outlined text-[18px] ${currentScreen === item.id ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`}>
+                        {item.icon}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="block truncate">{item.label}</span>
+                        {item.description && (
+                          <span className={`text-[10px] block truncate ${currentScreen === item.id ? 'text-white/80' : 'text-outline'}`}>
+                            {item.description}
+                          </span>
+                        )}
+                      </div>
+                      {currentScreen === item.id && (
+                        <span className="material-symbols-outlined text-[15px]">check</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Multi-Role Portals */}
+              <div className="pt-3">
+                <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1 mb-1">
+                  Multi-Role Portals ({portalItems.length})
+                </div>
+                <div className="space-y-0.5">
+                  {portalItems.map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSelectScreen(item.id)}
+                      className={`w-full text-left px-2.5 py-2.5 rounded-lg text-xs font-medium flex items-center gap-2.5 transition-colors cursor-pointer min-h-[42px] ${
+                        currentScreen === item.id
+                          ? 'bg-primary text-white font-bold shadow-xs'
+                          : 'hover:bg-surface-container text-on-surface'
+                      }`}
+                    >
+                      <span className={`material-symbols-outlined text-[18px] ${currentScreen === item.id ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                        {item.icon}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="block truncate">{item.label}</span>
+                        {item.description && (
+                          <span className={`text-[10px] block truncate ${currentScreen === item.id ? 'text-white/80' : 'text-outline'}`}>
+                            {item.description}
+                          </span>
+                        )}
+                      </div>
+                      {currentScreen === item.id && (
+                        <span className="material-symbols-outlined text-[15px]">check</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4. Super Admin & Infrastructure */}
+              <div className="pt-3">
+                <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1 mb-1">
+                  Super Admin Console ({superAdminItems.length})
+                </div>
+                <div className="space-y-0.5">
+                  {superAdminItems.map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSelectScreen(item.id)}
+                      className={`w-full text-left px-2.5 py-2.5 rounded-lg text-xs font-medium flex items-center gap-2.5 transition-colors cursor-pointer min-h-[42px] ${
+                        currentScreen === item.id
+                          ? 'bg-primary text-white font-bold shadow-xs'
+                          : 'hover:bg-surface-container text-on-surface'
+                      }`}
+                    >
+                      <span className={`material-symbols-outlined text-[18px] ${currentScreen === item.id ? 'text-white' : 'text-amber-600 dark:text-amber-400'}`}>
+                        {item.icon}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="block truncate">{item.label}</span>
+                        {item.description && (
+                          <span className={`text-[10px] block truncate ${currentScreen === item.id ? 'text-white/80' : 'text-outline'}`}>
+                            {item.description}
+                          </span>
+                        )}
+                      </div>
+                      {item.badge && (
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/15 text-amber-600 font-bold uppercase">
+                          {item.badge}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 5. Landing Showcase & Section Anchors */}
+              <div className="pt-3">
+                <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1 mb-1 flex items-center justify-between">
+                  <span>Landing Showcase</span>
+                  <span className="text-[9px] font-mono text-outline">#anchors</span>
+                </div>
+                <button
+                  onClick={handleSelectLanding}
+                  className={`w-full text-left px-2.5 py-2.5 rounded-lg text-xs font-medium flex items-center gap-2.5 mb-1 cursor-pointer min-h-[42px] ${
+                    currentScreen === 'landing' ? 'bg-primary text-white font-bold shadow-xs' : 'hover:bg-surface-container text-on-surface'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">home</span>
+                  <span>Landing Home (Overview)</span>
+                </button>
+
+                <div className="pl-3 space-y-0.5 border-l-2 border-surface-container ml-2 my-1">
+                  {LANDING_ANCHORS.map((anchor) => (
+                    <button
+                      key={anchor.id}
+                      onClick={() => handleSelectAnchor(anchor.id)}
+                      className="w-full text-left px-2 py-2 rounded text-[11px] flex items-center justify-between hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors cursor-pointer min-h-[38px]"
+                    >
+                      <span className="flex items-center gap-1.5 truncate">
+                        <span className="material-symbols-outlined text-[14px] text-outline">{anchor.icon}</span>
+                        <span className="truncate">{anchor.label}</span>
+                      </span>
+                      <span className="text-[9px] font-mono text-outline flex-shrink-0">#{anchor.id}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="p-3 bg-surface-container-low/80 border-t border-outline-variant/15 flex flex-col gap-2 text-xs flex-shrink-0">
+              <div
+                onClick={() => handleSelectScreen('admin')}
+                className="flex items-center justify-between p-2 rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <img
+                    alt="Dr. Sarah Jenkins"
+                    className="w-8 h-8 rounded-full object-cover border border-outline-variant/40 flex-shrink-0"
+                    src={BRAND_HOTLINKS.profileSarah}
+                  />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-on-surface truncate">Dr. Sarah Jenkins</p>
+                    <p className="text-[10px] text-outline truncate">Super Admin • Apex HQ</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-semibold text-primary">Admin Console →</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-semibold cursor-pointer transition-colors"
+              >
+                Close Menu
+              </button>
+            </div>
           </div>
         </div>
-      </nav>
+      )}
+
+      {/* MOBILE BOTTOM NAVIGATION DOCK (Native App-Like Ergonomic Thumb Navigation) */}
+      <div
+        className="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant/30 z-[55] flex items-center justify-around px-1 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] select-none"
+        role="navigation"
+        aria-label="Mobile Bottom Navigation"
+      >
+        {/* 1. Dashboard */}
+        <button
+          onClick={() => handleSelectScreen('dashboard')}
+          className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer flex-1 min-h-[44px] ${
+            currentScreen === 'dashboard'
+              ? 'text-primary font-bold'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+          title="Admin Dashboard"
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            grid_view
+          </span>
+          <span className="leading-tight mt-0.5 text-[9px]">Dashboard</span>
+        </button>
+
+        {/* 2. Students */}
+        <button
+          onClick={() => handleSelectScreen('students-directory')}
+          className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer flex-1 min-h-[44px] ${
+            ['students-directory', 'student-profile'].includes(currentScreen)
+              ? 'text-primary font-bold'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+          title="Students Directory"
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            group
+          </span>
+          <span className="leading-tight mt-0.5 text-[9px]">Students</span>
+        </button>
+
+        {/* 3. Academics */}
+        <button
+          onClick={() => handleSelectScreen('timetable-schedule')}
+          className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer flex-1 min-h-[44px] ${
+            ['timetable-schedule', 'academics', 'marks-entry', 'results-transcripts', 'assignments-coursework'].includes(currentScreen)
+              ? 'text-primary font-bold'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+          title="Academics & Schedule"
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            menu_book
+          </span>
+          <span className="leading-tight mt-0.5 text-[9px]">Academics</span>
+        </button>
+
+        {/* 4. Admissions */}
+        <button
+          onClick={() => handleSelectScreen('admissions')}
+          className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer flex-1 min-h-[44px] ${
+            ['admissions', 'courses-batches', 'certificates'].includes(currentScreen)
+              ? 'text-primary font-bold'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+          title="Admissions & CRM"
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            contact_support
+          </span>
+          <span className="leading-tight mt-0.5 text-[9px]">Admissions</span>
+        </button>
+
+        {/* 5. Menu Drawer */}
+        <button
+          onClick={() => setMobileMenuOpen(true)}
+          className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-lg text-[10px] font-semibold transition-all cursor-pointer flex-1 min-h-[44px] ${
+            mobileMenuOpen
+              ? 'text-primary font-bold'
+              : 'text-on-surface-variant hover:text-on-surface'
+          }`}
+          title="All Navigation Modules"
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            apps
+          </span>
+          <span className="leading-tight mt-0.5 text-[9px]">All Menu</span>
+        </button>
+      </div>
     </>
   );
 };

@@ -348,10 +348,17 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
       {/* Notification Center Dropdown Panel */}
       {isOpen && (
-        <div
-          className="absolute right-0 sm:right-auto sm:left-auto md:right-0 mt-2 w-[92vw] sm:w-[420px] md:w-[450px] max-w-[460px] rounded-2xl bg-surface-container-lowest text-on-surface border border-outline-variant/30 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 backdrop-blur-xl overflow-hidden flex flex-col"
-          style={{ maxHeight: '82vh' }}
-        >
+        <>
+          {/* Mobile Dimmed Backdrop for clean tap outside on mobile */}
+          <div
+            className="fixed inset-0 bg-black/45 z-[65] sm:hidden backdrop-blur-xs transition-opacity"
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            className="fixed left-2 right-2 sm:left-auto sm:right-0 top-14 sm:top-full mt-1 sm:mt-2 w-auto sm:w-[420px] md:w-[450px] max-w-[460px] rounded-2xl bg-surface-container-lowest text-on-surface border border-outline-variant/30 shadow-2xl z-[70] animate-in fade-in zoom-in-95 duration-150 backdrop-blur-xl overflow-hidden flex flex-col"
+            style={{ maxHeight: '82vh' }}
+          >
           {/* Header */}
           <div className="p-3.5 sm:p-4 border-b border-surface-container bg-surface-container-low/50">
             <div className="flex items-center justify-between gap-2">
@@ -613,6 +620,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             </button>
           </div>
         </div>
+      </>
       )}
     </div>
   );
