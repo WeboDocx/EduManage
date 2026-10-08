@@ -4,6 +4,7 @@ import { BRAND_HOTLINKS } from '../data/mockData';
 import { ThemeToggle } from './ThemeToggle';
 import { useSidebar } from '../context/SidebarContext';
 import { GlobalSearchBar } from './GlobalSearchBar';
+import { NotificationCenter } from './NotificationCenter';
 
 interface NavigationProps {
   currentScreen: ScreenType;
@@ -267,16 +268,21 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
           {/* Logo / Brandmark with EduManage branding */}
           <button
             onClick={handleSelectLanding}
-            className="flex items-center gap-1.5 text-white font-bold tracking-tight hover:opacity-90 transition-opacity cursor-pointer mr-0.5"
+            className="flex items-center gap-1.5 sm:gap-2 text-white font-bold tracking-tight hover:opacity-90 transition-opacity cursor-pointer mr-0.5 group"
             title="EduManage Home"
           >
             <img
               alt="EduManage Logo"
-              className="h-6 w-auto object-contain"
+              className="h-6.5 w-6.5 object-contain rounded-md shadow-xs group-hover:scale-105 transition-transform flex-shrink-0"
               src={BRAND_HOTLINKS.logo}
+              onError={(e) => {
+                // Fallback to svg asset if needed
+                (e.currentTarget as HTMLImageElement).src = '/edumanage-logo.svg';
+              }}
             />
-            <span className="hidden sm:inline font-headline-sm text-xs font-bold tracking-tight">
-              EduManage
+            <span className="font-headline-sm text-xs sm:text-sm font-bold tracking-tight text-white flex items-center">
+              <span>Edu</span>
+              <span className="text-blue-400 font-extrabold">Manage</span>
             </span>
           </button>
 
@@ -400,6 +406,12 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
         <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
           {/* Global Search Bar (Quick jump to students, courses, or admin pages) */}
           <GlobalSearchBar
+            onNavigate={handleSelectScreen}
+            onShowToast={onShowToast}
+          />
+
+          {/* Notification Center Dropdown (System alerts, task deadlines, academic announcements) */}
+          <NotificationCenter
             onNavigate={handleSelectScreen}
             onShowToast={onShowToast}
           />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ScreenType } from '../types';
 import { useSidebar } from '../context/SidebarContext';
+import { useActivityLog } from '../context/ActivityLogContext';
 
 interface CertificatesConsoleScreenProps {
   onNavigate: (screen: ScreenType) => void;
@@ -120,6 +121,7 @@ export const CertificatesConsoleScreen: React.FC<CertificatesConsoleScreenProps>
   const [selectedCourse, setSelectedCourse] = useState('Web Development');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
+  const { logAdministrativeAction } = useActivityLog();
 
   // Simulator state
   const [simCertQuery, setSimCertQuery] = useState('CERT-APX-2026-00125');
@@ -210,6 +212,23 @@ export const CertificatesConsoleScreen: React.FC<CertificatesConsoleScreenProps>
     }
 
     setIsRevokeModalOpen(false);
+    logAdministrativeAction({
+      action: 'Certificate Revoked',
+      target: targetCertToRevoke.studentName,
+      targetId: targetCertToRevoke.certId,
+      category: 'certificates',
+      campus: targetCertToRevoke.branch,
+      details: `Revocation ratified for ${targetCertToRevoke.certId} (${targetCertToRevoke.course}). Public verification invalidated.`,
+      actor: 'Apex Ethics Board',
+      actorRole: 'Disciplinary Committee',
+      securityLevel: 'Critical Audit',
+      metadata: {
+        certificateId: targetCertToRevoke.certId,
+        cause: revokeReason,
+        notes: revokeNotes,
+      },
+      screenTarget: 'certificates',
+    });
     onShowToast(`Certificate ${targetCertToRevoke.certId} has been formally revoked.`);
   };
 
@@ -227,7 +246,25 @@ export const CertificatesConsoleScreen: React.FC<CertificatesConsoleScreenProps>
           : c
       )
     );
-    onShowToast(`Director cryptographic sign-off applied to ${cert.certId}.`);
+    logAdministrativeAction({
+      action: 'Certificate Issued',
+      target: cert.studentName,
+      targetId: cert.certId,
+      category: 'certificates',
+      campus: cert.branch,
+      details: `Digital credential approved with cryptographic RSA-2048 sign-off. Status set to Verified & Active for ${cert.course}.`,
+      actor: 'Dr. Rajesh Sharma',
+      actorRole: 'Director & Head of Institutions',
+      securityLevel: 'Critical Audit',
+      metadata: {
+        certificateId: cert.certId,
+        course: cert.course,
+        batch: cert.batch,
+        hash: cert.hash,
+      },
+      screenTarget: 'certificates',
+    });
+    onShowToast(`Director cryptographic sign-off applied to ${cert.certId} and logged to audit trail.`);
   };
 
   const handleExportCSV = () => {

@@ -3,6 +3,11 @@ import { ScreenType } from '../types';
 import { BRAND_HOTLINKS } from '../data/mockData';
 import { ThemeToggle } from './ThemeToggle';
 import { useSidebar } from '../context/SidebarContext';
+import { QuickActionsFloatingButton } from './QuickActionsFloatingButton';
+import { CreateCourseModal } from './CreateCourseModal';
+import { ViewReportsModal } from './ViewReportsModal';
+import { RecentActivityPanel } from './RecentActivityPanel';
+import { useActivityLog } from '../context/ActivityLogContext';
 
 interface DashboardScreenProps {
   onNavigate: (screen: ScreenType) => void;
@@ -132,6 +137,7 @@ const INITIAL_FEES: FeePayment[] = [
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, onShowToast }) => {
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
+  const { activities, logAdministrativeAction } = useActivityLog();
 
   // Core interactive states
   const [searchQuery, setSearchQuery] = useState('');
@@ -149,8 +155,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
   // Modals
   const [isQuickActionModalOpen, setIsQuickActionModalOpen] = useState(false);
   const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
+  const [isCreateCourseModalOpen, setIsCreateCourseModalOpen] = useState(false);
+  const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<RecentAdmission | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [createdCoursesList, setCreatedCoursesList] = useState<Array<{ title: string; code: string }>>([]);
 
   // Form states for Quick Intake
   const [newStudentName, setNewStudentName] = useState('');
@@ -218,9 +227,28 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
     };
     setRecentFees(prev => [newFeeItem, ...prev.slice(0, 3)]);
 
+    // Commit to Secure Activity Audit Ledger
+    logAdministrativeAction({
+      action: 'Student Added',
+      target: newStudentName.trim(),
+      targetId: admCode,
+      category: 'students',
+      campus: `${newStudentBranch} Campus`,
+      details: `New student intake confirmed for ${newStudentCourse}. Registered with receipt ₹${feeNum.toLocaleString('en-IN')}.`,
+      actor: 'Sarah Jenkins',
+      actorRole: 'Registrar & Admissions Lead',
+      metadata: {
+        admissionCode: admCode,
+        course: newStudentCourse,
+        branch: newStudentBranch,
+        feeAmount: `₹${feeNum}`,
+      },
+      screenTarget: 'students-directory',
+    });
+
     setIsQuickActionModalOpen(false);
     setNewStudentName('');
-    onShowToast(`Admission confirmed for ${newAdm.name} (${admCode})!`);
+    onShowToast(`Admission confirmed for ${newAdm.name} (${admCode}) and logged to audit trail!`);
   };
 
   const handleQuickCollectFee = (e: React.FormEvent) => {
@@ -244,6 +272,25 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
 
     setRecentFees(prev => [newFeeItem, ...prev.slice(0, 3)]);
     setTodayCollectionTotal(prev => prev + amountNum);
+
+    // Commit to Secure Activity Audit Ledger
+    logAdministrativeAction({
+      action: 'Fee Recorded',
+      target: feeStudentName.trim(),
+      targetId: rcpCode,
+      category: 'finance',
+      campus: selectedCampusScope.includes('All') ? 'Siliguri HQ Campus' : selectedCampusScope,
+      details: `Counter payment ₹${amountNum.toLocaleString('en-IN')} verified via ${feeMode}. Voucher signed.`,
+      actor: 'Alok Mukherjee',
+      actorRole: 'Accounts Officer',
+      metadata: {
+        receiptNumber: rcpCode,
+        amount: `₹${amountNum}`,
+        paymentMode: feeMode,
+      },
+      screenTarget: 'dashboard',
+    });
+
     setIsFeeModalOpen(false);
     setFeeStudentName('');
     onShowToast(`Payment of ₹${amountNum.toLocaleString('en-IN')} recorded for ${feeStudentName}! (${rcpCode})`);
@@ -477,17 +524,26 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
             </button>
 
             {/* Logo & Institute Name */}
-            <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onNavigate('landing')}
+              className="flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity text-left group"
+              title="EduManage Home"
+            >
               <img
-                alt="Brand logo"
-                className="h-7 w-auto object-contain cursor-pointer hover:opacity-90 transition-opacity hidden sm:block"
+                alt="EduManage Logo"
+                className="h-7 w-7 object-contain rounded-lg shadow-xs group-hover:scale-105 transition-transform"
                 src={BRAND_HOTLINKS.logo}
-                onClick={() => onNavigate('landing')}
               />
-              <span className="font-bold text-sm sm:text-base text-on-surface tracking-tight truncate">
-                Apex Institute
-              </span>
-            </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-xs sm:text-sm text-on-surface tracking-tight leading-tight truncate">
+                  Apex Institute
+                </span>
+                <span className="text-[10px] text-outline leading-none font-medium hidden sm:block">
+                  EduManage Academic OS
+                </span>
+              </div>
+            </button>
 
             {/* Branch Scope Dropdown (Compact) */}
             <div className="relative">
@@ -1162,39 +1218,77 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
                   </div>
                 </div>
 
-                {/* System Activity (Minimal 3 Items) */}
+                {/* Live Admin Stream Card connected to Activity Log */}
                 <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-outline-variant/20 shadow-xs">
-                  <div className="flex items-center gap-1.5 pb-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <h2 className="font-bold text-xs uppercase tracking-wider text-outline">
-                      Live Stream
-                    </h2>
+                  <div className="flex items-center justify-between pb-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <h2 className="font-bold text-xs uppercase tracking-wider text-outline">
+                        Live Stream
+                      </h2>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById('recent-activity-panel');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
+                    >
+                      Audit Trail ({activities.length}) ↓
+                    </button>
                   </div>
                   <div className="space-y-2.5 text-xs">
-                    <div className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0"></span>
-                      <div>
-                        <span className="font-semibold text-on-surface">Rahul Kumar</span> admitted to Web Dev Batch 04
-                        <span className="text-[10px] text-outline block">Siliguri • 10:42 AM</span>
+                    {activities.slice(0, 3).map(item => (
+                      <div
+                        key={item.id}
+                        onClick={() => {
+                          const el = document.getElementById('recent-activity-panel');
+                          if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="flex items-start gap-2 cursor-pointer hover:bg-surface-container-low/50 p-1 rounded-lg transition-colors"
+                      >
+                        <span
+                          className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                            item.action.includes('Student')
+                              ? 'bg-emerald-500'
+                              : item.action.includes('Certificate')
+                              ? 'bg-purple-500'
+                              : item.action.includes('Fee')
+                              ? 'bg-amber-500'
+                              : 'bg-primary'
+                          }`}
+                        ></span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-semibold text-on-surface truncate">
+                              {item.action}: {item.target}
+                            </span>
+                            <span className="text-[10px] font-mono text-outline flex-shrink-0">
+                              {item.timeAgo}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-outline block truncate">
+                            {item.details}
+                          </span>
+                          <span className="text-[10px] font-mono text-outline/80 block">
+                            {item.campus} • {item.securityHash.slice(0, 14)}...
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0"></span>
-                      <div>
-                        Fee payment of <strong className="text-emerald-600">₹12,500</strong> verified for Sneha Das
-                        <span className="text-[10px] text-outline block">UPI Gateway • 09:55 AM</span>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0"></span>
-                      <div>
-                        QR Certificate batch issued for Batch 2024-B (118 Issued)
-                        <span className="text-[10px] text-outline block">Academic Registry • 08:30 AM</span>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* 7. SECURE RECENT ACTIVITY & AUDIT TRAIL PANEL */}
+            <div id="recent-activity-panel" className="mt-4">
+              <RecentActivityPanel
+                onNavigate={onNavigate}
+                onShowToast={onShowToast}
+                currentCampusScope={selectedCampusScope}
+              />
             </div>
           </div>
         </main>
@@ -1466,6 +1560,53 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
           </div>
         </div>
       )}
+
+      {/* MODAL 4: CREATE COURSE (Quick Action) */}
+      <CreateCourseModal
+        isOpen={isCreateCourseModalOpen}
+        onClose={() => setIsCreateCourseModalOpen(false)}
+        onSuccess={(courseData) => {
+          setCreatedCoursesList(prev => [{ title: courseData.title, code: courseData.code }, ...prev]);
+          logAdministrativeAction({
+            action: 'Course Created',
+            target: courseData.title,
+            targetId: courseData.code,
+            category: 'academics',
+            campus: courseData.campus || 'Siliguri HQ Campus',
+            details: `Curriculum approved for ${courseData.duration} (${courseData.category}). Capacity: ${courseData.seats} seats, Fee: ₹${courseData.fee}.`,
+            actor: 'Prof. Anirban Sen',
+            actorRole: 'Dean of Academic Programs',
+            metadata: {
+              code: courseData.code,
+              duration: courseData.duration,
+              category: courseData.category,
+              seats: courseData.seats,
+              fee: `₹${courseData.fee}`,
+            },
+            screenTarget: 'courses-batches',
+          });
+          onShowToast(`Course "${courseData.title}" (${courseData.code}) created and logged to audit trail!`);
+        }}
+        onNavigate={onNavigate}
+      />
+
+      {/* MODAL 5: INSTITUTION REPORTS & ANALYTICS (Quick Action) */}
+      <ViewReportsModal
+        isOpen={isReportsModalOpen}
+        onClose={() => setIsReportsModalOpen(false)}
+        onNavigate={onNavigate}
+        onShowToast={onShowToast}
+      />
+
+      {/* FLOATING QUICK ACTIONS BUTTON */}
+      <QuickActionsFloatingButton
+        onAddStudent={() => setIsQuickActionModalOpen(true)}
+        onCreateCourse={() => setIsCreateCourseModalOpen(true)}
+        onViewReports={() => setIsReportsModalOpen(true)}
+        onCollectFee={() => setIsFeeModalOpen(true)}
+        onNavigate={onNavigate}
+        onShowToast={onShowToast}
+      />
     </div>
   );
 };

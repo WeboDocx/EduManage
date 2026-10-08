@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ScreenType } from '../types';
 import { useSidebar } from '../context/SidebarContext';
+import { useActivityLog } from '../context/ActivityLogContext';
+import {
+  StudentsQuickFilterPanel,
+  SESSION_QUICK_FILTER_KEY,
+  QuickFilterPreferences,
+} from './StudentsQuickFilterPanel';
 
 interface StudentsDirectoryScreenProps {
   onNavigate: (screen: ScreenType) => void;
@@ -18,6 +24,8 @@ interface StudentItem {
   admissionNo: string;
   grade: string;
   enrollmentDate: string; // YYYY-MM-DD format
+  academicYear?: string;
+  department?: string;
   course: string;
   batch: string;
   branch: string;
@@ -33,6 +41,44 @@ interface StudentItem {
   feeSub: string;
   overdue?: boolean;
 }
+
+export const getStudentDepartment = (course?: string, department?: string): string => {
+  if (department) return department;
+  const c = (course || '').toLowerCase();
+  if (c.includes('web') || c.includes('python') || c.includes('computer') || c.includes('code') || c.includes('ai')) {
+    return 'Computer Science & IT';
+  }
+  if (c.includes('tally') || c.includes('gst') || c.includes('commerce') || c.includes('account')) {
+    return 'Commerce & Accounting';
+  }
+  if (c.includes('marketing') || c.includes('digital') || c.includes('seo') || c.includes('media')) {
+    return 'Digital Marketing & Media';
+  }
+  if (c.includes('design') || c.includes('graphic') || c.includes('ui') || c.includes('ux') || c.includes('art')) {
+    return 'Design & Arts';
+  }
+  if (c.includes('english') || c.includes('spoken') || c.includes('language') || c.includes('comm')) {
+    return 'Languages & Communication';
+  }
+  return 'General Academics';
+};
+
+export const getStudentAcademicYear = (enrollmentDate?: string, academicYear?: string): string => {
+  if (academicYear) return academicYear;
+  if (!enrollmentDate) return '2025-2026';
+  const year = parseInt(enrollmentDate.slice(0, 4), 10);
+  const month = parseInt(enrollmentDate.slice(5, 7), 10);
+  if (year >= 2026) {
+    return month >= 4 ? '2026-2027' : '2025-2026';
+  }
+  if (year === 2025) {
+    return month >= 4 ? '2025-2026' : '2024-2025';
+  }
+  if (year === 2024) {
+    return month >= 4 ? '2024-2025' : '2023-2024';
+  }
+  return `${year}-${year + 1}`;
+};
 
 export const formatEnrollmentDate = (dateStr?: string) => {
   if (!dateStr) return '—';
@@ -79,6 +125,8 @@ const INITIAL_STUDENTS: StudentItem[] = [
     admissionNo: 'ADM-2026-00125',
     grade: 'Grade 11 (Science)',
     enrollmentDate: '2025-08-15',
+    academicYear: '2025-2026',
+    department: 'Computer Science & IT',
     course: 'Web Development',
     batch: 'WD Evening (Batch 02)',
     branch: 'Siliguri HQ',
@@ -104,6 +152,8 @@ const INITIAL_STUDENTS: StudentItem[] = [
     admissionNo: 'ADM-2026-00341',
     grade: 'Grade 12 (Commerce)',
     enrollmentDate: '2025-06-20',
+    academicYear: '2025-2026',
+    department: 'Digital Marketing & Media',
     course: 'Digital Marketing Pro',
     batch: 'DM Morning (Batch 01)',
     branch: 'Binnaguri Campus',
@@ -129,6 +179,8 @@ const INITIAL_STUDENTS: StudentItem[] = [
     admissionNo: 'ADM-2026-00892',
     grade: 'Grade 10-A',
     enrollmentDate: '2025-09-01',
+    academicYear: '2025-2026',
+    department: 'Commerce & Accounting',
     course: 'Tally Prime & GST',
     batch: 'Tally Weekend (W1)',
     branch: 'Jalpaiguri Centre',
@@ -154,6 +206,8 @@ const INITIAL_STUDENTS: StudentItem[] = [
     admissionNo: 'ADM-2026-00194',
     grade: 'Grade 12 (Arts)',
     enrollmentDate: '2025-07-08',
+    academicYear: '2025-2026',
+    department: 'Design & Arts',
     course: 'Graphic & UI Design',
     batch: 'GD Afternoon (Batch 03)',
     branch: 'Siliguri HQ',
@@ -180,6 +234,8 @@ const INITIAL_STUDENTS: StudentItem[] = [
     admissionNo: 'ADM-2026-00210',
     grade: 'Higher Ed (Sem 6)',
     enrollmentDate: '2025-04-02',
+    academicYear: '2025-2026',
+    department: 'Computer Science & IT',
     course: 'Computer Fundamentals',
     batch: 'CF Morning (Batch 01)',
     branch: 'Siliguri HQ',
@@ -205,6 +261,8 @@ const INITIAL_STUDENTS: StudentItem[] = [
     admissionNo: 'ADM-2026-00415',
     grade: 'Grade 9-A',
     enrollmentDate: '2026-01-25',
+    academicYear: '2025-2026',
+    department: 'Languages & Communication',
     course: 'Spoken English & Comm.',
     batch: 'SE Evening (Batch 04)',
     branch: 'Binnaguri Campus',
@@ -230,6 +288,8 @@ const INITIAL_STUDENTS: StudentItem[] = [
     admissionNo: 'ADM-2026-00512',
     grade: 'Grade 12 (Science)',
     enrollmentDate: '2025-07-14',
+    academicYear: '2025-2026',
+    department: 'Computer Science & IT',
     course: 'Python & AI Data',
     batch: 'Morning (08:00 AM)',
     branch: 'Siliguri HQ',
@@ -255,6 +315,8 @@ const INITIAL_STUDENTS: StudentItem[] = [
     admissionNo: 'ADM-2026-00633',
     grade: 'Grade 11 (Commerce)',
     enrollmentDate: '2025-08-22',
+    academicYear: '2025-2026',
+    department: 'Commerce & Accounting',
     course: 'Tally Prime & GST',
     batch: 'Evening (05:00 PM)',
     branch: 'Jalpaiguri Centre',
@@ -280,6 +342,8 @@ const INITIAL_STUDENTS: StudentItem[] = [
     admissionNo: 'ADM-2026-00741',
     grade: 'Grade 10-B',
     enrollmentDate: '2026-01-10',
+    academicYear: '2025-2026',
+    department: 'Computer Science & IT',
     course: 'Computer Fundamentals',
     batch: 'Afternoon (01:00 PM)',
     branch: 'Siliguri HQ',
@@ -305,6 +369,8 @@ const INITIAL_STUDENTS: StudentItem[] = [
     admissionNo: 'ADM-2026-00820',
     grade: 'Grade 9-B',
     enrollmentDate: '2026-02-05',
+    academicYear: '2025-2026',
+    department: 'Languages & Communication',
     course: 'Spoken English & Comm.',
     batch: 'Morning (08:00 AM)',
     branch: 'Binnaguri Campus',
@@ -330,6 +396,8 @@ const INITIAL_STUDENTS: StudentItem[] = [
     admissionNo: 'ADM-2026-00910',
     grade: 'Higher Ed (Sem 4)',
     enrollmentDate: '2025-04-18',
+    academicYear: '2024-2025',
+    department: 'Computer Science & IT',
     course: 'Web Development',
     batch: 'Weekend Intensive',
     branch: 'Siliguri HQ',
@@ -355,6 +423,8 @@ const INITIAL_STUDENTS: StudentItem[] = [
     admissionNo: 'ADM-2026-00995',
     grade: 'Grade 12 (Arts)',
     enrollmentDate: '2024-11-12',
+    academicYear: '2024-2025',
+    department: 'Design & Arts',
     course: 'Graphic & UI Design',
     batch: 'Afternoon (01:00 PM)',
     branch: 'Cooch Behar',
@@ -369,6 +439,88 @@ const INITIAL_STUDENTS: StudentItem[] = [
     feeLabel: 'Paid Full',
     feeSub: 'Cert #ED-7904',
   },
+  {
+    id: 'std-13',
+    name: 'Arjun Singhania',
+    phone: '+91 98110 55432',
+    avatarBg: 'bg-surface-container-highest',
+    avatarText: 'text-error',
+    avatarColor: 'AS',
+    enrollmentNo: 'ABC-MAL-26-01042',
+    admissionNo: 'ADM-2025-01042',
+    grade: 'Grade 11 (Commerce)',
+    enrollmentDate: '2024-09-15',
+    academicYear: '2024-2025',
+    department: 'Computer Science & IT',
+    course: 'Web Development',
+    batch: 'WD Weekend (Batch 01)',
+    branch: 'Malbazar Hub',
+    status: 'Dropped Out',
+    statusBg: 'bg-error-container/40',
+    statusText: 'text-error',
+    statusDot: 'bg-error',
+    feeType: 'due',
+    feeBadgeBg: 'bg-error-container/60',
+    feeBadgeText: 'text-error',
+    feeDotBg: 'bg-error',
+    feeLabel: 'Unsettled ₹5,000',
+    feeSub: 'Discontinued',
+    overdue: true,
+  },
+  {
+    id: 'std-14',
+    name: 'Ishita Majumder',
+    phone: '+91 97490 22314',
+    avatarBg: 'bg-primary-fixed',
+    avatarText: 'text-primary',
+    avatarColor: 'IM',
+    enrollmentNo: 'ABC-SIL-27-01180',
+    admissionNo: 'ADM-2026-01180',
+    grade: 'Grade 12 (Arts)',
+    enrollmentDate: '2026-04-10',
+    academicYear: '2026-2027',
+    department: 'Digital Marketing & Media',
+    course: 'Digital Marketing Pro',
+    batch: 'DM Morning (Batch 02)',
+    branch: 'Siliguri HQ',
+    status: 'Active',
+    statusBg: 'bg-secondary-container/40',
+    statusText: 'text-on-secondary-container',
+    statusDot: 'bg-secondary',
+    feeType: 'paid',
+    feeBadgeBg: 'bg-emerald-50',
+    feeBadgeText: 'text-emerald-800',
+    feeDotBg: 'bg-emerald-500',
+    feeLabel: 'Paid Full',
+    feeSub: '₹22,000 Early Bird',
+  },
+  {
+    id: 'std-15',
+    name: 'Deepak Ghosh',
+    phone: '+91 94320 88712',
+    avatarBg: 'bg-secondary-fixed',
+    avatarText: 'text-secondary',
+    avatarColor: 'DG',
+    enrollmentNo: 'ABC-JAL-26-01205',
+    admissionNo: 'ADM-2026-01205',
+    grade: 'Grade 10-A',
+    enrollmentDate: '2025-10-05',
+    academicYear: '2025-2026',
+    department: 'Commerce & Accounting',
+    course: 'Tally Prime & GST',
+    batch: 'Evening (05:00 PM)',
+    branch: 'Jalpaiguri Centre',
+    status: 'Inactive',
+    statusBg: 'bg-surface-container',
+    statusText: 'text-outline',
+    statusDot: 'bg-outline',
+    feeType: 'due',
+    feeBadgeBg: 'bg-amber-100',
+    feeBadgeText: 'text-amber-900',
+    feeDotBg: 'bg-amber-500',
+    feeLabel: 'Due ₹3,500',
+    feeSub: 'Inv #9562',
+  },
 ];
 
 export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = ({
@@ -376,6 +528,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
   onShowToast,
 }) => {
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
+  const { logAdministrativeAction } = useActivityLog();
   const [students, setStudents] = useState<StudentItem[]>(INITIAL_STUDENTS);
   const [selectedIds, setSelectedIds] = useState<string[]>(['std-1', 'std-2', 'std-3']);
   
@@ -393,6 +546,165 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
   const [selectedSession, setSelectedSession] = useState('2025-2026');
   const [activeFacetStatus, setActiveFacetStatus] = useState<string | null>(null);
   const [activeFacetSession, setActiveFacetSession] = useState<string | null>('2025-26');
+
+  // Quick Filter State (with local session persistence)
+  const [quickAcademicYear, setQuickAcademicYear] = useState<string>(() => {
+    try {
+      const raw = sessionStorage.getItem(SESSION_QUICK_FILTER_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.academicYear) return parsed.academicYear;
+      }
+    } catch {}
+    return 'All Academic Years';
+  });
+
+  const [quickDepartment, setQuickDepartment] = useState<string>(() => {
+    try {
+      const raw = sessionStorage.getItem(SESSION_QUICK_FILTER_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.department) return parsed.department;
+      }
+    } catch {}
+    return 'All Departments';
+  });
+
+  const [quickStatus, setQuickStatus] = useState<string>(() => {
+    try {
+      const raw = sessionStorage.getItem(SESSION_QUICK_FILTER_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.status) return parsed.status;
+      }
+    } catch {}
+    return 'All Statuses';
+  });
+
+  const [isQuickFilterExpanded, setIsQuickFilterExpanded] = useState<boolean>(() => {
+    try {
+      const raw = sessionStorage.getItem(SESSION_QUICK_FILTER_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.isPanelExpanded === 'boolean') return parsed.isPanelExpanded;
+      }
+    } catch {}
+    return true;
+  });
+
+  const [lastSavedSessionTime, setLastSavedSessionTime] = useState<string | null>(() => {
+    try {
+      return sessionStorage.getItem(SESSION_QUICK_FILTER_KEY)
+        ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Automatically save preferences to sessionStorage whenever any quick filter or panel state changes
+  useEffect(() => {
+    try {
+      const payload: QuickFilterPreferences = {
+        academicYear: quickAcademicYear,
+        department: quickDepartment,
+        status: quickStatus,
+        isPanelExpanded: isQuickFilterExpanded,
+      };
+      sessionStorage.setItem(SESSION_QUICK_FILTER_KEY, JSON.stringify(payload));
+      setLastSavedSessionTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    } catch (err) {
+      console.warn('Could not save quick filter preferences to session storage', err);
+    }
+  }, [quickAcademicYear, quickDepartment, quickStatus, isQuickFilterExpanded]);
+
+  // Dynamic distribution counts for Quick Filter chips
+  const academicYearCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      'All Academic Years': students.length,
+      '2026-2027': 0,
+      '2025-2026': 0,
+      '2024-2025': 0,
+      '2023-2024': 0,
+    };
+    students.forEach(s => {
+      const ay = s.academicYear || getStudentAcademicYear(s.enrollmentDate);
+      if (counts[ay] !== undefined) {
+        counts[ay]++;
+      } else if (ay.includes('2025') || s.enrollmentDate.startsWith('2025')) {
+        counts['2025-2026']++;
+      } else if (ay.includes('2024') || s.enrollmentDate.startsWith('2024')) {
+        counts['2024-2025']++;
+      } else if (ay.includes('2026') || s.enrollmentDate.startsWith('2026')) {
+        counts['2026-2027']++;
+      }
+    });
+    return counts;
+  }, [students]);
+
+  const departmentCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      'All Departments': students.length,
+      'Computer Science & IT': 0,
+      'Commerce & Accounting': 0,
+      'Digital Marketing & Media': 0,
+      'Design & Arts': 0,
+      'Languages & Communication': 0,
+    };
+    students.forEach(s => {
+      const dept = s.department || getStudentDepartment(s.course);
+      if (counts[dept] !== undefined) {
+        counts[dept]++;
+      }
+    });
+    return counts;
+  }, [students]);
+
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      'All Statuses': students.length,
+      'Active': 0,
+      'Inactive': 0,
+      'Completed': 0,
+      'Dropped Out': 0,
+    };
+    students.forEach(s => {
+      if (counts[s.status] !== undefined) {
+        counts[s.status]++;
+      }
+    });
+    return counts;
+  }, [students]);
+
+  const handleResetQuickFilters = () => {
+    setQuickAcademicYear('All Academic Years');
+    setQuickDepartment('All Departments');
+    setQuickStatus('All Statuses');
+    try {
+      sessionStorage.setItem(
+        SESSION_QUICK_FILTER_KEY,
+        JSON.stringify({
+          academicYear: 'All Academic Years',
+          department: 'All Departments',
+          status: 'All Statuses',
+          isPanelExpanded: isQuickFilterExpanded,
+        })
+      );
+      setLastSavedSessionTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    } catch {}
+    onShowToast('Quick filters reset to show all students.');
+  };
+
+  const handleClearSessionPreferences = () => {
+    try {
+      sessionStorage.removeItem(SESSION_QUICK_FILTER_KEY);
+      setLastSavedSessionTime(null);
+    } catch {}
+    setQuickAcademicYear('All Academic Years');
+    setQuickDepartment('All Departments');
+    setQuickStatus('All Statuses');
+    onShowToast('Session filter preferences cleared from local memory.');
+  };
 
   // Modals state
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
@@ -491,7 +803,40 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
           : true
         : s.status.toLowerCase().includes(selectedStatus.toLowerCase());
 
-    return matchesSearch && matchesGrade && matchesDate && matchesBranch && matchesCourse && matchesStatus;
+    // 5. Quick Filter: Academic Year
+    const studentAY = s.academicYear || getStudentAcademicYear(s.enrollmentDate);
+    let matchesAcademicYear = true;
+    if (quickAcademicYear !== 'All Academic Years') {
+      matchesAcademicYear =
+        studentAY === quickAcademicYear ||
+        (quickAcademicYear === '2025-2026' && (studentAY.includes('2025') || s.enrollmentDate.startsWith('2025') || s.enrollmentDate.startsWith('2026-01') || s.enrollmentDate.startsWith('2026-02'))) ||
+        (quickAcademicYear === '2024-2025' && (studentAY.includes('2024') || s.enrollmentDate.startsWith('2024'))) ||
+        (quickAcademicYear === '2026-2027' && (studentAY.includes('2026-2027') || s.enrollmentDate >= '2026-04-01')) ||
+        (quickAcademicYear === '2023-2024' && (studentAY.includes('2023') || s.enrollmentDate.startsWith('2023')));
+    }
+
+    // 6. Quick Filter: Department
+    const studentDept = s.department || getStudentDepartment(s.course);
+    const matchesDepartment =
+      quickDepartment === 'All Departments' ||
+      studentDept === quickDepartment;
+
+    // 7. Quick Filter: Status
+    const matchesQuickStatus =
+      quickStatus === 'All Statuses' ||
+      s.status.toLowerCase() === quickStatus.toLowerCase();
+
+    return (
+      matchesSearch &&
+      matchesGrade &&
+      matchesDate &&
+      matchesBranch &&
+      matchesCourse &&
+      matchesStatus &&
+      matchesAcademicYear &&
+      matchesDepartment &&
+      matchesQuickStatus
+    );
   });
 
   const isAllSelected =
@@ -541,6 +886,8 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
       admissionNo: `ADM-2026-00${count}`,
       grade: newStudentGrade,
       enrollmentDate: newStudentEnrollmentDate || new Date().toISOString().split('T')[0],
+      academicYear: getStudentAcademicYear(newStudentEnrollmentDate),
+      department: getStudentDepartment(newStudentCourse),
       course: newStudentCourse,
       batch: newStudentBatch,
       branch: newStudentBranch,
@@ -558,12 +905,33 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
 
     setStudents([newStd, ...students]);
     setSelectedIds(prev => [newStd.id, ...prev]);
+
+    // Commit action to audit trail
+    logAdministrativeAction({
+      action: 'Student Added',
+      target: newStudentName.trim(),
+      targetId: newStd.admissionNo,
+      category: 'students',
+      campus: `${newStudentBranch} Campus`,
+      details: `Registered into ${newStudentCourse} (${newStudentBatch}). Initial status: Active. Fee status: ${newStudentFeeStatus}.`,
+      actor: 'Sarah Jenkins',
+      actorRole: 'Registrar',
+      metadata: {
+        admissionNo: newStd.admissionNo,
+        enrollmentNo: newStd.enrollmentNo,
+        department: newStd.department,
+        academicYear: newStd.academicYear,
+        course: newStudentCourse,
+      },
+      screenTarget: 'students-directory',
+    });
+
     setIsAddStudentModalOpen(false);
     setNewStudentName('');
     setNewStudentPhone('');
     setNewStudentGrade('Grade 11 (Science)');
     setNewStudentEnrollmentDate('2026-02-15');
-    onShowToast(`Student ${newStudentName} registered successfully!`);
+    onShowToast(`Student ${newStudentName} registered successfully and logged to audit trail!`);
   };
 
   const handleUpdateStudent = (e: React.FormEvent) => {
@@ -573,8 +941,25 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
     setStudents(prev =>
       prev.map(s => (s.id === editingStudent.id ? editingStudent : s))
     );
+
+    logAdministrativeAction({
+      action: 'Student Status Changed',
+      target: editingStudent.name,
+      targetId: editingStudent.admissionNo,
+      category: 'students',
+      campus: editingStudent.branch,
+      details: `Student profile updated. Current status: ${editingStudent.status}. Course: ${editingStudent.course}.`,
+      actor: 'Academic Registrar',
+      actorRole: 'Administrative Officer',
+      metadata: {
+        studentId: editingStudent.id,
+        status: editingStudent.status,
+      },
+      screenTarget: 'students-directory',
+    });
+
     setIsEditStudentModalOpen(false);
-    onShowToast(`Updated student profile for ${editingStudent.name}.`);
+    onShowToast(`Updated student profile for ${editingStudent.name} and logged to audit trail.`);
   };
 
   const handleExportCSV = (
@@ -675,6 +1060,8 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
         'Enrollment Number',
         'Student Full Name',
         'Contact Phone',
+        'Academic Year',
+        'Department',
         'Grade / Class',
         'Enrollment Date',
         'Campus Branch',
@@ -691,6 +1078,8 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
         s.enrollmentNo || '',
         s.name,
         s.phone || '',
+        s.academicYear || getStudentAcademicYear(s.enrollmentDate),
+        s.department || getStudentDepartment(s.course),
         s.grade,
         s.enrollmentDate,
         s.branch,
@@ -725,6 +1114,9 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
         selectedGrade !== 'All Grades' ? `Grade: ${selectedGrade}` : null,
         selectedCourse !== 'All Courses' ? `Course: ${selectedCourse}` : null,
         selectedStatus !== 'All Status' ? `Status: ${selectedStatus}` : null,
+        quickAcademicYear !== 'All Academic Years' ? `Quick AY: ${quickAcademicYear}` : null,
+        quickDepartment !== 'All Departments' ? `Quick Dept: ${quickDepartment}` : null,
+        quickStatus !== 'All Statuses' ? `Quick Status: ${quickStatus}` : null,
         selectedDateFilter !== 'All Dates' ? `Date: ${selectedDateFilter}` : null,
         searchQuery ? `Search: "${searchQuery}"` : null
       ].filter(Boolean);
@@ -780,6 +1172,21 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
     setSelectedSession('2025-2026');
     setActiveFacetStatus(null);
     setActiveFacetSession(null);
+    setQuickAcademicYear('All Academic Years');
+    setQuickDepartment('All Departments');
+    setQuickStatus('All Statuses');
+    try {
+      sessionStorage.setItem(
+        SESSION_QUICK_FILTER_KEY,
+        JSON.stringify({
+          academicYear: 'All Academic Years',
+          department: 'All Departments',
+          status: 'All Statuses',
+          isPanelExpanded: isQuickFilterExpanded,
+        })
+      );
+      setLastSavedSessionTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    } catch {}
     onShowToast('Filters reset to show all students.');
   };
 
@@ -1665,6 +2072,35 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 </div>
               </div>
 
+              {/* Quick Filter Panel with Local Session Persistence */}
+              <StudentsQuickFilterPanel
+                academicYear={quickAcademicYear}
+                department={quickDepartment}
+                status={quickStatus}
+                isExpanded={isQuickFilterExpanded}
+                onAcademicYearChange={ay => {
+                  setQuickAcademicYear(ay);
+                  onShowToast(`Filtered by Academic Year: ${ay}`);
+                }}
+                onDepartmentChange={dept => {
+                  setQuickDepartment(dept);
+                  onShowToast(`Filtered by Department: ${dept}`);
+                }}
+                onStatusChange={st => {
+                  setQuickStatus(st);
+                  onShowToast(`Filtered by Status: ${st}`);
+                }}
+                onToggleExpand={() => setIsQuickFilterExpanded(prev => !prev)}
+                onResetFilters={handleResetQuickFilters}
+                onClearSession={handleClearSessionPreferences}
+                matchingCount={filteredStudents.length}
+                totalCount={students.length}
+                academicYearCounts={academicYearCounts}
+                departmentCounts={departmentCounts}
+                statusCounts={statusCounts}
+                lastSavedAt={lastSavedSessionTime}
+              />
+
               {/* Robust Search & Filtering Console */}
               <div className="p-4 sm:p-5 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-4 border border-outline-variant/40 transition-all print:hidden">
                 {/* Top Section: Search Input + Scope Switcher */}
@@ -2089,13 +2525,77 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                       </span>
                     )}
 
+                    {/* Quick Filter: Academic Year Chip */}
+                    {quickAcademicYear !== 'All Academic Years' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300 font-medium">
+                        <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                        <span>AY: {quickAcademicYear}</span>
+                        <button
+                          onClick={() => setQuickAcademicYear('All Academic Years')}
+                          className="p-0.5 hover:opacity-80 cursor-pointer"
+                          type="button"
+                          aria-label="Clear Academic Year quick filter"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                      </span>
+                    )}
+
+                    {/* Quick Filter: Department Chip */}
+                    {quickDepartment !== 'All Departments' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950/70 dark:text-purple-300 font-medium">
+                        <span className="material-symbols-outlined text-[14px]">domain</span>
+                        <span>Dept: {quickDepartment}</span>
+                        <button
+                          onClick={() => setQuickDepartment('All Departments')}
+                          className="p-0.5 hover:opacity-80 cursor-pointer"
+                          type="button"
+                          aria-label="Clear Department quick filter"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                      </span>
+                    )}
+
+                    {/* Quick Filter: Status Chip */}
+                    {quickStatus !== 'All Statuses' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 font-medium">
+                        <span className="material-symbols-outlined text-[14px]">verified_user</span>
+                        <span>Quick Status: {quickStatus}</span>
+                        <button
+                          onClick={() => setQuickStatus('All Statuses')}
+                          className="p-0.5 hover:opacity-80 cursor-pointer"
+                          type="button"
+                          aria-label="Clear Status quick filter"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                      </span>
+                    )}
+
                     {/* If no filters active */}
-                    {!searchQuery && selectedGrade === 'All Grades' && selectedDateFilter === 'All Dates' && selectedBranch === 'All Branches' && selectedCourse === 'All Courses' && selectedStatus === 'All Status' && (
-                      <span className="text-outline text-xs italic">No active filters applied (showing all students)</span>
+                    {!searchQuery &&
+                      selectedGrade === 'All Grades' &&
+                      selectedDateFilter === 'All Dates' &&
+                      selectedBranch === 'All Branches' &&
+                      selectedCourse === 'All Courses' &&
+                      selectedStatus === 'All Status' &&
+                      quickAcademicYear === 'All Academic Years' &&
+                      quickDepartment === 'All Departments' &&
+                      quickStatus === 'All Statuses' && (
+                        <span className="text-outline text-xs italic">No active filters applied (showing all students)</span>
                     )}
 
                     {/* Clear all link */}
-                    {(searchQuery || selectedGrade !== 'All Grades' || selectedDateFilter !== 'All Dates' || selectedBranch !== 'All Branches' || selectedCourse !== 'All Courses' || selectedStatus !== 'All Status') && (
+                    {(searchQuery ||
+                      selectedGrade !== 'All Grades' ||
+                      selectedDateFilter !== 'All Dates' ||
+                      selectedBranch !== 'All Branches' ||
+                      selectedCourse !== 'All Courses' ||
+                      selectedStatus !== 'All Status' ||
+                      quickAcademicYear !== 'All Academic Years' ||
+                      quickDepartment !== 'All Departments' ||
+                      quickStatus !== 'All Statuses') && (
                       <button
                         onClick={handleResetFilters}
                         className="text-primary hover:underline font-semibold ml-2 cursor-pointer"
@@ -2429,12 +2929,17 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
 
                               {/* Enrollment Date */}
                               <td className="px-4 py-3 whitespace-nowrap">
-                                <div className="flex items-center gap-1.5 text-on-surface">
-                                  <span className="material-symbols-outlined text-[15px] text-primary">
-                                    calendar_today
-                                  </span>
-                                  <span className="font-data-mono text-xs text-on-surface font-medium">
-                                    {formatEnrollmentDate(student.enrollmentDate)}
+                                <div className="flex flex-col">
+                                  <div className="flex items-center gap-1.5 text-on-surface">
+                                    <span className="material-symbols-outlined text-[15px] text-primary">
+                                      calendar_today
+                                    </span>
+                                    <span className="font-data-mono text-xs text-on-surface font-medium">
+                                      {formatEnrollmentDate(student.enrollmentDate)}
+                                    </span>
+                                  </div>
+                                  <span className="font-data-mono text-[10px] text-primary bg-primary/10 px-1.5 py-0.2 rounded font-semibold w-fit mt-1">
+                                    AY {student.academicYear || getStudentAcademicYear(student.enrollmentDate)}
                                   </span>
                                 </div>
                               </td>
@@ -2456,11 +2961,15 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                               {/* Course & Batch */}
                               <td className="px-4 py-3">
                                 <div className="flex flex-col">
-                                  <span className="font-medium text-on-surface truncate max-w-[180px]">
+                                  <span className="font-medium text-on-surface truncate max-w-[190px]">
                                     {student.course}
                                   </span>
-                                  <span className="font-body-sm text-body-sm text-outline">
+                                  <span className="font-body-sm text-body-sm text-outline truncate max-w-[190px]">
                                     {student.batch}
+                                  </span>
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant w-fit mt-1">
+                                    <span className="material-symbols-outlined text-[12px] text-primary">domain</span>
+                                    {student.department || getStudentDepartment(student.course)}
                                   </span>
                                 </div>
                               </td>
