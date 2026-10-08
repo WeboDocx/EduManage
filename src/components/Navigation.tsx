@@ -267,14 +267,14 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
             <span className="material-symbols-outlined text-[20px]">menu</span>
           </button>
 
-          {/* Quick Sidebar Toggle (Visible on desktop/laptop for screens with sidebar) */}
+          {/* Primary Sidebar Toggle (Single dedicated toggle on main navbar for all viewports) */}
           {hasSidebarScreen && (
             <button
               onClick={() => {
                 toggleSidebar();
                 onShowToast?.(isSidebarOpen ? 'Sidebar hide ho gaya' : 'Sidebar show ho gaya');
               }}
-              className={`hidden min-[1024px]:flex p-1.5 rounded-lg text-xs font-semibold items-center justify-center transition-all cursor-pointer border flex-shrink-0 ${
+              className={`flex p-1.5 sm:p-1.5 rounded-lg text-xs font-semibold items-center justify-center transition-all cursor-pointer border flex-shrink-0 min-w-[34px] min-h-[34px] sm:min-w-0 sm:min-h-0 ${
                 isSidebarOpen
                   ? 'bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border-white/20'
                   : 'bg-primary text-white border-primary shadow-xs ring-2 ring-primary/40'
@@ -282,7 +282,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
               title={isSidebarOpen ? 'Sidebar Hide karein (Ctrl+B)' : 'Sidebar Show karein (Ctrl+B)'}
               aria-label={isSidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}
             >
-              <span className="material-symbols-outlined text-[17px]">
+              <span className="material-symbols-outlined text-[18px] sm:text-[17px]">
                 {isSidebarOpen ? 'left_panel_close' : 'left_panel_open'}
               </span>
             </button>

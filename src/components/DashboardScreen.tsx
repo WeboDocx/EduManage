@@ -465,16 +465,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
                 </span>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(false)}
-              className="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
-              aria-label="Hide sidebar"
-              title="Close sidebar"
-            >
-              <span className="material-symbols-outlined text-[20px]">close</span>
-            </button>
           </div>
 
           {/* Core Essential Navigation Links */}
@@ -620,21 +610,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
         <header
           className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/30 flex items-center justify-between px-3 sm:px-6 shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out"
         >
-          {/* Left: Sidebar Toggle + Brand / Branch */}
+          {/* Left: Brand / Branch */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            {/* Sidebar Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(prev => !prev)}
-              className="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center border border-outline-variant/30 shadow-xs"
-              aria-label="Toggle Navigation Menu"
-              title={isSidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                {isSidebarOpen ? 'menu_open' : 'menu'}
-              </span>
-            </button>
-
             {/* Logo & Institute Name (Hidden on extra small mobile since top navbar has EduManage brand) */}
             <button
               type="button"

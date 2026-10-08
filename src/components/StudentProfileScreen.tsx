@@ -317,15 +317,6 @@ export const StudentProfileScreen: React.FC<StudentProfileScreenProps> = ({
                 </span>
               </div>
             </div>
-            <button
-              aria-label="Hide sidebar"
-              className="text-on-surface-variant hover:text-on-surface p-1.5 rounded-lg hover:bg-surface-container transition-colors cursor-pointer flex items-center justify-center"
-              type="button"
-              onClick={() => setIsSidebarOpen(false)}
-              title="Hide sidebar"
-            >
-              <span className="material-symbols-outlined text-[20px]">menu_open</span>
-            </button>
           </div>
 
           {/* Navigation Items */}
@@ -649,19 +640,6 @@ export const StudentProfileScreen: React.FC<StudentProfileScreenProps> = ({
         {/* RESPONSIVE TOP HEADER (Sticky below global navigation) */}
         <header className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 flex items-center justify-between px-3 sm:px-space-lg shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out">
           <div className="flex items-center gap-2 sm:gap-space-md min-w-0">
-            {/* Show/Hide Sidebar Toggle Button (Visible on all screens) */}
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(prev => !prev)}
-              className="p-2 -ml-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center border border-outline-variant/30 shadow-xs"
-              aria-label="Toggle Navigation Menu"
-              title={isSidebarOpen ? "Hide Sidebar (Maximize workspace)" : "Show Sidebar"}
-            >
-              <span className="material-symbols-outlined text-[22px]">
-                {isSidebarOpen ? 'menu_open' : 'menu'}
-              </span>
-            </button>
-
             {/* Brand Logo & Name */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <img

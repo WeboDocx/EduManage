@@ -132,15 +132,6 @@ export const SuperAdminConsole: React.FC<SuperAdminConsoleProps> = ({ onNavigate
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary-fixed text-primary font-data-mono font-bold">
                 ROOT
               </span>
-              <button
-                type="button"
-                onClick={() => setIsSidebarOpen(false)}
-                className="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer flex items-center justify-center"
-                aria-label="Hide sidebar"
-                title="Hide sidebar"
-              >
-                <span className="material-symbols-outlined text-[18px]">menu_open</span>
-              </button>
             </div>
           </div>
 
@@ -333,18 +324,6 @@ export const SuperAdminConsole: React.FC<SuperAdminConsoleProps> = ({ onNavigate
         {/* Top Header Bar */}
         <header className="h-16 px-4 md:px-8 border-b border-outline-variant/30 bg-surface-container-lowest flex items-center justify-between gap-4 sticky top-12 z-40">
           <div className="flex items-center gap-2 text-xs">
-            {/* Sidebar Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(prev => !prev)}
-              className="p-1.5 -ml-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer border border-outline-variant/30 shadow-xs flex items-center justify-center"
-              aria-label="Toggle Sidebar Menu"
-              title={isSidebarOpen ? "Hide Sidebar (Maximize workspace)" : "Show Sidebar"}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                {isSidebarOpen ? 'menu_open' : 'menu'}
-              </span>
-            </button>
             <span className="text-outline">Platform</span>
             <span className="text-outline">/</span>
             <span className="font-bold text-on-surface">Global Orchestration Hub</span>

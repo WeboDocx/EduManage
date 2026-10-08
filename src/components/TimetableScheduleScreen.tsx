@@ -105,15 +105,6 @@ export const TimetableScheduleScreen: React.FC<TimetableScheduleScreenProps> = (
                 </span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(false)}
-              className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer flex items-center justify-center"
-              aria-label="Hide sidebar"
-              title="Hide sidebar"
-            >
-              <span className="material-symbols-outlined text-[20px]">menu_open</span>
-            </button>
           </div>
 
           {/* Campus Selector Pill */}
@@ -297,19 +288,6 @@ export const TimetableScheduleScreen: React.FC<TimetableScheduleScreenProps> = (
         <header className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] flex items-center justify-between px-4 sm:px-space-xl border-b border-outline-variant/20 transition-all duration-300 ease-in-out">
           {/* Breadcrumbs & Sidebar Toggle */}
           <div className="flex items-center gap-space-md">
-            {/* Show/Hide Sidebar Toggle Button (Visible on all screens) */}
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(prev => !prev)}
-              className="p-2 -ml-1 mr-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center border border-outline-variant/30 shadow-xs"
-              aria-label="Toggle Sidebar Menu"
-              title={isSidebarOpen ? "Hide Sidebar (Maximize workspace)" : "Show Sidebar"}
-            >
-              <span className="material-symbols-outlined text-[22px]">
-                {isSidebarOpen ? 'menu_open' : 'menu'}
-              </span>
-            </button>
-
             <div className="flex items-center gap-space-xs text-outline font-body-sm text-body-sm">
               <span
                 onClick={() => onNavigate('dashboard')}

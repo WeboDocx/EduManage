@@ -325,15 +325,6 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
                 </span>
               </div>
             </div>
-            <button
-              aria-label="Hide sidebar"
-              title="Hide sidebar"
-              className="text-on-surface-variant hover:text-on-surface p-1.5 rounded-lg hover:bg-surface-container transition-colors cursor-pointer flex items-center justify-center"
-              type="button"
-              onClick={() => setIsSidebarOpen(false)}
-            >
-              <span className="material-symbols-outlined text-[20px]">menu_open</span>
-            </button>
           </div>
 
           {/* Navigation Items */}
@@ -687,19 +678,6 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
         {/* RESPONSIVE TOP HEADER (Sticky below global navigation) */}
         <header className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 flex items-center justify-between px-4 sm:px-space-lg shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out">
           <div className="flex items-center gap-space-md min-w-0">
-            {/* Sidebar Toggle Button (Desktop & Mobile) */}
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(prev => !prev)}
-              className="p-2 -ml-1 mr-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer border border-outline-variant/30 shadow-xs flex items-center justify-center"
-              aria-label="Toggle Sidebar Menu"
-              title={isSidebarOpen ? "Hide Sidebar (Maximize workspace)" : "Show Sidebar"}
-            >
-              <span className="material-symbols-outlined text-[22px]">
-                {isSidebarOpen ? 'menu_open' : 'menu'}
-              </span>
-            </button>
-
             {/* Logo & Institute Name */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <img

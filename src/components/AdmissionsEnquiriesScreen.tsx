@@ -320,15 +320,6 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
                   {isSidebarCollapsed ? 'chevron_right' : 'chevron_left'}
                 </span>
               </button>
-              <button
-                type="button"
-                onClick={() => setIsSidebarOpen(false)}
-                className="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer flex items-center justify-center"
-                aria-label="Hide sidebar"
-                title="Hide sidebar"
-              >
-                <span className="material-symbols-outlined text-[18px]">menu_open</span>
-              </button>
             </div>
           </div>
 
@@ -734,26 +725,6 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
         >
           {/* Left Brand / Campus View / Search */}
           <div className="flex items-center gap-1.5 sm:gap-space-md min-w-0">
-            {/* Show/Hide Sidebar Toggle Button */}
-            <button
-              type="button"
-              onClick={() => {
-                if (!isSidebarOpen) {
-                  setIsSidebarOpen(true);
-                  setIsSidebarCollapsed(false);
-                } else {
-                  setIsSidebarOpen(false);
-                }
-              }}
-              className="p-1.5 sm:p-2 -ml-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center border border-outline-variant/30 shadow-xs"
-              aria-label="Toggle Navigation Menu"
-              title={isSidebarOpen ? "Hide Sidebar (Maximize workspace)" : "Show Sidebar"}
-            >
-              <span className="material-symbols-outlined text-[20px] sm:text-[22px]">
-                {isSidebarOpen ? 'menu_open' : 'menu'}
-              </span>
-            </button>
-
             <div className="flex items-center gap-2 flex-shrink-0">
               <img
                 alt="Brand logo"
