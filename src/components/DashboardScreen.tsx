@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ScreenType } from '../types';
 import { BRAND_HOTLINKS } from '../data/mockData';
 import { ThemeToggle } from './ThemeToggle';
 import { useSidebar } from '../context/SidebarContext';
 import { QuickActionsFloatingButton } from './QuickActionsFloatingButton';
-import { CreateCourseModal } from './CreateCourseModal';
+import { CreateCourseModal, DRAFT_CREATE_COURSE_OPEN_KEY } from './CreateCourseModal';
 import { ViewReportsModal } from './ViewReportsModal';
 import { RecentActivityPanel } from './RecentActivityPanel';
 import { useActivityLog } from '../context/ActivityLogContext';
@@ -153,19 +153,124 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
   const [recentFees, setRecentFees] = useState<FeePayment[]>(INITIAL_FEES);
 
   // Modals
-  const [isQuickActionModalOpen, setIsQuickActionModalOpen] = useState(false);
+  const [isQuickActionModalOpen, setIsQuickActionModalOpen] = useState(() => {
+    try {
+      return localStorage.getItem('edumanage_draft_quick_student_open') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
-  const [isCreateCourseModalOpen, setIsCreateCourseModalOpen] = useState(false);
+  const [isCreateCourseModalOpen, setIsCreateCourseModalOpen] = useState(() => {
+    try {
+      return localStorage.getItem(DRAFT_CREATE_COURSE_OPEN_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<RecentAdmission | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [createdCoursesList, setCreatedCoursesList] = useState<Array<{ title: string; code: string }>>([]);
 
-  // Form states for Quick Intake
+  // Form states for Quick Intake with Auto-Save
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentCourse, setNewStudentCourse] = useState('Web Development');
   const [newStudentBranch, setNewStudentBranch] = useState('Siliguri');
   const [newStudentFee, setNewStudentFee] = useState('12500');
+  const [isQuickStudentDraftRestored, setIsQuickStudentDraftRestored] = useState(false);
+  const [quickStudentLastSavedTime, setQuickStudentLastSavedTime] = useState<string | null>(null);
+
+  // Restore quick student intake draft from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('edumanage_draft_quick_student');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.name || (parsed.fee && parsed.fee !== '12500')) {
+          if (parsed.name !== undefined) setNewStudentName(parsed.name);
+          if (parsed.course !== undefined) setNewStudentCourse(parsed.course);
+          if (parsed.branch !== undefined) setNewStudentBranch(parsed.branch);
+          if (parsed.fee !== undefined) setNewStudentFee(parsed.fee);
+          setIsQuickStudentDraftRestored(true);
+          if (parsed.lastSaved) setQuickStudentLastSavedTime(parsed.lastSaved);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to restore quick student draft:', err);
+    }
+  }, []);
+
+  // Track modal open state in localStorage
+  useEffect(() => {
+    try {
+      if (isQuickActionModalOpen) {
+        localStorage.setItem('edumanage_draft_quick_student_open', 'true');
+      } else {
+        localStorage.removeItem('edumanage_draft_quick_student_open');
+      }
+    } catch {}
+  }, [isQuickActionModalOpen]);
+
+  // Immediate save on beforeunload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      try {
+        if (newStudentName.trim() !== '') {
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const draftData = {
+            name: newStudentName,
+            course: newStudentCourse,
+            branch: newStudentBranch,
+            fee: newStudentFee,
+            lastSaved: timeStr,
+          };
+          localStorage.setItem('edumanage_draft_quick_student', JSON.stringify(draftData));
+        }
+      } catch {}
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [newStudentName, newStudentCourse, newStudentBranch, newStudentFee]);
+
+  // Debounced auto-save effect
+  useEffect(() => {
+    if (!newStudentName.trim() && newStudentFee === '12500') return;
+
+    const timer = setTimeout(() => {
+      try {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const draftData = {
+          name: newStudentName,
+          course: newStudentCourse,
+          branch: newStudentBranch,
+          fee: newStudentFee,
+          lastSaved: timeStr,
+        };
+        localStorage.setItem('edumanage_draft_quick_student', JSON.stringify(draftData));
+        setQuickStudentLastSavedTime(timeStr);
+      } catch {}
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [newStudentName, newStudentCourse, newStudentBranch, newStudentFee]);
+
+  const handleDiscardQuickStudentDraft = () => {
+    try {
+      localStorage.removeItem('edumanage_draft_quick_student');
+      localStorage.removeItem('edumanage_draft_quick_student_open');
+    } catch {}
+    setNewStudentName('');
+    setNewStudentCourse('Web Development');
+    setNewStudentBranch('Siliguri');
+    setNewStudentFee('12500');
+    setIsQuickStudentDraftRestored(false);
+    setQuickStudentLastSavedTime(null);
+    onShowToast('Intake draft discarded.');
+  };
 
   // Form states for Collect Fee
   const [feeStudentName, setFeeStudentName] = useState('');
@@ -246,8 +351,17 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
       screenTarget: 'students-directory',
     });
 
+    // Clear saved draft from localStorage
+    try {
+      localStorage.removeItem('edumanage_draft_quick_student');
+      localStorage.removeItem('edumanage_draft_quick_student_open');
+    } catch {}
+    setIsQuickStudentDraftRestored(false);
+    setQuickStudentLastSavedTime(null);
+
     setIsQuickActionModalOpen(false);
     setNewStudentName('');
+    setNewStudentFee('12500');
     onShowToast(`Admission confirmed for ${newAdm.name} (${admCode}) and logged to audit trail!`);
   };
 
@@ -1299,7 +1413,15 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
             <div className="px-5 py-3.5 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container-low/40">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">person_add</span>
-                <h3 className="font-bold text-sm sm:text-base text-on-surface">Quick Student Admission</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-sm sm:text-base text-on-surface">Quick Student Admission</h3>
+                  {quickStudentLastSavedTime && (
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-mono flex items-center gap-1 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Auto-saved
+                    </span>
+                  )}
+                </div>
               </div>
               <button
                 type="button"
@@ -1309,6 +1431,23 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
+
+            {/* Restored Draft Alert Banner */}
+            {isQuickStudentDraftRestored && (
+              <div className="px-5 py-2 bg-emerald-500/10 border-b border-emerald-500/20 text-emerald-800 dark:text-emerald-200 text-xs flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px] text-emerald-600 dark:text-emerald-400">history_toggle_off</span>
+                  <span>Restored unsaved draft {quickStudentLastSavedTime ? `(${quickStudentLastSavedTime})` : ''}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDiscardQuickStudentDraft}
+                  className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 hover:underline cursor-pointer"
+                >
+                  Discard Draft
+                </button>
+              </div>
+            )}
 
             <form onSubmit={handleCreateNewStudent} className="p-5 space-y-3.5 text-xs">
               <div>
@@ -1371,20 +1510,34 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/10">
-                <button
-                  type="button"
-                  onClick={() => setIsQuickActionModalOpen(false)}
-                  className="px-3.5 py-1.5 rounded-lg text-outline hover:text-on-surface text-xs cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 rounded-lg bg-primary text-on-primary font-semibold text-xs shadow-xs hover:bg-primary-container transition-all cursor-pointer"
-                >
-                  Confirm Admission
-                </button>
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-outline-variant/10">
+                <div>
+                  {(newStudentName || quickStudentLastSavedTime) && (
+                    <button
+                      type="button"
+                      onClick={handleDiscardQuickStudentDraft}
+                      className="text-xs text-error hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">delete</span>
+                      Discard
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsQuickActionModalOpen(false)}
+                    className="px-3.5 py-1.5 rounded-lg text-outline hover:text-on-surface text-xs cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-1.5 rounded-lg bg-primary text-on-primary font-semibold text-xs shadow-xs hover:bg-primary-container transition-all cursor-pointer"
+                  >
+                    Confirm Admission
+                  </button>
+                </div>
               </div>
             </form>
           </div>

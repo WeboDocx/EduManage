@@ -266,13 +266,22 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
 
   return (
     <div className="min-h-screen bg-background text-on-surface font-body-md antialiased flex">
+      {/* Mobile backdrop overlay for sidebar */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden backdrop-blur-xs transition-opacity duration-200"
+          onClick={() => setIsSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* 1. FIXED LEFT SIDEBAR (260px) */}
       <aside
-        className={`fixed left-0 top-12 bottom-0 bg-surface-container-lowest border-r border-outline-variant/40 z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out ${
+        className={`fixed left-0 top-12 bottom-0 bg-surface-container-lowest border-r border-outline-variant/40 z-50 flex flex-col justify-between shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${
           !isSidebarOpen
             ? 'w-[260px] -translate-x-full'
             : isSidebarCollapsed
-            ? 'w-[72px] translate-x-0'
+            ? 'w-[260px] lg:w-[72px] translate-x-0'
             : 'w-[260px] translate-x-0'
         }`}
       >
@@ -706,16 +715,20 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
 
       {/* 2. MAIN WORKSPACE CONTAINER */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
-          !isSidebarOpen ? 'pl-0' : isSidebarCollapsed ? 'pl-[72px]' : 'pl-[260px]'
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
+          !isSidebarOpen
+            ? 'pl-0'
+            : isSidebarCollapsed
+            ? 'pl-0 lg:pl-[72px]'
+            : 'pl-0 lg:pl-[260px]'
         }`}
       >
         {/* TOP RESPONSIVE HEADER (Sticky below global navigation) */}
         <header
-          className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 flex items-center justify-between px-space-lg shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out"
+          className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 flex items-center justify-between px-3 sm:px-6 shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out"
         >
           {/* Left Brand / Campus View / Search */}
-          <div className="flex items-center gap-2 sm:gap-space-md min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-space-md min-w-0">
             {/* Show/Hide Sidebar Toggle Button */}
             <button
               type="button"
@@ -727,11 +740,11 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
                   setIsSidebarOpen(false);
                 }
               }}
-              className="p-2 -ml-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center border border-outline-variant/30 shadow-xs"
+              className="p-1.5 sm:p-2 -ml-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center border border-outline-variant/30 shadow-xs"
               aria-label="Toggle Navigation Menu"
               title={isSidebarOpen ? "Hide Sidebar (Maximize workspace)" : "Show Sidebar"}
             >
-              <span className="material-symbols-outlined text-[22px]">
+              <span className="material-symbols-outlined text-[20px] sm:text-[22px]">
                 {isSidebarOpen ? 'menu_open' : 'menu'}
               </span>
             </button>
@@ -739,7 +752,7 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
             <div className="flex items-center gap-2 flex-shrink-0">
               <img
                 alt="Brand logo"
-                className="h-8 w-auto object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                className="h-7 sm:h-8 w-auto object-contain cursor-pointer hover:opacity-90 transition-opacity"
                 src={BRAND_HOTLINKS.logo}
                 onClick={() => onNavigate('landing')}
               />
@@ -759,16 +772,16 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
             <div className="relative flex items-center">
               <button
                 onClick={() => setIsCampusDropdownOpen(!isCampusDropdownOpen)}
-                className="flex items-center gap-2 px-2.5 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/50 rounded-lg text-left transition-colors"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-2.5 py-1 sm:py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/50 rounded-lg text-left transition-colors"
                 type="button"
               >
-                <span className="material-symbols-outlined text-[18px] text-primary">location_on</span>
+                <span className="material-symbols-outlined text-[16px] sm:text-[18px] text-primary">location_on</span>
                 <div className="flex flex-col text-left">
-                  <span className="font-label-sm text-[10px] text-outline leading-none uppercase">
+                  <span className="font-label-sm text-[9px] sm:text-[10px] text-outline leading-none uppercase hidden sm:inline">
                     Campus View
                   </span>
-                  <span className="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1">
-                    {selectedCampus} <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+                  <span className="font-label-md text-xs sm:text-label-md text-on-surface font-semibold flex items-center gap-0.5 sm:gap-1 max-w-[90px] sm:max-w-none truncate">
+                    {selectedCampus} <span className="material-symbols-outlined text-[14px] sm:text-[16px] text-outline">expand_more</span>
                   </span>
                 </div>
               </button>
@@ -827,13 +840,13 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
           </div>
 
           {/* Right Action Icons & Profile */}
-          <div className="flex items-center gap-space-sm flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-space-sm flex-shrink-0">
             <button
               onClick={() => setIsNewEnquiryOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all shadow-sm font-label-md text-label-md font-semibold active:scale-[0.98]"
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all shadow-sm font-label-md text-xs sm:text-label-md font-semibold active:scale-[0.98]"
               type="button"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
+              <span className="material-symbols-outlined text-[17px] sm:text-[18px]">add</span>
               <span className="hidden sm:inline">Quick Action</span>
             </button>
 
@@ -888,12 +901,12 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
         </header>
 
         {/* 3. MAIN PAGE CONTENT */}
-        <main className="w-full pt-3 sm:pt-4 bg-background min-h-screen">
-          <div className="p-space-lg lg:p-margin-desktop space-y-space-lg max-w-[1600px] mx-auto w-full">
+        <main className="w-full pt-3 sm:pt-4 bg-background min-h-screen min-w-0">
+          <div className="p-3 sm:p-5 lg:p-margin-desktop space-y-4 sm:space-y-6 max-w-[1600px] mx-auto w-full min-w-0">
             {/* Breadcrumb & Top Bar Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
-              <div className="space-y-space-xs">
-                <nav className="flex items-center gap-2 font-body-sm text-body-sm text-on-surface-variant">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-space-md">
+              <div className="space-y-1 sm:space-y-space-xs">
+                <nav className="flex items-center gap-2 font-body-sm text-xs sm:text-body-sm text-on-surface-variant">
                   <button
                     onClick={() => {
                       setActiveStageFilter('');
@@ -906,54 +919,54 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
                   <span>/</span>
                   <span className="text-on-surface font-semibold">Enquiries & Leads</span>
                 </nav>
-                <div className="flex items-center gap-3">
-                  <h1 className="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  <h1 className="font-headline-md sm:font-headline-lg text-xl sm:text-headline-lg text-on-surface font-bold tracking-tight">
                     Admissions & Enquiries
                   </h1>
-                  <span className="px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-data-mono text-label-sm font-semibold">
+                  <span className="px-2 sm:px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-data-mono text-[10px] sm:text-label-sm font-semibold">
                     337 Active Leads
                   </span>
                 </div>
-                <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+                <p className="font-body-sm sm:font-body-md text-xs sm:text-body-md text-on-surface-variant max-w-2xl">
                   Track admissions pipeline, orchestrate tele-counseling, schedule offline lab demos, and fast-track student enrollments across 8 active campuses.
                 </p>
               </div>
 
               {/* Action CTAs */}
-              <div className="flex flex-wrap items-center gap-space-xs">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => setIsBulkWhatsAppOpen(true)}
-                  className="px-3 py-2 bg-surface-container-lowest text-on-surface font-label-md text-label-md rounded-lg shadow-sm hover:bg-surface-container flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-surface-container-lowest text-on-surface font-label-md text-xs sm:text-label-md rounded-lg shadow-sm hover:bg-surface-container flex items-center gap-1.5 transition-all cursor-pointer border border-outline-variant/30"
                   type="button"
                 >
-                  <span className="material-symbols-outlined text-[18px] text-secondary">chat</span>
-                  <span>WhatsApp Bulk Follow-up</span>
+                  <span className="material-symbols-outlined text-[17px] sm:text-[18px] text-secondary">chat</span>
+                  <span>WhatsApp Bulk<span className="hidden sm:inline"> Follow-up</span></span>
                 </button>
 
                 <button
                   onClick={handleExportCSV}
-                  className="px-3 py-2 bg-surface-container-lowest text-on-surface font-label-md text-label-md rounded-lg shadow-sm hover:bg-surface-container flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-surface-container-lowest text-on-surface font-label-md text-xs sm:text-label-md rounded-lg shadow-sm hover:bg-surface-container flex items-center gap-1.5 transition-all cursor-pointer border border-outline-variant/30"
                   type="button"
                 >
-                  <span className="material-symbols-outlined text-[18px] text-outline">file_download</span>
-                  <span>Export Leads</span>
+                  <span className="material-symbols-outlined text-[17px] sm:text-[18px] text-outline">file_download</span>
+                  <span>Export<span className="hidden sm:inline"> Leads</span></span>
                 </button>
 
                 <button
                   onClick={() => setIsConversionModalOpen(true)}
-                  className="px-3.5 py-2 bg-surface-container-high text-primary font-label-md text-label-md font-semibold rounded-lg hover:bg-surface-container-highest flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-3 sm:px-3.5 py-1.5 sm:py-2 bg-surface-container-high text-primary font-label-md text-xs sm:text-label-md font-semibold rounded-lg hover:bg-surface-container-highest flex items-center gap-1.5 transition-all cursor-pointer"
                   type="button"
                 >
-                  <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
+                  <span className="material-symbols-outlined text-[17px] sm:text-[18px]">how_to_reg</span>
                   <span>+ Direct Admission</span>
                 </button>
 
                 <button
                   onClick={() => setIsNewEnquiryOpen(true)}
-                  className="px-4 py-2 bg-primary text-on-primary font-label-md text-label-md font-semibold rounded-lg shadow-sm hover:bg-primary-container active:scale-[0.98] flex items-center gap-2 transition-all cursor-pointer"
+                  className="px-3.5 sm:px-4 py-1.5 sm:py-2 bg-primary text-on-primary font-label-md text-xs sm:text-label-md font-semibold rounded-lg shadow-sm hover:bg-primary-container active:scale-[0.98] flex items-center gap-1.5 sm:gap-2 transition-all cursor-pointer"
                   type="button"
                 >
-                  <span className="material-symbols-outlined text-[18px]">person_add</span>
+                  <span className="material-symbols-outlined text-[17px] sm:text-[18px]">person_add</span>
                   <span>+ New Enquiry</span>
                 </button>
               </div>
@@ -1640,9 +1653,16 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
                 </div>
               </div>
 
-              {/* Right Detail Drawer: 30% (4 cols in 12-col grid) */}
+              {/* Right Detail Drawer: 30% on desktop, floating sheet on mobile */}
               {isDrawerOpen && selectedLead && (
-                <div className="xl:col-span-4 bg-surface-container-lowest rounded-xl shadow-md p-space-md space-y-space-md sticky top-20 border border-outline-variant/20">
+                <>
+                  {/* Mobile Backdrop Overlay for Detail Drawer */}
+                  <div
+                    className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 xl:hidden"
+                    onClick={() => setIsDrawerOpen(false)}
+                    aria-hidden="true"
+                  />
+                  <div className="fixed inset-x-2 sm:inset-x-4 bottom-2 sm:bottom-4 z-50 max-h-[85vh] overflow-y-auto xl:static xl:inset-auto xl:z-auto xl:max-h-none xl:col-span-4 bg-surface-container-lowest rounded-2xl xl:rounded-xl shadow-2xl xl:shadow-md p-space-md space-y-space-md xl:sticky xl:top-20 border border-outline-variant/30 xl:border-outline-variant/20 animate-in slide-in-from-bottom-5 duration-200">
                   {/* Drawer Top Head */}
                   <div className="flex items-start justify-between pb-space-sm bg-surface-container-low -m-space-md p-space-md mb-2 rounded-t-xl">
                     <div className="flex items-center gap-3">
@@ -1910,7 +1930,8 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
                     </div>
                   </div>
                 </div>
-              )}
+              </>
+            )}
             </div>
           </div>
         </main>
@@ -1918,9 +1939,9 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
 
       {/* MODAL 1: NEW ENQUIRY DIALOG */}
       {isNewEnquiryOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-outline-variant/40 animate-in fade-in zoom-in-95 duration-150">
-            <div className="p-5 bg-surface-container-low border-b border-outline-variant/30 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-surface-container-lowest rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-outline-variant/40 animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+            <div className="p-4 sm:p-5 bg-surface-container-low border-b border-outline-variant/30 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                   <span className="material-symbols-outlined text-lg">person_add</span>
@@ -1936,14 +1957,14 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
               </div>
               <button
                 onClick={() => setIsNewEnquiryOpen(false)}
-                className="p-1 rounded-lg text-outline hover:text-on-surface"
+                className="p-1 rounded-lg text-outline hover:text-on-surface cursor-pointer"
               >
                 <span className="material-symbols-outlined text-xl">close</span>
               </button>
             </div>
 
-            <form onSubmit={handleCreateNewEnquiry} className="p-5 space-y-4">
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleCreateNewEnquiry} className="p-4 sm:p-5 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="block text-xs font-bold text-on-surface">Applicant Full Name *</label>
                   <input
@@ -1968,7 +1989,7 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="block text-xs font-bold text-on-surface">Course Interested</label>
                   <select
@@ -1998,7 +2019,7 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="block text-xs font-bold text-on-surface">Enquiry Lead Source</label>
                   <select

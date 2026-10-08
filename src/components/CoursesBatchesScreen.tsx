@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { ScreenType, BatchItem } from '../types';
 import { BRAND_HOTLINKS } from '../data/mockData';
 import { useSidebar } from '../context/SidebarContext';
+import { CreateCourseModal, DRAFT_CREATE_COURSE_OPEN_KEY } from './CreateCourseModal';
 
 interface CoursesBatchesScreenProps {
   onNavigate: (screen: ScreenType) => void;
@@ -132,6 +133,13 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
   const [activeTab, setActiveTab] = useState<'courses' | 'batches' | 'subjects' | 'classrooms'>('batches');
   const [selectedCampusScope, setSelectedCampusScope] = useState('All Branches (8 Active)');
   const [isCampusDropdownOpen, setIsCampusDropdownOpen] = useState(false);
+  const [isCreateCourseModalOpen, setIsCreateCourseModalOpen] = useState(() => {
+    try {
+      return localStorage.getItem(DRAFT_CREATE_COURSE_OPEN_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
 
   // Quick Batch form state
@@ -905,10 +913,7 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
                 </button>
 
                 <button
-                  onClick={() => {
-                    focusQuickBatch();
-                    onShowToast('Enter new course information in the bottom spotlight section.');
-                  }}
+                  onClick={() => setIsCreateCourseModalOpen(true)}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all shadow-md font-label-md text-label-md font-semibold active:scale-[0.98] cursor-pointer"
                   type="button"
                 >
@@ -1996,6 +2001,16 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
           </div>
         </div>
       )}
+      {/* MODAL: CREATE COURSE (With Full Auto-Save) */}
+      <CreateCourseModal
+        isOpen={isCreateCourseModalOpen}
+        onClose={() => setIsCreateCourseModalOpen(false)}
+        onSuccess={newCourse => {
+          onShowToast(`Course "${newCourse.title}" created successfully!`);
+          setIsCreateCourseModalOpen(false);
+        }}
+        onNavigate={onNavigate}
+      />
     </div>
   );
 };

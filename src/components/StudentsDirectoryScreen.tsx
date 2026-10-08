@@ -8,6 +8,9 @@ import {
   QuickFilterPreferences,
 } from './StudentsQuickFilterPanel';
 
+export const DRAFT_ADD_STUDENT_KEY = 'edumanage_draft_add_student';
+export const DRAFT_ADD_STUDENT_OPEN_KEY = 'edumanage_draft_add_student_open';
+
 interface StudentsDirectoryScreenProps {
   onNavigate: (screen: ScreenType) => void;
   onShowToast: (message: string) => void;
@@ -707,7 +710,16 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
   };
 
   // Modals state
-  const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
+  const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(() => {
+    try {
+      return localStorage.getItem(DRAFT_ADD_STUDENT_OPEN_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [isAddStudentDraftRestored, setIsAddStudentDraftRestored] = useState(false);
+  const [addStudentLastSavedTime, setAddStudentLastSavedTime] = useState<string | null>(null);
+
   const [isBulkIdModalOpen, setIsBulkIdModalOpen] = useState(false);
   const [isBulkMessageModalOpen, setIsBulkMessageModalOpen] = useState(false);
   const [isChangeBatchModalOpen, setIsChangeBatchModalOpen] = useState(false);
@@ -731,6 +743,166 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
   const [newStudentBatch, setNewStudentBatch] = useState('WD Evening (Batch 02)');
   const [newStudentFeeStatus, setNewStudentFeeStatus] = useState<'due' | 'paid'>('paid');
   const [newStudentFeeAmount, setNewStudentFeeAmount] = useState('18000');
+
+  // Restore student draft on initial load
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_ADD_STUDENT_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const hasData =
+          (parsed.name && parsed.name.trim() !== '') ||
+          (parsed.phone && parsed.phone.trim() !== '') ||
+          (parsed.feeAmount && parsed.feeAmount !== '18000') ||
+          (parsed.course && parsed.course !== 'Web Development') ||
+          (parsed.branch && parsed.branch !== 'Siliguri HQ');
+
+        if (hasData) {
+          if (parsed.name !== undefined) setNewStudentName(parsed.name);
+          if (parsed.phone !== undefined) setNewStudentPhone(parsed.phone);
+          if (parsed.grade !== undefined) setNewStudentGrade(parsed.grade);
+          if (parsed.enrollmentDate !== undefined) setNewStudentEnrollmentDate(parsed.enrollmentDate);
+          if (parsed.course !== undefined) setNewStudentCourse(parsed.course);
+          if (parsed.branch !== undefined) setNewStudentBranch(parsed.branch);
+          if (parsed.batch !== undefined) setNewStudentBatch(parsed.batch);
+          if (parsed.feeStatus !== undefined) setNewStudentFeeStatus(parsed.feeStatus);
+          if (parsed.feeAmount !== undefined) setNewStudentFeeAmount(parsed.feeAmount);
+          setIsAddStudentDraftRestored(true);
+          if (parsed.lastSaved) setAddStudentLastSavedTime(parsed.lastSaved);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to restore student draft:', err);
+    }
+  }, []);
+
+  // Track modal open state in localStorage
+  useEffect(() => {
+    try {
+      if (isAddStudentModalOpen) {
+        localStorage.setItem(DRAFT_ADD_STUDENT_OPEN_KEY, 'true');
+      } else {
+        localStorage.removeItem(DRAFT_ADD_STUDENT_OPEN_KEY);
+      }
+    } catch {}
+  }, [isAddStudentModalOpen]);
+
+  // Immediate save on browser beforeunload (refresh, tab close)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      try {
+        const hasContent =
+          newStudentName.trim() !== '' ||
+          newStudentPhone.trim() !== '' ||
+          newStudentFeeAmount !== '18000' ||
+          newStudentBranch !== 'Siliguri HQ' ||
+          newStudentCourse !== 'Web Development';
+
+        if (hasContent) {
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const draftData = {
+            name: newStudentName,
+            phone: newStudentPhone,
+            grade: newStudentGrade,
+            enrollmentDate: newStudentEnrollmentDate,
+            course: newStudentCourse,
+            branch: newStudentBranch,
+            batch: newStudentBatch,
+            feeStatus: newStudentFeeStatus,
+            feeAmount: newStudentFeeAmount,
+            lastSaved: timeStr,
+          };
+          localStorage.setItem(DRAFT_ADD_STUDENT_KEY, JSON.stringify(draftData));
+          if (isAddStudentModalOpen) {
+            localStorage.setItem(DRAFT_ADD_STUDENT_OPEN_KEY, 'true');
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to save student draft on beforeunload:', err);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [
+    newStudentName,
+    newStudentPhone,
+    newStudentGrade,
+    newStudentEnrollmentDate,
+    newStudentCourse,
+    newStudentBranch,
+    newStudentBatch,
+    newStudentFeeStatus,
+    newStudentFeeAmount,
+    isAddStudentModalOpen,
+  ]);
+
+  // Debounced auto-save effect
+  useEffect(() => {
+    const hasContent =
+      newStudentName.trim() !== '' ||
+      newStudentPhone.trim() !== '' ||
+      newStudentFeeAmount !== '18000' ||
+      newStudentBranch !== 'Siliguri HQ' ||
+      newStudentCourse !== 'Web Development';
+
+    if (!hasContent) return;
+
+    const timer = setTimeout(() => {
+      try {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const draftData = {
+          name: newStudentName,
+          phone: newStudentPhone,
+          grade: newStudentGrade,
+          enrollmentDate: newStudentEnrollmentDate,
+          course: newStudentCourse,
+          branch: newStudentBranch,
+          batch: newStudentBatch,
+          feeStatus: newStudentFeeStatus,
+          feeAmount: newStudentFeeAmount,
+          lastSaved: timeStr,
+        };
+        localStorage.setItem(DRAFT_ADD_STUDENT_KEY, JSON.stringify(draftData));
+        setAddStudentLastSavedTime(timeStr);
+      } catch (err) {
+        console.warn('Failed to auto-save student draft:', err);
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [
+    newStudentName,
+    newStudentPhone,
+    newStudentGrade,
+    newStudentEnrollmentDate,
+    newStudentCourse,
+    newStudentBranch,
+    newStudentBatch,
+    newStudentFeeStatus,
+    newStudentFeeAmount,
+  ]);
+
+  const handleDiscardStudentDraft = () => {
+    try {
+      localStorage.removeItem(DRAFT_ADD_STUDENT_KEY);
+      localStorage.removeItem(DRAFT_ADD_STUDENT_OPEN_KEY);
+    } catch {}
+    setNewStudentName('');
+    setNewStudentPhone('');
+    setNewStudentGrade('Grade 11 (Science)');
+    setNewStudentEnrollmentDate('2026-02-15');
+    setNewStudentCourse('Web Development');
+    setNewStudentBranch('Siliguri HQ');
+    setNewStudentBatch('WD Evening (Batch 02)');
+    setNewStudentFeeStatus('paid');
+    setNewStudentFeeAmount('18000');
+    setIsAddStudentDraftRestored(false);
+    setAddStudentLastSavedTime(null);
+    onShowToast('Student draft discarded.');
+  };
 
   // Bulk message text
   const [bulkMessageText, setBulkMessageText] = useState('Dear Student, this is an official announcement from Apex Tech Institute.');
@@ -926,11 +1098,24 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
       screenTarget: 'students-directory',
     });
 
+    // Clear saved draft from localStorage
+    try {
+      localStorage.removeItem(DRAFT_ADD_STUDENT_KEY);
+      localStorage.removeItem(DRAFT_ADD_STUDENT_OPEN_KEY);
+    } catch {}
+    setIsAddStudentDraftRestored(false);
+    setAddStudentLastSavedTime(null);
+
     setIsAddStudentModalOpen(false);
     setNewStudentName('');
     setNewStudentPhone('');
     setNewStudentGrade('Grade 11 (Science)');
     setNewStudentEnrollmentDate('2026-02-15');
+    setNewStudentCourse('Web Development');
+    setNewStudentBranch('Siliguri HQ');
+    setNewStudentBatch('WD Evening (Batch 02)');
+    setNewStudentFeeStatus('paid');
+    setNewStudentFeeAmount('18000');
     onShowToast(`Student ${newStudentName} registered successfully and logged to audit trail!`);
   };
 
@@ -3194,14 +3379,22 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
       {/* MODAL 1: Add Student Dialog */}
       {isAddStudentModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-outline-variant/40 animate-in zoom-in-95">
+          <div className="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-outline-variant/40 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center text-primary">
                   <span className="material-symbols-outlined text-[20px]">person_add</span>
                 </div>
                 <div>
-                  <h3 className="font-headline-md text-headline-md font-bold text-on-surface">Add New Student</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-headline-md text-headline-md font-bold text-on-surface">Add New Student</h3>
+                    {addStudentLastSavedTime && (
+                      <span className="text-[10px] text-emerald-700 dark:text-emerald-300 font-mono flex items-center gap-1 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Auto-saved
+                      </span>
+                    )}
+                  </div>
                   <p className="font-body-sm text-outline">Direct enrollment into active campus batches</p>
                 </div>
               </div>
@@ -3212,6 +3405,26 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
+
+            {/* Restored Draft Alert Banner */}
+            {isAddStudentDraftRestored && (
+              <div className="mt-3 px-3.5 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-800 dark:text-emerald-200 text-xs flex items-center justify-between animate-in fade-in">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[17px] text-emerald-600 dark:text-emerald-400">history_toggle_off</span>
+                  <span>
+                    Restored draft from previous session {addStudentLastSavedTime ? `(Saved at ${addStudentLastSavedTime})` : ''}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDiscardStudentDraft}
+                  className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 hover:underline cursor-pointer ml-3 flex-shrink-0"
+                  title="Discard draft and reset form"
+                >
+                  Discard Draft
+                </button>
+              </div>
+            )}
 
             <form onSubmit={handleCreateStudent} className="space-y-4 pt-4">
               <div>
@@ -3355,20 +3568,35 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-4 border-t border-outline-variant/30">
-                <button
-                  type="button"
-                  onClick={() => setIsAddStudentModalOpen(false)}
-                  className="px-4 py-2 rounded-lg text-outline hover:bg-surface-container transition-colors cursor-pointer font-label-md"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold transition-all shadow-sm cursor-pointer"
-                >
-                  Register Student
-                </button>
+              <div className="flex items-center justify-between gap-2 pt-4 border-t border-outline-variant/30">
+                <div>
+                  {(newStudentName || newStudentPhone || addStudentLastSavedTime) && (
+                    <button
+                      type="button"
+                      onClick={handleDiscardStudentDraft}
+                      className="px-3 py-1.5 text-xs text-error hover:bg-error-container/20 rounded-lg transition-colors cursor-pointer flex items-center gap-1 font-medium"
+                      title="Discard current draft"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">delete_sweep</span>
+                      <span>Discard Draft</span>
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddStudentModalOpen(false)}
+                    className="px-4 py-2 rounded-lg text-outline hover:bg-surface-container transition-colors cursor-pointer font-label-md"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold transition-all shadow-sm cursor-pointer"
+                  >
+                    Register Student
+                  </button>
+                </div>
               </div>
             </form>
           </div>

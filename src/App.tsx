@@ -22,8 +22,22 @@ import { TeacherPortalScreen } from './components/TeacherPortalScreen';
 import { TimetableScheduleScreen } from './components/TimetableScheduleScreen';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>('landing');
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>(() => {
+    try {
+      const saved = localStorage.getItem('edumanage_current_screen');
+      if (saved) return saved as ScreenType;
+    } catch {}
+    return 'landing';
+  });
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const handleNavigate = (screen: ScreenType) => {
+    try {
+      localStorage.setItem('edumanage_current_screen', screen);
+    } catch {}
+    setCurrentScreen(screen);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const [registrationData, setRegistrationData] = useState<RegistrationFormData>({
     institutionType: 'School (K-12)',
@@ -53,180 +67,126 @@ export default function App() {
         {/* Global Navigation & Screen Switcher */}
         <Navigation
           currentScreen={currentScreen}
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
 
       {/* Screen Views */}
       {currentScreen === 'timetable-schedule' && (
         <TimetableScheduleScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'teacher-portal' && (
         <TeacherPortalScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'student-portal' && (
         <StudentPortalScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'parent-portal' && (
         <ParentPortalScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'assignments-coursework' && (
         <AssignmentsCourseworkScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'results-transcripts' && (
         <ResultsReportCardsScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'marks-entry' && (
         <MarksEntryConsoleScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'academics' && (
         <ExamsAssessmentsScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'certificates' && (
         <CertificatesConsoleScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'certificate-studio' && (
         <CertificateTemplateStudioScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'students-directory' && (
         <StudentsDirectoryScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'student-profile' && (
         <StudentProfileScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'dashboard' && (
         <DashboardScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'courses-batches' && (
         <CoursesBatchesScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'admissions' && (
         <AdmissionsEnquiriesScreen
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'landing' && (
         <LandingPage
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
 
       {currentScreen === 'register' && (
         <RegistrationStep1
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
           onSaveData={handleUpdateRegistration}
           initialData={registrationData}
@@ -235,10 +195,7 @@ export default function App() {
 
       {currentScreen === 'onboarding' && (
         <CampusOnboardingStep2
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
           regData={registrationData}
         />
@@ -246,10 +203,7 @@ export default function App() {
 
       {currentScreen === 'admin' && (
         <SuperAdminConsole
-          onNavigate={(screen) => {
-            setCurrentScreen(screen);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onNavigate={handleNavigate}
           onShowToast={showToast}
         />
       )}
