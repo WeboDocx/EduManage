@@ -324,10 +324,11 @@ export const AssignmentsCourseworkScreen: React.FC<AssignmentsCourseworkScreenPr
         isSidebarOpen ? 'pl-0 lg:pl-[260px]' : 'pl-0'
       }`}>
         {/* Top Responsive Header (Sticky below global navigation) */}
-        <header className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] flex items-center justify-between px-4 sm:px-space-xl border-b border-outline-variant/20 transition-all duration-300 ease-in-out">
+        <header className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] flex items-center justify-between px-3 sm:px-space-xl border-b border-outline-variant/20 transition-all duration-300 ease-in-out">
           {/* Breadcrumb & Year */}
-          <div className="flex items-center gap-space-md">
-            <div className="flex items-center gap-space-xs text-outline font-body-sm text-body-sm">
+          <div className="flex items-center gap-2 sm:gap-space-md min-w-0">
+            <span className="text-xs font-bold text-on-surface sm:hidden truncate">Assignments</span>
+            <div className="hidden md:flex items-center gap-space-xs text-outline font-body-sm text-body-sm">
               <span
                 onClick={() => onNavigate('dashboard')}
                 className="hover:text-primary cursor-pointer transition-colors"
@@ -344,16 +345,16 @@ export const AssignmentsCourseworkScreen: React.FC<AssignmentsCourseworkScreenPr
               <span>/</span>
               <span className="text-on-surface font-semibold">Operations</span>
             </div>
-            <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold tracking-wide">
+            <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold tracking-wide">
               AY 2025–26
             </span>
           </div>
 
           {/* Search, Notifications & User */}
-          <div className="flex items-center gap-space-lg">
+          <div className="flex items-center gap-1.5 sm:gap-space-lg flex-shrink-0">
             <div
               onClick={() => onShowToast('Global Search opened (Press ⌘K).')}
-              className="relative flex items-center cursor-pointer"
+              className="relative hidden md:flex items-center cursor-pointer"
             >
               <div className="flex items-center gap-space-sm bg-surface-container-low px-space-md py-1.5 rounded-lg text-outline hover:text-on-surface transition-colors border border-outline-variant/20">
                 <span className="material-symbols-outlined text-[18px]">search</span>
@@ -366,7 +367,7 @@ export const AssignmentsCourseworkScreen: React.FC<AssignmentsCourseworkScreenPr
               </div>
             </div>
 
-            <div className="flex items-center gap-space-sm">
+            <div className="flex items-center gap-1 sm:gap-space-sm">
               <button
                 onClick={() => onShowToast('3 pending homework cutoff deadlines tonight.')}
                 className="relative p-2 rounded-lg text-outline hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer"
@@ -378,18 +379,18 @@ export const AssignmentsCourseworkScreen: React.FC<AssignmentsCourseworkScreenPr
               </button>
               <button
                 onClick={() => onShowToast('Assignments & Evaluation documentation')}
-                className="p-2 rounded-lg text-outline hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer"
+                className="p-2 rounded-lg text-outline hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer hidden sm:flex"
               >
                 <span className="material-symbols-outlined text-[20px]">help_outline</span>
               </button>
             </div>
 
-            <div className="h-6 w-[1px] bg-outline-variant/40"></div>
+            <div className="hidden sm:block h-6 w-[1px] bg-outline-variant/40"></div>
 
-            <div className="flex items-center gap-space-sm pl-space-xs">
+            <div className="flex items-center gap-1.5 sm:gap-space-sm pl-0.5 sm:pl-space-xs">
               <img
                 alt="Profile of Dr. Aris Thorne"
-                className="w-8 h-8 rounded-full object-cover shadow-xs"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover shadow-xs"
                 referrerPolicy="no-referrer"
                 src="https://lh3.googleusercontent.com/aida/AEtjO1WGopkRi0e7RACbAeh9HarEQpgzwV4gII2BBnN0fImO0_ivQuf3D8fWWXjnDa8i7tNyimgkcDUKUpCQ0SbimmA8304zNb8-OtViMqR7RWTsqbRK69ytaSQUrdsT77u80IH5L7DiWTGCwRGcXNmevxS6bfF83aQaWrI7pGS91Kgb52wdoxaqDG5GJfP-jdFHhXzJ-uH663fwJU19MjIi3ZIknbHOIbpbDy0SCYfb9-a95DfMmTqAAIK0TQ"
               />

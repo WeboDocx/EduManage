@@ -250,6 +250,7 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   }
 
   /* Hide UI navigation, sidebars, sticky headers, modals, filters, and action bars */
+  nav,
   aside,
   header,
   #bulkBar,

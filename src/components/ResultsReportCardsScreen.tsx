@@ -583,24 +583,24 @@ export const ResultsReportCardsScreen: React.FC<ResultsReportCardsScreenProps> =
             {/* Branch Selector */}
             <div
               onClick={() => onShowToast('Branch network filter active across 8 locations.')}
-              className="relative flex items-center bg-surface-container-low rounded-lg px-space-sm py-1.5 cursor-pointer hover:bg-surface-container-high transition-colors border border-outline-variant/20"
+              className="relative flex items-center bg-surface-container-low rounded-lg px-2 sm:px-space-sm py-1.5 cursor-pointer hover:bg-surface-container-high transition-colors border border-outline-variant/20"
             >
               <span className="material-symbols-outlined text-outline text-[18px] mr-1">domain</span>
-              <span className="font-label-md text-label-md text-on-surface font-medium">
+              <span className="font-label-md text-xs sm:text-label-md text-on-surface font-medium truncate max-w-[100px] sm:max-w-none">
                 All Branches (8 Active)
               </span>
               <span className="material-symbols-outlined text-outline text-[16px] ml-1">expand_more</span>
             </div>
 
             {/* Academic Year Badge */}
-            <div className="bg-secondary-fixed-dim/40 text-on-secondary-fixed-variant px-2.5 py-1 rounded-full flex items-center gap-1">
+            <div className="hidden sm:flex bg-secondary-fixed-dim/40 text-on-secondary-fixed-variant px-2.5 py-1 rounded-full items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
               <span className="font-label-sm text-label-sm font-semibold tracking-wide">AY 2025-26</span>
             </div>
           </div>
 
           {/* Right Header Utilities */}
-          <div className="flex items-center gap-space-md">
+          <div className="flex items-center gap-1.5 sm:gap-space-md flex-shrink-0">
             <div className="relative hidden md:flex items-center bg-surface-container-low rounded-lg px-space-md py-1.5 w-64 border border-outline-variant/20">
               <span className="material-symbols-outlined text-outline text-[18px] mr-2">search</span>
               <input
@@ -617,7 +617,7 @@ export const ResultsReportCardsScreen: React.FC<ResultsReportCardsScreenProps> =
 
             <button
               onClick={() => onShowToast('3 results pending dean approval.')}
-              className="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer"
+              className="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer hidden sm:flex"
               type="button"
             >
               <span className="material-symbols-outlined text-[20px]">notifications</span>
@@ -628,7 +628,7 @@ export const ResultsReportCardsScreen: React.FC<ResultsReportCardsScreenProps> =
 
             <button
               onClick={() => onShowToast('Help with transcript generation and grading rules')}
-              className="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer"
+              className="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer hidden sm:flex"
               type="button"
             >
               <span className="material-symbols-outlined text-[20px]">help</span>

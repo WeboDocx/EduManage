@@ -700,13 +700,15 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
               )}
             </div>
 
-            {/* Theme Toggle */}
-            <ThemeToggle
-              variant="pill"
-              onToggleCallback={mode =>
-                onShowToast(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode`)
-              }
-            />
+            {/* Theme Toggle (Hidden on mobile to keep secondary header clean & fitting) */}
+            <div className="hidden sm:block">
+              <ThemeToggle
+                variant="pill"
+                onToggleCallback={mode =>
+                  onShowToast(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode`)
+                }
+              />
+            </div>
 
             {/* Primary Action Button: Add Student */}
             <button

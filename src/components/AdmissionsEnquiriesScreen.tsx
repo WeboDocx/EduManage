@@ -834,7 +834,7 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
             <button
               onClick={() => onShowToast('You have 3 notifications: 2 demo confirmations & 1 fee pending.')}
               aria-label="Notifications"
-              className="relative p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors"
+              className="relative p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors hidden sm:flex cursor-pointer"
               type="button"
             >
               <span className="material-symbols-outlined text-[20px]">notifications</span>
@@ -846,13 +846,13 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
             <button
               onClick={() => onShowToast('Documentation & Help Desk: edumanage.io/docs')}
               aria-label="Help and documentation"
-              className="p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors hidden sm:flex"
+              className="p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors hidden sm:flex cursor-pointer"
               type="button"
             >
               <span className="material-symbols-outlined text-[20px]">help_outline</span>
             </button>
 
-            <div className="h-6 w-[1px] bg-outline-variant/40 mx-1"></div>
+            <div className="h-6 w-[1px] bg-outline-variant/40 mx-1 hidden sm:block"></div>
 
             {/* Profile Dropdown */}
             <div className="flex items-center gap-2 pl-1 cursor-pointer group" onClick={() => onNavigate('admin')}>

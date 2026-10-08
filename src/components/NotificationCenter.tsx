@@ -356,7 +356,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             aria-hidden="true"
           />
           <div
-            className="fixed left-2 right-2 sm:left-auto sm:right-0 top-14 sm:top-full mt-1 sm:mt-2 w-auto sm:w-[420px] md:w-[450px] max-w-[460px] rounded-2xl bg-surface-container-lowest text-on-surface border border-outline-variant/30 shadow-2xl z-[70] animate-in fade-in zoom-in-95 duration-150 backdrop-blur-xl overflow-hidden flex flex-col"
+            className="fixed left-2 right-2 top-13 mt-1 sm:fixed sm:left-auto sm:right-4 sm:top-14 sm:mt-0 sm:w-[420px] md:w-[450px] max-w-[calc(100vw-1rem)] rounded-2xl bg-surface-container-lowest text-on-surface border border-outline-variant/30 shadow-2xl z-[70] animate-in fade-in zoom-in-95 duration-150 backdrop-blur-xl overflow-hidden flex flex-col"
             style={{ maxHeight: '82vh' }}
           >
           {/* Header */}

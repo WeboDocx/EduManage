@@ -278,9 +278,10 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
         isSidebarOpen ? 'pl-0 lg:pl-[260px]' : 'pl-0'
       }`}>
         {/* Top Responsive Header (Sticky below global navigation) */}
-        <header className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] flex items-center justify-between px-4 sm:px-space-xl border-b border-outline-variant/20 transition-all duration-300 ease-in-out">
+        <header className="sticky top-12 z-30 h-14 sm:h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] flex items-center justify-between px-3 sm:px-space-xl border-b border-outline-variant/20 transition-all duration-300 ease-in-out">
           {/* Breadcrumbs */}
-          <div className="flex items-center gap-space-md">
+          <div className="flex items-center gap-2 sm:gap-space-md min-w-0">
+            <span className="text-xs font-bold text-on-surface sm:hidden truncate">Student Portal</span>
             <div className="hidden md:flex items-center gap-space-xs text-outline font-body-sm text-body-sm">
               <span
                 onClick={() => onNavigate('dashboard')}
@@ -304,7 +305,7 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
           </div>
 
           {/* Search, Notifications & User */}
-          <div className="flex items-center gap-1.5 sm:gap-space-lg">
+          <div className="flex items-center gap-1.5 sm:gap-space-lg flex-shrink-0">
             <div
               onClick={() => onShowToast('Quick find: Aarav Sharma')}
               className="relative hidden md:flex items-center cursor-pointer"
@@ -321,10 +322,12 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
             </div>
 
             <div className="flex items-center gap-1 sm:gap-space-sm">
-              <ThemeToggle
-                variant="pill"
-                onToggleCallback={(mode) => onShowToast(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode`)}
-              />
+              <div className="hidden sm:block">
+                <ThemeToggle
+                  variant="pill"
+                  onToggleCallback={(mode) => onShowToast(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode`)}
+                />
+              </div>
               <button
                 onClick={() => onShowToast('3 Priority Alerts: Fee due in 4 days, Physics Live Now, Calculus HW due tomorrow.')}
                 className="relative p-2 rounded-lg text-outline hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer"

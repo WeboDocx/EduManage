@@ -322,18 +322,18 @@ export const SuperAdminConsole: React.FC<SuperAdminConsoleProps> = ({ onNavigate
       {/* 2. MAIN ADMIN CONSOLE CONTENT AREA */}
       <main className="flex-1 min-w-0 flex flex-col">
         {/* Top Header Bar */}
-        <header className="h-16 px-4 md:px-8 border-b border-outline-variant/30 bg-surface-container-lowest flex items-center justify-between gap-4 sticky top-12 z-40">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-outline">Platform</span>
-            <span className="text-outline">/</span>
-            <span className="font-bold text-on-surface">Global Orchestration Hub</span>
+        <header className="h-14 sm:h-16 px-3 sm:px-4 md:px-8 border-b border-outline-variant/30 bg-surface-container-lowest flex items-center justify-between gap-2 sm:gap-4 sticky top-12 z-40">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-xs min-w-0">
+            <span className="text-outline hidden xs:inline">Platform</span>
+            <span className="text-outline hidden xs:inline">/</span>
+            <span className="font-bold text-on-surface truncate max-w-[140px] sm:max-w-none">Global Orchestration Hub</span>
             <span className="hidden sm:inline-flex items-center gap-1 ml-3 px-2 py-0.5 rounded-full bg-secondary-fixed text-secondary text-[11px] font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
               Cluster US-East-1 Healthy
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* Quick Search */}
             <div className="relative hidden md:block w-64">
               <input
@@ -351,7 +351,7 @@ export const SuperAdminConsole: React.FC<SuperAdminConsoleProps> = ({ onNavigate
             {/* Notification Bell */}
             <button
               onClick={() => onShowToast('You have 3 system alerts pending: 2 certificate renewals, 1 past-due payment.')}
-              className="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low"
+              className="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hidden sm:flex"
             >
               <span className="material-symbols-outlined text-lg">notifications</span>
               <span className="w-2 h-2 rounded-full bg-error absolute top-1.5 right-1.5"></span>

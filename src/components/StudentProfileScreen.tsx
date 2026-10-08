@@ -718,7 +718,7 @@ export const StudentProfileScreen: React.FC<StudentProfileScreenProps> = ({
             <button
               aria-label="Notifications"
               onClick={() => onShowToast('You have 3 operational alerts pending.')}
-              className="relative p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer"
+              className="relative p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer hidden sm:flex"
               type="button"
             >
               <span className="material-symbols-outlined text-[20px]">notifications</span>
@@ -736,7 +736,7 @@ export const StudentProfileScreen: React.FC<StudentProfileScreenProps> = ({
               <span className="material-symbols-outlined text-[20px]">help_outline</span>
             </button>
 
-            <div className="h-6 w-[1px] bg-outline-variant/40 mx-1"></div>
+            <div className="h-6 w-[1px] bg-outline-variant/40 mx-1 hidden sm:block"></div>
 
             <div className="flex items-center gap-2 pl-1 cursor-pointer" onClick={() => onNavigate('admin')}>
               <img

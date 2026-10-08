@@ -1337,7 +1337,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
   };
 
   const handlePrintDirectory = () => {
-    onShowToast(`Preparing printer-friendly directory (${filteredStudents.length} students)...`);
+    onShowToast(`Opening Print View for ${filteredStudents.length} student records...`);
     setTimeout(() => {
       window.print();
     }, 150);
@@ -1905,23 +1905,24 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
             </div>
 
             <button
-              id="topHeaderPrintBtn"
+              id="topHeaderPrintViewBtn"
+              data-testid="top-header-print-view-btn"
               onClick={handlePrintDirectory}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-all border border-outline-variant/40 shadow-xs font-label-md text-label-md font-semibold active:scale-[0.98] cursor-pointer"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-all border border-outline-variant/40 shadow-xs font-label-md text-label-md font-semibold active:scale-[0.98] cursor-pointer group"
               type="button"
-              title={`Print clean directory (${filteredStudents.length} students)`}
+              title={`Print View (${filteredStudents.length} students)`}
             >
-              <span className="material-symbols-outlined text-[18px] text-outline">print</span>
-              <span className="hidden xl:inline">Print Directory</span>
+              <span className="material-symbols-outlined text-[18px] text-outline group-hover:text-primary transition-colors">print</span>
+              <span className="hidden xl:inline">Print View</span>
             </button>
 
             <button
               onClick={() => setIsAddStudentModalOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all shadow-sm font-label-md text-label-md font-semibold active:scale-[0.98] cursor-pointer"
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all shadow-sm font-label-md text-xs sm:text-label-md font-semibold active:scale-[0.98] cursor-pointer"
               type="button"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              <span>Quick Action</span>
+              <span className="material-symbols-outlined text-[17px] sm:text-[18px]">add</span>
+              <span className="hidden sm:inline">Quick Action</span>
             </button>
 
             <div className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container/40 border border-secondary/20 text-on-secondary-container">
@@ -1932,7 +1933,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
             <button
               aria-label="Notifications"
               onClick={() => onShowToast('3 new student alerts: 2 ID cards ready, 1 fee milestone.')}
-              className="relative p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer"
+              className="relative p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer hidden sm:flex"
               type="button"
             >
               <span className="material-symbols-outlined text-[20px]">notifications</span>
@@ -1950,7 +1951,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
               <span className="material-symbols-outlined text-[20px]">help_outline</span>
             </button>
 
-            <div className="h-6 w-[1px] bg-outline-variant/40 mx-1"></div>
+            <div className="h-6 w-[1px] bg-outline-variant/40 mx-1 hidden sm:block"></div>
 
             <div className="flex items-center gap-2 pl-1 cursor-pointer" onClick={() => onNavigate('admin')}>
               <img
@@ -2128,15 +2129,17 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                     <span>Import</span>
                   </button>
 
+                  {/* Dedicated Print View Button */}
                   <button
-                    id="pagePrintDirectoryBtn"
+                    id="pagePrintViewBtn"
+                    data-testid="page-print-view-btn"
                     onClick={handlePrintDirectory}
-                    className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container hover:text-primary shadow-sm font-label-md text-label-md font-semibold transition-all cursor-pointer border border-outline-variant/30 hover:border-primary/40 active:scale-[0.98]"
+                    className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container hover:text-primary shadow-sm font-label-md text-label-md font-semibold transition-all cursor-pointer border border-outline-variant/30 hover:border-primary/40 active:scale-[0.98] group"
                     type="button"
-                    title={`Print clean directory format (${filteredStudents.length} students)`}
+                    title={`Print View — Open printer-friendly layout (${filteredStudents.length} students)`}
                   >
-                    <span className="material-symbols-outlined text-[18px] text-outline">print</span>
-                    <span>Print Directory</span>
+                    <span className="material-symbols-outlined text-[18px] text-outline group-hover:text-primary transition-colors">print</span>
+                    <span>Print View</span>
                   </button>
 
                   <button
@@ -2888,14 +2891,15 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                     </div>
 
                     <button
-                      id="filterBarPrintBtn"
+                      id="filterBarPrintViewBtn"
+                      data-testid="filter-bar-print-view-btn"
                       onClick={handlePrintDirectory}
-                      className="flex items-center gap-1 text-xs text-on-surface hover:bg-surface-container-high px-2.5 py-1 rounded-md bg-surface-container font-semibold cursor-pointer transition-colors"
+                      className="flex items-center gap-1 text-xs text-on-surface hover:bg-surface-container-high px-2.5 py-1 rounded-md bg-surface-container font-semibold cursor-pointer transition-colors group"
                       type="button"
-                      title="Print clean directory format"
+                      title={`Print View — ${filteredStudents.length} students in printer-friendly format`}
                     >
-                      <span className="material-symbols-outlined text-[15px]">print</span>
-                      <span>Print</span>
+                      <span className="material-symbols-outlined text-[15px] text-outline group-hover:text-primary transition-colors">print</span>
+                      <span>Print View</span>
                     </button>
                   </div>
                 </div>
@@ -3369,6 +3373,11 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                   </table>
                 </div>
 
+                {/* Print Footer for physical/PDF output */}
+                <div className="print-footer hidden print:block">
+                  EduManage Enterprise — Official Students Directory &bull; Generated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} &bull; Total records: {filteredStudents.length} &bull; Confidential
+                </div>
+
                 {/* Pagination & Per Page Console */}
                 <div className="px-3 sm:px-space-md py-3 bg-surface-container-low/50 flex flex-col md:flex-row items-center justify-between gap-3 select-none border-t border-outline-variant/30 print:hidden">
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3 text-center sm:text-left">
@@ -3461,7 +3470,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
               </div>
 
               {/* Quick Insights & Batch Overview Strip */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter-desktop">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter-desktop print:hidden">
                 <div className="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex items-center gap-4 border border-outline-variant/20">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
                     <span className="material-symbols-outlined text-[20px]">document_scanner</span>
