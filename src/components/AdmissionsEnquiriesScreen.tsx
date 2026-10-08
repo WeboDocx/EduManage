@@ -17,7 +17,12 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
   const [leads, setLeads] = useState<LeadApplicant[]>(INITIAL_LEADS);
   const [selectedLeadId, setSelectedLeadId] = useState<string>(INITIAL_LEADS[0]?.id || '');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 1280;
+    }
+    return false;
+  });
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState('');
@@ -1375,8 +1380,138 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
                   </div>
                 </div>
 
-                {/* High-density Data Table */}
-                <div className="overflow-x-auto">
+                {/* Mobile Cards View (Visible on screens < md) */}
+                <div className="block md:hidden divide-y divide-surface-container-low p-2 sm:p-3 space-y-2.5">
+                  {filteredLeads.length === 0 ? (
+                    <div className="py-10 text-center text-on-surface-variant">
+                      <span className="material-symbols-outlined text-4xl text-outline mb-2">
+                        person_search
+                      </span>
+                      <p className="font-semibold text-xs">No prospective applicants match your filters.</p>
+                      <button
+                        onClick={() => {
+                          setSearchQuery('');
+                          setBranchFilter('All Branches (8)');
+                          setCourseFilter('All Courses');
+                          setCounsellorFilter('All Counsellors');
+                          setSourceFilter('All Sources');
+                          setActiveStageFilter('');
+                          setQuickFilter(null);
+                        }}
+                        className="mt-3 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container"
+                      >
+                        Reset All Filters
+                      </button>
+                    </div>
+                  ) : (
+                    filteredLeads.map(lead => {
+                      const isSelected = selectedLead?.id === lead.id;
+                      return (
+                        <div
+                          key={`mobile-${lead.id}`}
+                          onClick={() => handleSelectLead(lead.id, lead.name)}
+                          className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-surface-container-high/70 border-primary/40 shadow-xs ring-1 ring-primary/20'
+                              : 'bg-surface-container-lowest border-outline-variant/30 hover:border-outline-variant/60'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div
+                                className={`w-9 h-9 rounded-full ${lead.avatarBg} ${lead.avatarText} flex items-center justify-center font-bold text-xs flex-shrink-0`}
+                              >
+                                {lead.initials}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-bold text-sm text-on-surface flex items-center gap-1.5 truncate">
+                                  {lead.name}
+                                  {lead.highIntent && (
+                                    <span className="w-2 h-2 rounded-full bg-secondary flex-shrink-0" title="High Intent Lead" />
+                                  )}
+                                </div>
+                                <div className="text-xs text-on-surface-variant font-mono">{lead.phone}</div>
+                              </div>
+                            </div>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono flex-shrink-0 ${lead.statusBg} ${lead.statusText}`}>
+                              {lead.status}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 text-xs text-on-surface-variant my-2 py-2 border-y border-outline-variant/20 bg-surface-container-low/40 -mx-3.5 px-3.5">
+                            <div>
+                              <span className="text-[10px] text-outline block uppercase font-semibold">Course</span>
+                              <span className="font-medium text-on-surface truncate block">{lead.course}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-outline block uppercase font-semibold">Campus</span>
+                              <span className="font-medium text-on-surface truncate block">{lead.branch}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-outline block uppercase font-semibold">Counsellor</span>
+                              <span className="font-medium text-on-surface truncate block">{lead.counsellor}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-outline block uppercase font-semibold">Source</span>
+                              <span className="font-medium text-on-surface truncate block">{lead.source}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1 gap-2 flex-wrap">
+                            <div className="flex items-center gap-1">
+                              <a
+                                href={`tel:${lead.phone.replace(/[^0-9+]/g, '')}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="p-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary flex items-center justify-center"
+                                title="Call"
+                              >
+                                <span className="material-symbols-outlined text-[17px]">call</span>
+                              </a>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onShowToast(`Opening WhatsApp chat with ${lead.name}`);
+                                }}
+                                className="p-1.5 rounded-lg bg-secondary-container/60 hover:bg-secondary-container text-secondary flex items-center justify-center"
+                                title="WhatsApp"
+                              >
+                                <span className="material-symbols-outlined text-[17px]">chat</span>
+                              </button>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 ml-auto">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedLeadId(lead.id);
+                                  setIsConversionModalOpen(true);
+                                }}
+                                className="px-2.5 py-1 text-xs rounded-lg bg-primary text-on-primary font-semibold hover:bg-primary-container"
+                              >
+                                Convert
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectLead(lead.id, lead.name);
+                                }}
+                                className="px-2.5 py-1 text-xs rounded-lg bg-surface-container text-on-surface font-semibold hover:bg-surface-container-high"
+                              >
+                                Details
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* High-density Data Table (Desktop / Tablet) */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-surface-container-low font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
@@ -1663,6 +1798,8 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
                     aria-hidden="true"
                   />
                   <div className="fixed inset-x-2 sm:inset-x-4 bottom-2 sm:bottom-4 z-50 max-h-[85vh] overflow-y-auto xl:static xl:inset-auto xl:z-auto xl:max-h-none xl:col-span-4 bg-surface-container-lowest rounded-2xl xl:rounded-xl shadow-2xl xl:shadow-md p-space-md space-y-space-md xl:sticky xl:top-20 border border-outline-variant/30 xl:border-outline-variant/20 animate-in slide-in-from-bottom-5 duration-200">
+                  {/* Mobile Pull Handle */}
+                  <div className="w-10 h-1 bg-outline-variant/60 rounded-full mx-auto mb-2 xl:hidden" />
                   {/* Drawer Top Head */}
                   <div className="flex items-start justify-between pb-space-sm bg-surface-container-low -m-space-md p-space-md mb-2 rounded-t-xl">
                     <div className="flex items-center gap-3">

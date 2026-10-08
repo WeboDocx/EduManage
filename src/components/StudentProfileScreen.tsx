@@ -685,11 +685,11 @@ export const StudentProfileScreen: React.FC<StudentProfileScreenProps> = ({
             <div className="relative flex items-center">
               <button
                 onClick={() => onShowToast('Current Campus Scope: Siliguri Campus (Main HQ)')}
-                className="flex items-center gap-2 px-2.5 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/50 rounded-lg text-left transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/50 rounded-lg text-left transition-colors cursor-pointer"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[18px] text-primary">location_on</span>
-                <div className="flex flex-col text-left">
+                <div className="hidden sm:flex flex-col text-left">
                   <span className="font-label-sm text-[10px] text-outline leading-none uppercase">
                     Campus View
                   </span>
@@ -698,11 +698,14 @@ export const StudentProfileScreen: React.FC<StudentProfileScreenProps> = ({
                     <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
                   </span>
                 </div>
+                <span className="sm:hidden text-xs font-semibold text-on-surface">
+                  8 Campuses
+                </span>
               </button>
             </div>
 
             {/* Quick Search */}
-            <div className="relative w-72 lg:w-96">
+            <div className="relative w-72 lg:w-96 hidden sm:block">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">
                 search
               </span>

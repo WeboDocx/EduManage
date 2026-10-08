@@ -11,19 +11,35 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
+      if (window.innerWidth < 1024) {
+        return false; // Always closed by default on mobile/tablet viewports
+      }
       const stored = localStorage.getItem('edumanage_sidebar_open');
       if (stored !== null) {
         return stored === 'true';
       }
-      return window.innerWidth >= 1024;
+      return true;
     }
-    return true;
+    return false;
   });
 
-  // Save preference to localStorage
+  // Automatically close sidebar if window resizes to mobile width
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setIsSidebarOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Save preference to localStorage (only save preference for desktop)
   useEffect(() => {
     try {
-      localStorage.setItem('edumanage_sidebar_open', String(isSidebarOpen));
+      if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+        localStorage.setItem('edumanage_sidebar_open', String(isSidebarOpen));
+      }
     } catch {
       // ignore storage errors
     }

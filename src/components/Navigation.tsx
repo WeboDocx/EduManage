@@ -151,7 +151,9 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
         <button
           onClick={() => setActiveDropdown(isOpen ? null : key)}
           aria-expanded={isOpen}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none ${
+          title={`${title} (${items.length} modules)${currentItem ? ` • Active: ${currentItem.label}` : ''}`}
+          aria-label={title}
+          className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none relative ${
             isActive
               ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
               : isOpen
@@ -159,16 +161,14 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
               : 'text-outline-variant hover:text-white hover:bg-surface-container-highest/30'
           }`}
         >
-          <span className="material-symbols-outlined text-[15px]">{icon}</span>
-          <span>{title}</span>
-          {currentItem && (
-            <span className="hidden xl:inline text-[10px] px-1.5 py-0.5 rounded bg-white/15 text-white font-normal truncate max-w-[90px]">
-              {currentItem.label.split(' ')[0]}
-            </span>
-          )}
-          <span className={`material-symbols-outlined text-[14px] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+          <span className="material-symbols-outlined text-[17px]">{icon}</span>
+          <span className={`material-symbols-outlined text-[14px] transition-transform duration-200 opacity-80 ${isOpen ? 'rotate-180' : ''}`}>
             expand_more
           </span>
+          {/* Active module dot indicator */}
+          {isActive && (
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-300 ring-2 ring-inverse-surface animate-pulse" />
+          )}
         </button>
 
         {isOpen && (
@@ -318,11 +318,11 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
               >
                 <button
                   onClick={handleSelectLanding}
-                  className="px-2.5 py-1.5 font-semibold flex items-center gap-1.5 text-xs cursor-pointer select-none"
+                  className="px-2 py-1.5 font-semibold flex items-center justify-center text-xs cursor-pointer select-none"
                   title="Landing Page Overview"
+                  aria-label="Landing Page"
                 >
-                  <span className="material-symbols-outlined text-[15px]">home</span>
-                  <span>Landing</span>
+                  <span className="material-symbols-outlined text-[17px]">home</span>
                 </button>
                 <button
                   onClick={() => setActiveDropdown(activeDropdown === 'landing' ? null : 'landing')}
@@ -333,7 +333,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
                   title="Landing Page Section #Anchors"
                   aria-label="Toggle Landing page section links"
                 >
-                  <span className={`material-symbols-outlined text-[14px] transition-transform duration-200 ${activeDropdown === 'landing' ? 'rotate-180' : ''}`}>
+                  <span className={`material-symbols-outlined text-[14px] transition-transform duration-200 opacity-80 ${activeDropdown === 'landing' ? 'rotate-180' : ''}`}>
                     expand_more
                   </span>
                 </button>
@@ -386,15 +386,15 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
             {/* 2. Create Institution (Step 1) */}
             <button
               onClick={() => handleSelectScreen('register')}
-              className={`px-2.5 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 text-xs cursor-pointer ${
+              className={`p-1.5 rounded-lg transition-all font-semibold flex items-center justify-center text-xs cursor-pointer ${
                 currentScreen === 'register'
                   ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
                   : 'text-outline-variant hover:text-white hover:bg-surface-container-highest/30'
               }`}
-              title="Create Institution - Step 1"
+              title="Create Institution - Step 1 Registration"
+              aria-label="Create Institution"
             >
-              <span className="material-symbols-outlined text-[15px]">add_business</span>
-              <span>Create Institution</span>
+              <span className="material-symbols-outlined text-[17px]">add_business</span>
             </button>
           </div>
 
@@ -442,11 +442,11 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
               handleSelectScreen('register');
               onShowToast?.('Opening Step 1: Create Institution registration');
             }}
-            className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-container text-white text-xs font-semibold hover:bg-primary transition-all active:scale-[0.98] shadow-sm cursor-pointer"
-            title="Start Free Registration"
+            className="p-1.5 rounded-lg bg-primary-container text-white text-xs font-semibold hover:bg-primary transition-all active:scale-[0.98] shadow-sm cursor-pointer hidden md:flex items-center justify-center"
+            title="Start Free Registration (Step 1)"
+            aria-label="Start Free Registration"
           >
-            <span className="material-symbols-outlined text-[14px]">rocket_launch</span>
-            <span>Start Free</span>
+            <span className="material-symbols-outlined text-[16px]">rocket_launch</span>
           </button>
 
           {/* User Profile Avatar with fast tooltip (Desktop/Tablet) */}

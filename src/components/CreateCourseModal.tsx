@@ -289,7 +289,7 @@ export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({
           </div>
 
           {/* Code & Category */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold uppercase text-[10px] text-outline mb-1">
                 Course Code *
@@ -321,7 +321,7 @@ export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({
           </div>
 
           {/* Duration, Fee & Max Seats */}
-          <div className="grid grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <div>
               <label className="block font-semibold uppercase text-[10px] text-outline mb-1">
                 Duration
@@ -365,7 +365,7 @@ export const CreateCourseModal: React.FC<CreateCourseModalProps> = ({
           </div>
 
           {/* Primary Campus & Schedule */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold uppercase text-[10px] text-outline mb-1">
                 Primary Campus

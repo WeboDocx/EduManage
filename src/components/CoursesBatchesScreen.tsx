@@ -724,11 +724,11 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
             <div className="relative flex items-center">
               <button
                 onClick={() => setIsCampusDropdownOpen(!isCampusDropdownOpen)}
-                className="flex items-center gap-2 px-2.5 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/50 rounded-lg text-left transition-colors"
+                className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/50 rounded-lg text-left transition-colors cursor-pointer"
                 type="button"
               >
                 <span className="material-symbols-outlined text-[18px] text-primary">location_on</span>
-                <div className="flex flex-col text-left">
+                <div className="hidden sm:flex flex-col text-left">
                   <span className="font-label-sm text-[10px] text-outline leading-none uppercase">
                     Campus View
                   </span>
@@ -737,6 +737,9 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
                     <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
                   </span>
                 </div>
+                <span className="sm:hidden text-xs font-semibold text-on-surface">
+                  {selectedCampusScope.includes('All') ? '8 Campuses' : selectedCampusScope.split(' ')[0]}
+                </span>
               </button>
 
               {isCampusDropdownOpen && (
@@ -784,7 +787,7 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
             </div>
 
             {/* Quick Search */}
-            <div className="relative w-72 lg:w-96">
+            <div className="relative w-72 lg:w-96 hidden sm:block">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">
                 search
               </span>
@@ -877,7 +880,7 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
                     Academic Term 2025-26
                   </span>
                 </div>
-                <h1 className="font-display text-display text-on-surface tracking-tight">Courses &amp; Batches</h1>
+                <h1 className="font-headline-lg sm:font-display text-2xl sm:text-display text-on-surface tracking-tight font-bold">Courses &amp; Batches</h1>
                 <p className="font-body-md text-body-md text-on-surface-variant max-w-3xl">
                   Manage your institution's academic programs, departmental curriculum, physical laboratory allocations, and multi-campus batch occupancies.
                 </p>

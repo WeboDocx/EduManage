@@ -1762,7 +1762,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
             {/* Campus Selector Dropdown */}
             <div className="relative flex items-center">
               <button
-                className="flex items-center gap-2 px-2.5 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/50 rounded-lg text-left transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/50 rounded-lg text-left transition-colors cursor-pointer"
                 type="button"
                 onClick={() => {
                   setSelectedBranch('All Branches');
@@ -1770,18 +1770,21 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 }}
               >
                 <span className="material-symbols-outlined text-[18px] text-primary">location_on</span>
-                <div className="flex flex-col text-left">
+                <div className="hidden sm:flex flex-col text-left">
                   <span className="font-label-sm text-[10px] text-outline leading-none uppercase">Campus View</span>
                   <span className="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1">
                     {selectedBranch === 'All Branches' ? 'All Branches (8 Active)' : selectedBranch}
                     <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
                   </span>
                 </div>
+                <span className="sm:hidden text-xs font-semibold text-on-surface">
+                  {selectedBranch === 'All Branches' ? '8 Campuses' : selectedBranch.split(' ')[0]}
+                </span>
               </button>
             </div>
 
             {/* Global Search Bar */}
-            <div className="relative w-72 lg:w-96">
+            <div className="relative w-72 lg:w-96 hidden sm:block">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">
                 search
               </span>
@@ -1811,9 +1814,9 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
           </div>
 
           {/* Right Header Action Items */}
-          <div className="flex items-center gap-space-sm flex-shrink-0">
-            {/* Top Header Export to CSV Dropdown & Modal Trigger */}
-            <div className="relative">
+          <div className="flex items-center gap-1.5 sm:gap-space-sm flex-shrink-0">
+            {/* Top Header Export to CSV Dropdown & Modal Trigger (Hidden on mobile < md to prevent header clutter) */}
+            <div className="relative hidden md:block">
               <div className="inline-flex rounded-lg shadow-xs border border-outline-variant/40 bg-surface-container-low overflow-hidden">
                 <button
                   id="topHeaderExportCsvBtn"
@@ -1919,7 +1922,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
             <button
               id="topHeaderPrintBtn"
               onClick={handlePrintDirectory}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-all border border-outline-variant/40 shadow-xs font-label-md text-label-md font-semibold active:scale-[0.98] cursor-pointer"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-all border border-outline-variant/40 shadow-xs font-label-md text-label-md font-semibold active:scale-[0.98] cursor-pointer"
               type="button"
               title={`Print clean directory (${filteredStudents.length} students)`}
             >
@@ -1929,11 +1932,11 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
 
             <button
               onClick={() => setIsAddStudentModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all shadow-sm font-label-md text-label-md font-semibold active:scale-[0.98] cursor-pointer"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all shadow-sm font-label-md text-label-md font-semibold active:scale-[0.98] cursor-pointer"
               type="button"
             >
               <span className="material-symbols-outlined text-[18px]">add</span>
-              <span className="hidden sm:inline">Quick Action</span>
+              <span>Quick Action</span>
             </button>
 
             <div className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container/40 border border-secondary/20 text-on-secondary-container">
@@ -1988,11 +1991,11 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
         {/* 3. MAIN CONTENT VIEWPORT */}
         <main className="w-full pt-3 sm:pt-4 bg-background min-h-screen">
           <div className="flex flex-col w-full">
-            <div className="px-gutter-desktop py-space-lg flex flex-col gap-space-lg max-w-[1600px] mx-auto w-full">
+            <div className="px-3 sm:px-gutter-desktop py-space-md sm:py-space-lg flex flex-col gap-space-md sm:gap-space-lg max-w-[1600px] mx-auto w-full">
               {/* Top Hierarchy & Breadcrumb */}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md print:hidden">
                 <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2 font-body-sm text-body-sm text-outline">
+                  <div className="flex items-center gap-2 font-body-sm text-body-sm text-outline flex-wrap">
                     <button
                       onClick={() => onNavigate('dashboard')}
                       className="hover:text-primary transition-colors cursor-pointer"
@@ -2006,18 +2009,18 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                       AY 2025-26
                     </span>
                   </div>
-                  <div className="flex items-baseline gap-3">
-                    <h1 className="font-headline-lg text-headline-lg text-on-surface tracking-tight font-bold">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
+                    <h1 className="text-2xl sm:text-headline-lg font-bold text-on-surface tracking-tight">
                       Students Directory
                     </h1>
-                    <span className="font-body-md text-body-md text-outline">
+                    <span className="font-body-sm sm:font-body-md text-outline">
                       Managing 12,450 students enrolled across 8 branches
                     </span>
                   </div>
                 </div>
 
                 {/* Action Toolbar */}
-                <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => onShowToast('Upload CSV or Excel for bulk student registration.')}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container shadow-sm font-label-md text-label-md transition-all cursor-pointer border border-outline-variant/30"
@@ -2159,7 +2162,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
               </div>
 
               {/* Summary KPI Metrics Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter-desktop print:hidden">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-gutter-desktop print:hidden">
                 {/* Card 1: Total */}
                 <div className="relative overflow-hidden p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between group border border-outline-variant/20">
                   <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-primary/5 rounded-full blur-xl pointer-events-none"></div>
@@ -2172,7 +2175,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                     </div>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <span className="font-display text-display text-on-surface font-bold tracking-tight">12,450</span>
+                    <span className="text-2xl sm:text-display text-on-surface font-bold tracking-tight">12,450</span>
                     <div className="flex items-center gap-1 text-secondary font-label-sm text-label-sm">
                       <span className="material-symbols-outlined text-[14px]">hub</span>
                       <span>8 Branches</span>
@@ -2196,7 +2199,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                     </div>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <span className="font-display text-display text-on-surface font-bold tracking-tight">11,820</span>
+                    <span className="text-2xl sm:text-display text-on-surface font-bold tracking-tight">11,820</span>
                     <span className="px-2 py-0.5 rounded-full bg-secondary-container/50 font-label-sm text-label-sm text-on-secondary-container font-semibold">
                       94.9%
                     </span>
@@ -2219,7 +2222,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                     </div>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <span className="font-display text-display text-on-surface font-bold tracking-tight">384</span>
+                    <span className="text-2xl sm:text-display text-on-surface font-bold tracking-tight">384</span>
                     <div className="flex items-center gap-0.5 text-secondary font-label-sm text-label-sm font-semibold">
                       <span className="material-symbols-outlined text-[16px]">north_east</span>
                       <span>+12.4%</span>
@@ -2243,7 +2246,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                     </div>
                   </div>
                   <div className="flex items-baseline justify-between">
-                    <span className="font-display text-display text-on-surface font-bold tracking-tight">246</span>
+                    <span className="text-2xl sm:text-display text-on-surface font-bold tracking-tight">246</span>
                     <span className="px-2 py-0.5 rounded-full bg-surface-container-high font-label-sm text-label-sm text-primary font-semibold">
                       Ready
                     </span>
@@ -3016,7 +3019,148 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
 
               {/* Main High-Density Students Data Grid */}
               <div className="rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden flex flex-col border border-outline-variant/30 print:border-none print:shadow-none">
-                <div className="overflow-x-auto print:overflow-visible">
+                {/* Mobile Cards View (Visible on mobile & tablet < lg) */}
+                <div className="block lg:hidden divide-y divide-outline-variant/20 p-2 sm:p-3 space-y-2.5 print:hidden">
+                  {filteredStudents.length === 0 ? (
+                    <div className="py-10 text-center text-outline">
+                      <span className="material-symbols-outlined text-4xl block mb-2 text-outline-variant">
+                        search_off
+                      </span>
+                      <p className="font-semibold text-on-surface">No students matched your search criteria</p>
+                      <button
+                        onClick={handleResetFilters}
+                        className="mt-3 text-primary hover:underline font-label-md text-label-md cursor-pointer"
+                      >
+                        Reset all filters
+                      </button>
+                    </div>
+                  ) : (
+                    filteredStudents.map(student => {
+                      const isSelected = selectedIds.includes(student.id);
+                      return (
+                        <div
+                          key={`mobile-${student.id}`}
+                          className={`p-3.5 rounded-xl border transition-all ${
+                            isSelected
+                              ? 'bg-primary/5 border-primary/40 shadow-xs ring-1 ring-primary/20'
+                              : 'bg-surface-container-lowest border-outline-variant/30 hover:border-outline-variant/60'
+                          }`}
+                        >
+                          {/* Card Header: Checkbox + Avatar + Name + Status */}
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <input
+                                checked={isSelected}
+                                onChange={() => handleToggleStudent(student.id)}
+                                className="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer flex-shrink-0"
+                                type="checkbox"
+                              />
+                              <div
+                                className={`w-9 h-9 rounded-full ${student.avatarBg} flex items-center justify-center ${student.avatarText} font-semibold text-xs flex-shrink-0`}
+                              >
+                                {student.avatarColor}
+                              </div>
+                              <div className="min-w-0">
+                                <span
+                                  onClick={() => onNavigate('student-profile')}
+                                  className="font-label-lg text-label-lg font-semibold text-on-surface truncate block cursor-pointer hover:text-primary transition-colors hover:underline"
+                                >
+                                  {student.name}
+                                </span>
+                                <span className="font-data-mono text-xs text-outline block">
+                                  {student.phone}
+                                </span>
+                              </div>
+                            </div>
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${student.statusBg} ${student.statusText} font-label-sm text-[10px] font-semibold flex-shrink-0`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${student.statusDot}`}></span>
+                              {student.status}
+                            </span>
+                          </div>
+
+                          {/* Details Grid: Grade, Roll/ID, Course, Branch */}
+                          <div className="grid grid-cols-2 gap-2 text-xs py-2 my-2 border-y border-outline-variant/20 bg-surface-container-low/40 -mx-3.5 px-3.5">
+                            <div>
+                              <span className="text-[10px] text-outline block uppercase font-semibold">Grade / Level</span>
+                              <span className="font-medium text-on-surface truncate block">{student.grade}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-outline block uppercase font-semibold">Enrollment No.</span>
+                              <span className="font-data-mono font-medium text-on-surface-variant truncate block">{student.enrollmentNo}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-outline block uppercase font-semibold">Course & Batch</span>
+                              <span className="font-medium text-on-surface truncate block">{student.course}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-outline block uppercase font-semibold">Campus</span>
+                              <span className="font-medium text-on-surface truncate block">{student.branch}</span>
+                            </div>
+                          </div>
+
+                          {/* Fee Status & Action Buttons */}
+                          <div className="flex items-center justify-between pt-1 gap-2 flex-wrap">
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${student.feeBadgeBg} ${student.feeBadgeText} text-[11px] font-semibold`}
+                              >
+                                <span className={`w-1.5 h-1.5 rounded-full ${student.feeDotBg}`}></span>
+                                {student.feeLabel}
+                              </span>
+                              {student.feeSub && (
+                                <span className="text-[10px] text-outline font-data-mono">
+                                  {student.feeSub}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-1 ml-auto">
+                              <a
+                                href={`tel:${student.phone.replace(/[^0-9+]/g, '')}`}
+                                className="p-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary transition-colors flex items-center justify-center"
+                                title="Call student"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">call</span>
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => onShowToast(`Opening WhatsApp chat with ${student.name}`)}
+                                className="p-1.5 rounded-lg bg-secondary-container/60 hover:bg-secondary-container text-secondary transition-colors flex items-center justify-center"
+                                title="WhatsApp student"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">chat</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingStudent(student);
+                                  setIsEditStudentModalOpen(true);
+                                }}
+                                className="p-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-outline hover:text-on-surface transition-colors flex items-center justify-center"
+                                title="Edit record"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">edit</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onNavigate('student-profile')}
+                                className="px-2.5 py-1 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-all flex items-center gap-1"
+                              >
+                                <span className="material-symbols-outlined text-[14px]">visibility</span>
+                                <span>360° Profile</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Desktop High-Density Table View (Hidden on mobile < lg) */}
+                <div className="hidden lg:block overflow-x-auto print:block print:overflow-visible">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-surface-container-low text-outline font-label-sm text-label-sm uppercase tracking-wider h-11 select-none border-b border-outline-variant/30 print:border-b-2 print:border-black">
@@ -3237,14 +3381,14 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 </div>
 
                 {/* Pagination & Per Page Console */}
-                <div className="px-space-md py-3 bg-surface-container-low/50 flex flex-col sm:flex-row items-center justify-between gap-3 select-none border-t border-outline-variant/30 print:hidden">
-                  <div className="flex items-center gap-3">
+                <div className="px-3 sm:px-space-md py-3 bg-surface-container-low/50 flex flex-col md:flex-row items-center justify-between gap-3 select-none border-t border-outline-variant/30 print:hidden">
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 sm:gap-3 text-center sm:text-left">
                     <span className="font-body-sm text-body-sm text-outline">
                       Showing <strong className="font-semibold text-on-surface">1</strong> to{' '}
                       <strong className="font-semibold text-on-surface">{filteredStudents.length}</strong> of{' '}
                       <strong className="font-semibold text-on-surface">12,450</strong> students
                     </span>
-                    <div className="h-4 w-[1px] bg-outline-variant"></div>
+                    <div className="h-4 w-[1px] bg-outline-variant hidden sm:block"></div>
                     <div className="flex items-center gap-1.5">
                       <span className="font-body-sm text-body-sm text-outline">Per page:</span>
                       <select
@@ -3441,7 +3585,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-label-md text-label-md font-semibold text-on-surface mb-1">
                     WhatsApp Phone *
@@ -3471,7 +3615,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-label-md text-label-md font-semibold text-on-surface mb-1">
                     Grade / Class
@@ -3507,7 +3651,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-label-md text-label-md font-semibold text-on-surface mb-1">
                     Course
@@ -3541,7 +3685,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div>
                   <label className="block font-label-md text-label-md font-semibold text-on-surface mb-1">
                     Fee Intake Status
@@ -3839,7 +3983,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-label-md text-label-md font-semibold text-on-surface mb-1">
                     Status
@@ -3895,7 +4039,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-label-md text-label-md font-semibold text-on-surface mb-1">
                     Grade / Class

@@ -299,7 +299,7 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
               </span>
             </button>
 
-            <div className="flex items-center gap-space-xs text-outline font-body-sm text-body-sm">
+            <div className="hidden md:flex items-center gap-space-xs text-outline font-body-sm text-body-sm">
               <span
                 onClick={() => onNavigate('dashboard')}
                 className="hover:text-primary cursor-pointer transition-colors"
@@ -316,16 +316,16 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
               <span>/</span>
               <span className="text-on-surface font-semibold">Operations</span>
             </div>
-            <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold tracking-wide">
+            <span className="hidden sm:inline-block px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold tracking-wide">
               AY 2025–26
             </span>
           </div>
 
           {/* Search, Notifications & User */}
-          <div className="flex items-center gap-space-lg">
+          <div className="flex items-center gap-1.5 sm:gap-space-lg">
             <div
               onClick={() => onShowToast('Quick find: Aarav Sharma')}
-              className="relative flex items-center cursor-pointer"
+              className="relative hidden md:flex items-center cursor-pointer"
             >
               <div className="flex items-center gap-space-sm bg-surface-container-low px-space-md py-1.5 rounded-lg text-outline hover:text-on-surface transition-colors border border-outline-variant/20">
                 <span className="material-symbols-outlined text-[18px]">search</span>
@@ -338,7 +338,7 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-space-sm">
+            <div className="flex items-center gap-1 sm:gap-space-sm">
               <ThemeToggle
                 variant="pill"
                 onToggleCallback={(mode) => onShowToast(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode`)}
@@ -354,13 +354,13 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
               </button>
               <button
                 onClick={() => onShowToast('Help desk and student handbook')}
-                className="p-2 rounded-lg text-outline hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer"
+                className="p-2 rounded-lg text-outline hover:bg-surface-container-low hover:text-on-surface transition-colors cursor-pointer hidden sm:flex"
               >
                 <span className="material-symbols-outlined text-[20px]">help_outline</span>
               </button>
             </div>
 
-            <div className="h-6 w-[1px] bg-outline-variant/40"></div>
+            <div className="h-6 w-[1px] bg-outline-variant/40 hidden sm:block"></div>
 
             <div className="flex items-center gap-space-sm pl-space-xs">
               <img
@@ -369,7 +369,7 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
                 referrerPolicy="no-referrer"
                 src="https://lh3.googleusercontent.com/aida/AEtjO1WGopkRi0e7RACbAeh9HarEQpgzwV4gII2BBnN0fImO0_ivQuf3D8fWWXjnDa8i7tNyimgkcDUKUpCQ0SbimmA8304zNb8-OtViMqR7RWTsqbRK69ytaSQUrdsT77u80IH5L7DiWTGCwRGcXNmevxS6bfF83aQaWrI7pGS91Kgb52wdoxaqDG5GJfP-jdFHhXzJ-uH663fwJU19MjIi3ZIknbHOIbpbDy0SCYfb9-a95DfMmTqAAIK0TQ"
               />
-              <div className="flex flex-col">
+              <div className="hidden xl:flex flex-col">
                 <span className="font-label-md text-label-md text-on-surface font-semibold leading-tight">
                   Dr. Aris Thorne
                 </span>
@@ -461,14 +461,14 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
             {/* Student Welcome Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-space-md pb-space-xs">
               <div className="flex flex-col">
-                <div className="flex items-center gap-space-xs text-outline font-label-sm text-label-sm uppercase tracking-wider mb-1">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-outline font-label-sm text-label-sm uppercase tracking-wider mb-1">
                   <span>Session 2025–26</span>
                   <span>•</span>
                   <span>JEE Foundation Morning Cohort (Batch A)</span>
                   <span>•</span>
                   <span className="text-secondary font-semibold">Siliguri HQ Campus</span>
                 </div>
-                <h1 className="font-display text-display text-on-surface tracking-tight font-bold">
+                <h1 className="font-headline-lg sm:font-display text-2xl sm:text-display text-on-surface tracking-tight font-bold">
                   Welcome back, Aarav! 🎓
                 </h1>
               </div>
