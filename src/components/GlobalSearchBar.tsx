@@ -783,30 +783,29 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({ onNavigate, on
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="hidden min-[1501px]:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-surface-container-highest/40 hover:bg-surface-container-highest/75 text-on-surface-variant hover:text-white border border-white/10 hover:border-white/25 text-xs transition-all w-44 xl:w-56 text-left cursor-pointer group shadow-inner"
-          title="Global Search (Ctrl+K or /)"
+          className="hidden min-[1501px]:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-surface-container-highest/40 hover:bg-surface-container-highest/75 text-on-surface-variant hover:text-white border border-white/10 hover:border-white/25 text-xs transition-all w-40 xl:w-48 text-left cursor-pointer group shadow-inner"
+          title="Search students, courses, or pages"
           aria-label="Search students, courses, or admin pages"
         >
-          <span className="material-symbols-outlined text-[16px] text-primary group-hover:text-primary transition-colors flex-shrink-0">
+          <span className="material-symbols-outlined text-[16px] text-sky-400 dark:text-cyan-400 group-hover:text-sky-300 dark:group-hover:text-cyan-300 transition-colors flex-shrink-0">
             search
           </span>
-          <span className="flex-1 truncate text-outline-variant group-hover:text-white/80 select-none">
+          <span className="flex-1 truncate text-outline-variant group-hover:text-white/90 select-none">
             Search...
           </span>
-          <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-surface-container-highest/70 text-[10px] font-mono text-outline-variant border border-white/10 group-hover:border-white/20 select-none">
-            <span className="text-[9px]">⌘</span>K
-          </kbd>
         </button>
 
         {/* Compact Search Icon Button (Visible on all screens below 1501px) */}
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="min-[1501px]:hidden p-1.5 rounded-lg bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border border-white/20 flex items-center justify-center cursor-pointer transition-colors"
+          className="min-[1501px]:hidden p-1.5 rounded-lg bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border border-white/20 flex items-center justify-center cursor-pointer transition-colors group"
           title="Search students, courses, or pages"
           aria-label="Open Global Search"
         >
-          <span className="material-symbols-outlined text-[17px]">search</span>
+          <span className="material-symbols-outlined text-[17px] text-sky-400 dark:text-cyan-400 group-hover:text-sky-300 dark:group-hover:text-cyan-300 transition-colors">
+            search
+          </span>
         </button>
       </div>
 
@@ -827,7 +826,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({ onNavigate, on
           >
             {/* Search Header Bar */}
             <div className="p-3 sm:p-4 border-b border-surface-container flex items-center gap-2.5 sm:gap-3 bg-surface-container-low/40">
-              <span className="material-symbols-outlined text-[22px] text-primary flex-shrink-0">
+              <span className="material-symbols-outlined text-[22px] text-sky-500 dark:text-cyan-400 flex-shrink-0">
                 search
               </span>
               <input

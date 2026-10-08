@@ -558,13 +558,12 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
                 }}
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container border border-outline-variant/30 text-on-surface-variant hover:text-on-surface text-xs transition-colors cursor-pointer group"
               >
-                <span className="material-symbols-outlined text-[17px] text-primary">search</span>
+                <span className="material-symbols-outlined text-[17px] text-sky-500 dark:text-cyan-400 group-hover:text-sky-600 dark:group-hover:text-cyan-300 transition-colors">
+                  search
+                </span>
                 <span className="flex-1 text-left text-outline truncate group-hover:text-on-surface">
                   Search students, courses, pages...
                 </span>
-                <kbd className="text-[9px] font-mono px-1 py-0.5 rounded bg-surface-container-high text-outline">
-                  ⌘K
-                </kbd>
               </button>
 
               {/* In-Drawer Interactive Theme Switcher Row */}
