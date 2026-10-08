@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ScreenType } from '../types';
 import { BRAND_HOTLINKS } from '../data/mockData';
 import { ThemeToggle } from './ThemeToggle';
@@ -10,265 +10,418 @@ interface NavigationProps {
   onShowToast?: (msg: string) => void;
 }
 
+interface NavItem {
+  id: ScreenType;
+  label: string;
+  icon: string;
+  description?: string;
+  badge?: string;
+}
+
 export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigate, onShowToast }) => {
   const { isSidebarOpen, toggleSidebar } = useSidebar();
   const hasSidebarScreen = !['landing', 'register', 'onboarding'].includes(currentScreen);
 
+  // Dropdown states
+  const [activeDropdown, setActiveDropdown] = useState<'admin' | 'super-admin' | 'academics' | 'portals' | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navContainerRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside or escape key
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (navContainerRef.current && !navContainerRef.current.contains(e.target as Node)) {
+        setActiveDropdown(null);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveDropdown(null);
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const handleSelectScreen = (screen: ScreenType) => {
+    onNavigate(screen);
+    setActiveDropdown(null);
+    setMobileMenuOpen(false);
+  };
+
+  // Group definitions
+  const adminItems: NavItem[] = [
+    { id: 'dashboard', label: 'Admin Dashboard', icon: 'grid_view', description: 'Institution KPI overview & alerts' },
+    { id: 'students-directory', label: 'Students Directory', icon: 'group', description: 'Student rosters, search & CSV export' },
+    { id: 'student-profile', label: 'Student 360° Profile', icon: 'badge', description: 'Academic records, attendance & finance' },
+    { id: 'courses-batches', label: 'Courses & Batches', icon: 'menu_book', description: 'Curriculum batches & cohort rosters' },
+    { id: 'admissions', label: 'Admissions & CRM', icon: 'contact_support', description: 'Leads, enquiry pipeline & enrollment' },
+    { id: 'certificates', label: 'Certificates Console', icon: 'workspace_premium', description: 'Issuance & credential records' },
+    { id: 'certificate-studio', label: 'Template Studio', icon: 'draw', description: 'Custom certificate design builder' },
+  ];
+
+  const superAdminItems: NavItem[] = [
+    { id: 'admin', label: 'Super Admin Console', icon: 'admin_panel_settings', description: 'Multi-campus, tenants & system security', badge: 'PRO' },
+    { id: 'onboarding', label: 'Campus Setup (Step 2)', icon: 'domain_add', description: 'Branch campuses & multi-campus wizard' },
+  ];
+
+  const academicItems: NavItem[] = [
+    { id: 'timetable-schedule', label: 'Timetable & Schedule', icon: 'calendar_month', description: 'Weekly schedules & lecture allocations' },
+    { id: 'academics', label: 'Exams & Assessments', icon: 'assignment', description: 'Exam slots, halls & grading schedules' },
+    { id: 'marks-entry', label: 'Marks Entry Console', icon: 'grade', description: 'Score inputs & grade calculation sheets' },
+    { id: 'results-transcripts', label: 'Results & Transcripts', icon: 'verified', description: 'Report cards, transcripts & rankings' },
+    { id: 'assignments-coursework', label: 'Assignments & HW', icon: 'task', description: 'Submissions, rubrics & deadlines' },
+  ];
+
+  const portalItems: NavItem[] = [
+    { id: 'teacher-portal', label: 'Teacher Portal', icon: 'school', description: 'Attendance, class log & grading hub' },
+    { id: 'student-portal', label: 'Student Portal', icon: 'person', description: 'Learner LMS, grades & submissions' },
+    { id: 'parent-portal', label: 'Parent Portal', icon: 'family_restroom', description: 'Fee receipts, alerts & progress monitor' },
+  ];
+
+  const isAdminActive = adminItems.some(i => i.id === currentScreen);
+  const isSuperAdminActive = superAdminItems.some(i => i.id === currentScreen);
+  const isAcademicsActive = academicItems.some(i => i.id === currentScreen);
+  const isPortalsActive = portalItems.some(i => i.id === currentScreen);
+
+  // Helper to render dropdown menu
+  const renderDropdown = (
+    title: string,
+    key: 'admin' | 'super-admin' | 'academics' | 'portals',
+    icon: string,
+    items: NavItem[],
+    isActive: boolean
+  ) => {
+    const isOpen = activeDropdown === key;
+    const currentItem = items.find(i => i.id === currentScreen);
+
+    return (
+      <div className="relative">
+        <button
+          onClick={() => setActiveDropdown(isOpen ? null : key)}
+          aria-expanded={isOpen}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none ${
+            isActive
+              ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
+              : isOpen
+              ? 'bg-surface-container-highest/60 text-white'
+              : 'text-outline-variant hover:text-white hover:bg-surface-container-highest/30'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[15px]">{icon}</span>
+          <span>{title}</span>
+          {currentItem && (
+            <span className="hidden xl:inline text-[10px] px-1.5 py-0.5 rounded bg-white/15 text-white font-normal truncate max-w-[90px]">
+              {currentItem.label.split(' ')[0]}
+            </span>
+          )}
+          <span className={`material-symbols-outlined text-[14px] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+            expand_more
+          </span>
+        </button>
+
+        {isOpen && (
+          <div
+            className="absolute left-0 mt-2 w-72 rounded-xl bg-surface-container-lowest text-on-surface border border-outline-variant/30 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md"
+            style={{ minWidth: '260px' }}
+          >
+            <div className="px-3 py-1.5 border-b border-surface-container-low mb-1 flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-outline-variant flex items-center gap-1">
+                <span className="material-symbols-outlined text-[13px]">{icon}</span>
+                {title} Options
+              </span>
+              <span className="text-[10px] text-outline-variant font-mono">{items.length} pages</span>
+            </div>
+
+            <div className="max-h-[360px] overflow-y-auto py-1">
+              {items.map((item) => {
+                const isSelected = currentScreen === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleSelectScreen(item.id)}
+                    className={`w-full text-left px-3 py-2 flex items-start gap-2.5 hover:bg-surface-container text-xs transition-colors group cursor-pointer ${
+                      isSelected ? 'bg-primary/10 text-primary font-semibold' : 'text-on-surface-variant'
+                    }`}
+                  >
+                    <div
+                      className={`p-1.5 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                        isSelected
+                          ? 'bg-primary text-white'
+                          : 'bg-surface-container-high text-on-surface-variant group-hover:bg-primary group-hover:text-white'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[15px]">{item.icon}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className={`truncate text-xs ${isSelected ? 'font-bold text-primary' : 'font-medium text-on-surface'}`}>
+                          {item.label}
+                        </span>
+                        {item.badge && (
+                          <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/10 text-amber-500 font-bold uppercase">
+                            {item.badge}
+                          </span>
+                        )}
+                        {isSelected && (
+                          <span className="material-symbols-outlined text-[14px] text-primary">check</span>
+                        )}
+                      </div>
+                      {item.description && (
+                        <p className="text-[10px] text-outline line-clamp-1 leading-snug mt-0.5">
+                          {item.description}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <>
-      {/* Top Screen Selector Floating Bar for convenient testing & demo */}
-      <div className="bg-inverse-surface text-inverse-on-surface text-xs py-1.5 px-3 sm:px-4 sticky top-0 z-[60] border-b border-surface-container-highest/20 flex items-center justify-between gap-3 shadow-sm overflow-x-auto">
-        <div className="flex items-center gap-2 flex-shrink-0">
+      {/* Top Main Navigation Bar (Clean, NO horizontal scrollbar, clear layout) */}
+      <div
+        ref={navContainerRef}
+        className="bg-inverse-surface text-inverse-on-surface text-xs py-2 px-3 sm:px-5 sticky top-0 z-[60] border-b border-surface-container-highest/20 flex items-center justify-between gap-3 shadow-md"
+      >
+        {/* Left Side: Sidebar toggle + Brand + Main Direct Links & Dropdowns */}
+        <div className="flex items-center gap-2 lg:gap-3 flex-wrap">
           {/* Quick Sidebar Toggle on left */}
           {hasSidebarScreen && (
             <button
               onClick={() => {
                 toggleSidebar();
-                onShowToast?.(isSidebarOpen ? 'Sidebar hide ho gaya (Full Workspace)' : 'Sidebar show ho gaya');
+                onShowToast?.(isSidebarOpen ? 'Sidebar hide ho gaya' : 'Sidebar show ho gaya');
               }}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border flex-shrink-0 ${
+              className={`p-1.5 rounded-lg text-xs font-semibold flex items-center justify-center transition-all cursor-pointer border flex-shrink-0 ${
                 isSidebarOpen
                   ? 'bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border-white/20'
                   : 'bg-primary text-white border-primary shadow-xs ring-2 ring-primary/40'
               }`}
-              title={isSidebarOpen ? 'Sidebar Hide karein (Shortcut: Ctrl+B / Cmd+B)' : 'Sidebar Show karein (Shortcut: Ctrl+B / Cmd+B)'}
+              title={isSidebarOpen ? 'Sidebar Hide karein (Ctrl+B)' : 'Sidebar Show karein (Ctrl+B)'}
+              aria-label={isSidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}
             >
-              <span className="material-symbols-outlined text-[15px]">
+              <span className="material-symbols-outlined text-[17px]">
                 {isSidebarOpen ? 'left_panel_close' : 'left_panel_open'}
               </span>
-              <span className="hidden sm:inline">{isSidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}</span>
-              <kbd className="hidden md:inline-block px-1 py-0.2 rounded bg-black/30 text-[9px] font-mono text-white/70">
-                ⌘B
-              </kbd>
             </button>
           )}
 
-          <span className="hidden md:inline-flex items-center gap-1 font-semibold text-secondary-fixed flex-shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary-fixed animate-pulse"></span>
-            EduManage Screens:
-          </span>
-          <div className="flex items-center bg-surface-container-highest/20 rounded-lg p-0.5 overflow-x-auto max-w-[calc(100vw-180px)] sm:max-w-none">
+          {/* Logo / Brandmark */}
+          <button
+            onClick={() => handleSelectScreen('landing')}
+            className="flex items-center gap-1.5 text-white font-bold tracking-tight hover:opacity-90 transition-opacity cursor-pointer mr-1"
+          >
+            <div className="w-5 h-5 rounded bg-primary flex items-center justify-center text-white">
+              <span className="material-symbols-outlined text-[13px]">school</span>
+            </div>
+            <span className="hidden sm:inline font-headline-sm text-xs font-bold tracking-tight">
+              EduManage
+            </span>
+          </button>
+
+          <div className="h-4 w-[1px] bg-white/15 hidden sm:block"></div>
+
+          {/* MAIN PAGES (Direct in Navbar as requested: Landing, Create Institution, etc.) */}
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            {/* 1. Landing Page */}
             <button
-              onClick={() => onNavigate('certificates')}
-              className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 ${
-                currentScreen === 'certificates'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'bg-primary/20 text-primary-fixed hover:bg-primary/30 hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">workspace_premium</span>
-              <span>Certificates</span>
-            </button>
-            <button
-              onClick={() => onNavigate('certificate-studio')}
-              className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 ${
-                currentScreen === 'certificate-studio'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">draw</span>
-              <span>Template Studio</span>
-            </button>
-            <button
-              onClick={() => onNavigate('students-directory')}
-              className={`px-3 py-1 rounded-md transition-all font-medium flex items-center gap-1.5 ${
-                currentScreen === 'students-directory'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">group</span>
-              <span>All Students</span>
-            </button>
-            <button
-              onClick={() => onNavigate('student-profile')}
-              className={`px-3 py-1 rounded-md transition-all font-medium flex items-center gap-1.5 ${
-                currentScreen === 'student-profile'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">badge</span>
-              <span>Student Profile</span>
-            </button>
-            <button
-              onClick={() => onNavigate('dashboard')}
-              className={`px-3 py-1 rounded-md transition-all font-medium flex items-center gap-1.5 ${
-                currentScreen === 'dashboard'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">grid_view</span>
-              <span>Dashboard</span>
-            </button>
-            <button
-              onClick={() => onNavigate('academics')}
-              className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 ${
-                currentScreen === 'academics'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">assignment</span>
-              <span>Exams</span>
-            </button>
-            <button
-              onClick={() => onNavigate('marks-entry')}
-              className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 ${
-                currentScreen === 'marks-entry'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">grade</span>
-              <span>Marks Entry</span>
-            </button>
-            <button
-              onClick={() => onNavigate('timetable-schedule')}
-              className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 ${
-                currentScreen === 'timetable-schedule'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">calendar_month</span>
-              <span>Timetable &amp; Schedule</span>
-            </button>
-            <button
-              onClick={() => onNavigate('assignments-coursework')}
-              className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 ${
-                currentScreen === 'assignments-coursework'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">assignment</span>
-              <span>Assignments &amp; HW</span>
-            </button>
-            <button
-              onClick={() => onNavigate('teacher-portal')}
-              className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 ${
-                currentScreen === 'teacher-portal'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">school</span>
-              <span>Teacher Portal</span>
-            </button>
-            <button
-              onClick={() => onNavigate('student-portal')}
-              className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 ${
-                currentScreen === 'student-portal'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">person</span>
-              <span>Student Portal</span>
-            </button>
-            <button
-              onClick={() => onNavigate('parent-portal')}
-              className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 ${
-                currentScreen === 'parent-portal'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">family_restroom</span>
-              <span>Parent Portal</span>
-            </button>
-            <button
-              onClick={() => onNavigate('results-transcripts')}
-              className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 ${
-                currentScreen === 'results-transcripts'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">verified</span>
-              <span>Results &amp; Transcripts</span>
-            </button>
-            <button
-              onClick={() => onNavigate('courses-batches')}
-              className={`px-3 py-1 rounded-md transition-all font-medium flex items-center gap-1.5 ${
-                currentScreen === 'courses-batches'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">menu_book</span>
-              <span>Courses &amp; Batches</span>
-            </button>
-            <button
-              onClick={() => onNavigate('admissions')}
-              className={`px-3 py-1 rounded-md transition-all font-medium flex items-center gap-1.5 ${
-                currentScreen === 'admissions'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[15px]">contact_support</span>
-              <span>Admissions CRM</span>
-            </button>
-            <button
-              onClick={() => onNavigate('landing')}
-              className={`px-2.5 py-1 rounded-md transition-all font-medium ${
+              onClick={() => handleSelectScreen('landing')}
+              className={`px-2.5 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 text-xs cursor-pointer ${
                 currentScreen === 'landing'
-                  ? 'bg-primary-container text-white shadow-sm font-semibold'
-                  : 'text-outline-variant hover:text-white'
+                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
+                  : 'text-outline-variant hover:text-white hover:bg-surface-container-highest/30'
               }`}
+              title="Landing Showcase Page"
             >
-              1. Landing Showcase
+              <span className="material-symbols-outlined text-[15px]">home</span>
+              <span>Landing</span>
             </button>
+
+            {/* 2. Create Institution (Step 1) */}
             <button
-              onClick={() => onNavigate('register')}
-              className={`px-2.5 py-1 rounded-md transition-all font-medium ${
+              onClick={() => handleSelectScreen('register')}
+              className={`px-2.5 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 text-xs cursor-pointer ${
                 currentScreen === 'register'
-                  ? 'bg-primary-container text-white shadow-sm font-semibold'
-                  : 'text-outline-variant hover:text-white'
+                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
+                  : 'text-outline-variant hover:text-white hover:bg-surface-container-highest/30'
               }`}
+              title="Create Institution - Step 1"
             >
-              2. Create Institution (Step 1)
+              <span className="material-symbols-outlined text-[15px]">add_business</span>
+              <span className="hidden md:inline">Create Institution</span>
+              <span className="md:hidden">Create</span>
             </button>
-            <button
-              onClick={() => onNavigate('onboarding')}
-              className={`px-2.5 py-1 rounded-md transition-all font-medium ${
-                currentScreen === 'onboarding'
-                  ? 'bg-primary-container text-white shadow-sm font-semibold'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              3. Campus Setup (Step 2)
-            </button>
-            <button
-              onClick={() => onNavigate('admin')}
-              className={`px-2.5 py-1 rounded-md transition-all font-medium ${
-                currentScreen === 'admin'
-                  ? 'bg-primary-container text-white shadow-sm font-semibold'
-                  : 'text-outline-variant hover:text-white'
-              }`}
-            >
-              4. Super Admin Console
-            </button>
+          </div>
+
+          <div className="h-4 w-[1px] bg-white/15 hidden md:block"></div>
+
+          {/* DROPDOWN MENUS (Desktop/Tablet) for Admin, Super Admin, Academics, Portals */}
+          <div className="hidden md:flex items-center gap-1">
+            {/* Admin Pages Dropdown */}
+            {renderDropdown('Admin Pages', 'admin', 'admin_panel_settings', adminItems, isAdminActive)}
+
+            {/* Super Admin Dropdown */}
+            {renderDropdown('Super Admin', 'super-admin', 'shield_person', superAdminItems, isSuperAdminActive)}
+
+            {/* Academics Dropdown */}
+            {renderDropdown('Academics', 'academics', 'auto_stories', academicItems, isAcademicsActive)}
+
+            {/* Portals Dropdown */}
+            {renderDropdown('Portals', 'portals', 'hub', portalItems, isPortalsActive)}
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-[11px] text-outline-variant">
+        {/* Right Side: Active view indicator + Theme Toggle + Mobile Menu Trigger */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <ThemeToggle
             variant="compact"
             onToggleCallback={(mode) => onShowToast?.(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode (saved)`)}
           />
-          <span className="hidden sm:inline">Multi-Tenant Platform UI</span>
-          <span className="text-secondary-fixed flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span> 99.9% Uptime SLA
-          </span>
+
+          {/* Active Screen Indicator (Pill badge) */}
+          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 text-white text-[11px] font-medium border border-white/10">
+            <span className="w-1.5 h-1.5 rounded-full bg-secondary-fixed animate-pulse"></span>
+            <span className="text-white/70">Current:</span>
+            <span className="font-semibold text-white truncate max-w-[120px]">
+              {currentScreen.replace('-', ' ')}
+            </span>
+          </div>
+
+          {/* Mobile Screen Selector Trigger (Visible on small screens where dropdowns wrap) */}
+          <div className="md:hidden relative">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer ${
+                mobileMenuOpen
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border-white/20'
+              }`}
+              aria-label="Toggle navigation menu"
+            >
+              <span className="material-symbols-outlined text-[17px]">
+                {mobileMenuOpen ? 'close' : 'menu'}
+              </span>
+              <span className="text-[11px] font-medium">Pages</span>
+            </button>
+
+            {/* Mobile Dropdown Menu Sheet */}
+            {mobileMenuOpen && (
+              <div className="absolute right-0 mt-2 w-80 max-w-[90vw] rounded-2xl bg-surface-container-lowest text-on-surface border border-outline-variant/30 shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 backdrop-blur-xl max-h-[80vh] overflow-y-auto">
+                <div className="flex items-center justify-between pb-2 border-b border-surface-container mb-2">
+                  <span className="font-bold text-xs text-on-surface">Navigate EduManage</span>
+                  <span className="text-[10px] text-outline font-mono">Mobile View</span>
+                </div>
+
+                {/* Main Pages */}
+                <div className="mb-3">
+                  <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1">Main Pages</div>
+                  <button
+                    onClick={() => handleSelectScreen('landing')}
+                    className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium flex items-center gap-2 mb-1 ${
+                      currentScreen === 'landing' ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[16px]">home</span>
+                    Landing Showcase
+                  </button>
+                  <button
+                    onClick={() => handleSelectScreen('register')}
+                    className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium flex items-center gap-2 ${
+                      currentScreen === 'register' ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[16px]">add_business</span>
+                    Create Institution (Step 1)
+                  </button>
+                </div>
+
+                {/* Admin Pages */}
+                <div className="mb-3 border-t border-surface-container pt-2">
+                  <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1">Admin Pages</div>
+                  {adminItems.map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSelectScreen(item.id)}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 mb-0.5 ${
+                        currentScreen === item.id ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
+                      <span className="flex-1 truncate">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Super Admin */}
+                <div className="mb-3 border-t border-surface-container pt-2">
+                  <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1">Super Admin</div>
+                  {superAdminItems.map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSelectScreen(item.id)}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 mb-0.5 ${
+                        currentScreen === item.id ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
+                      <span className="flex-1 truncate">{item.label}</span>
+                      {item.badge && <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/10 text-amber-500 font-bold">{item.badge}</span>}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Academics */}
+                <div className="mb-3 border-t border-surface-container pt-2">
+                  <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1">Academics & Exams</div>
+                  {academicItems.map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSelectScreen(item.id)}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 mb-0.5 ${
+                        currentScreen === item.id ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
+                      <span className="flex-1 truncate">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Portals */}
+                <div className="border-t border-surface-container pt-2">
+                  <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1">Portals</div>
+                  {portalItems.map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSelectScreen(item.id)}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 mb-0.5 ${
+                        currentScreen === item.id ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
+                      <span className="flex-1 truncate">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Main Header (Rendered on Landing, Register, and Onboarding screens) */}
+      {/* Main Header (Rendered on Landing screen) */}
       {currentScreen === 'landing' && (
         <header className="sticky top-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(15,23,42,0.04)]">
           <div className="h-16 max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between">

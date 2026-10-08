@@ -402,6 +402,13 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
   const [isEditStudentModalOpen, setIsEditStudentModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<StudentItem | null>(null);
 
+  // CSV Export Modal & Settings State
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportScope, setExportScope] = useState<'filtered' | 'full' | 'selected'>('filtered');
+  const [exportReportFormat, setExportReportFormat] = useState<'comprehensive' | 'academic' | 'financial'>('comprehensive');
+  const [includeMetadataHeader, setIncludeMetadataHeader] = useState(true);
+  const [exportDropdownLocation, setExportDropdownLocation] = useState<'header' | 'page' | 'filter' | null>(null);
+
   // Add student form state
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentPhone, setNewStudentPhone] = useState('');
@@ -570,62 +577,186 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
     onShowToast(`Updated student profile for ${editingStudent.name}.`);
   };
 
-  const handleExportCSV = () => {
-    if (filteredStudents.length === 0) {
-      onShowToast('No student records match the current filters to export.');
-      return;
+  const handleExportCSV = (
+    scope: 'filtered' | 'full' | 'selected' = exportScope,
+    format: 'comprehensive' | 'academic' | 'financial' = exportReportFormat,
+    withMeta: boolean = includeMetadataHeader
+  ) => {
+    let targetList: StudentItem[] = [];
+    let scopeSlug = 'Current_Filtered_View';
+    let scopeHuman = 'Current Filtered View';
+
+    if (scope === 'selected') {
+      targetList = students.filter(s => selectedIds.includes(s.id));
+      scopeSlug = 'Selected_Students';
+      scopeHuman = `Selected Students (${targetList.length})`;
+      if (targetList.length === 0) {
+        onShowToast('No students currently selected in the table to export.');
+        return;
+      }
+    } else if (scope === 'full') {
+      targetList = students;
+      scopeSlug = 'Full_Directory';
+      scopeHuman = `Full Directory (All ${students.length} Students)`;
+      if (targetList.length === 0) {
+        onShowToast('Students directory has no records to export.');
+        return;
+      }
+    } else {
+      targetList = filteredStudents;
+      scopeSlug = 'Filtered_View';
+      scopeHuman = `Current Filtered View (${filteredStudents.length} Students)`;
+      if (targetList.length === 0) {
+        onShowToast('No student records match the current filters to export.');
+        return;
+      }
     }
 
-    const headers = [
-      'ID',
-      'Student Name',
-      'Phone Number',
-      'Grade / Class',
-      'Enrollment Date',
-      'Enrollment Number',
-      'Admission Number',
-      'Course',
-      'Batch Time Slot',
-      'Campus Branch',
-      'Academic Status',
-      'Fee Status',
-      'Fee Balance / Details'
-    ].map(h => `"${h}"`).join(',') + '\n';
+    let headers: string[] = [];
+    let rowExtractor: (s: StudentItem) => (string | number)[];
 
-    const rows = filteredStudents
-      .map(s =>
-        [
-          s.id,
-          (s.name || '').replace(/"/g, '""'),
-          s.phone || '',
-          s.grade || '',
-          s.enrollmentDate || '',
-          s.enrollmentNo || '',
-          s.admissionNo || '',
-          (s.course || '').replace(/"/g, '""'),
-          (s.batch || '').replace(/"/g, '""'),
-          (s.branch || '').replace(/"/g, '""'),
-          s.status || '',
-          s.feeLabel || '',
-          s.feeSub || ''
-        ]
-          .map(val => `"${val}"`)
-          .join(',')
-      )
+    if (format === 'academic') {
+      headers = [
+        'Student ID',
+        'Enrollment Number',
+        'Admission Number',
+        'Student Full Name',
+        'Contact Phone',
+        'Campus Branch',
+        'Course Name',
+        'Batch Schedule',
+        'Grade / Class',
+        'Enrollment Date',
+        'Academic Status'
+      ];
+      rowExtractor = s => [
+        s.id,
+        s.enrollmentNo || '',
+        s.admissionNo || '',
+        s.name,
+        s.phone || '',
+        s.branch,
+        s.course,
+        s.batch,
+        s.grade,
+        s.enrollmentDate,
+        s.status
+      ];
+    } else if (format === 'financial') {
+      headers = [
+        'Student ID',
+        'Admission Number',
+        'Student Full Name',
+        'Contact Phone',
+        'Campus Branch',
+        'Course Name',
+        'Fee Status',
+        'Fee Details / Amount',
+        'Invoice / Voucher Reference',
+        'Overdue Alert'
+      ];
+      rowExtractor = s => [
+        s.id,
+        s.admissionNo || '',
+        s.name,
+        s.phone || '',
+        s.branch,
+        s.course,
+        s.feeType.toUpperCase(),
+        s.feeLabel,
+        s.feeSub,
+        s.overdue ? 'YES' : 'NO'
+      ];
+    } else {
+      // Comprehensive default
+      headers = [
+        'Student ID',
+        'Admission Number',
+        'Enrollment Number',
+        'Student Full Name',
+        'Contact Phone',
+        'Grade / Class',
+        'Enrollment Date',
+        'Campus Branch',
+        'Course Name',
+        'Batch Schedule',
+        'Academic Status',
+        'Fee Status',
+        'Fee Balance / Details',
+        'Invoice / Reference Number'
+      ];
+      rowExtractor = s => [
+        s.id,
+        s.admissionNo || '',
+        s.enrollmentNo || '',
+        s.name,
+        s.phone || '',
+        s.grade,
+        s.enrollmentDate,
+        s.branch,
+        s.course,
+        s.batch,
+        s.status,
+        s.feeType === 'paid' ? 'PAID FULL' : 'DUE',
+        s.feeLabel,
+        s.feeSub
+      ];
+    }
+
+    const headerLine = headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',') + '\n';
+    const rows = targetList
+      .map(s => {
+        const fields = rowExtractor(s);
+        return fields.map(val => `"${String(val ?? '').replace(/"/g, '""')}"`).join(',');
+      })
       .join('\n');
 
-    const csvContent = '\uFEFF' + headers + rows; // UTF-8 BOM for Excel compatibility
+    let metaPrefix = '';
+    if (withMeta) {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+      const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      const activeFilterList = [
+        selectedBranch !== 'All Branches' ? `Branch: ${selectedBranch}` : null,
+        selectedGrade !== 'All Grades' ? `Grade: ${selectedGrade}` : null,
+        selectedCourse !== 'All Courses' ? `Course: ${selectedCourse}` : null,
+        selectedStatus !== 'All Status' ? `Status: ${selectedStatus}` : null,
+        selectedDateFilter !== 'All Dates' ? `Date: ${selectedDateFilter}` : null,
+        searchQuery ? `Search: "${searchQuery}"` : null
+      ].filter(Boolean);
+
+      metaPrefix = [
+        `# =========================================================================`,
+        `# EDUMANAGE ENTERPRISE — OFFICIAL STUDENTS DIRECTORY OFFLINE REPORT`,
+        `# Scope: ${scopeHuman}`,
+        `# Generated On: ${dateStr} at ${timeStr}`,
+        `# Total Records in Export: ${targetList.length} of ${students.length} total students`,
+        `# Filters Applied: ${activeFilterList.length > 0 ? activeFilterList.join(' | ') : 'None (Full List)'}`,
+        `# Report Profile: ${format.toUpperCase()}`,
+        `# Compatibility: UTF-8 BOM encoded for Microsoft Excel, Google Sheets, LibreOffice`,
+        `# =========================================================================`,
+        ''
+      ].join('\n');
+    }
+
+    const csvContent = '\uFEFF' + metaPrefix + headerLine + rows; // UTF-8 BOM for Excel compatibility
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
     const nowStr = new Date().toISOString().split('T')[0];
-    link.setAttribute('download', `EduManage_Students_Filtered_${nowStr}.csv`);
+    link.setAttribute('download', `EduManage_Students_${scopeSlug}_${nowStr}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    onShowToast(`Exported ${filteredStudents.length} filtered student record${filteredStudents.length === 1 ? '' : 's'} to CSV!`);
+    onShowToast(`Exported ${targetList.length} student record${targetList.length === 1 ? '' : 's'} (${scope === 'full' ? 'Full Directory' : 'Filtered View'}) to CSV!`);
+    setIsExportModalOpen(false);
+    setExportDropdownLocation(null);
   };
 
   const handlePrintDirectory = () => {
@@ -1091,19 +1222,109 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
 
           {/* Right Header Action Items */}
           <div className="flex items-center gap-space-sm flex-shrink-0">
-            <button
-              id="topHeaderExportCsvBtn"
-              onClick={handleExportCSV}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container hover:text-primary transition-all border border-outline-variant/40 shadow-xs font-label-md text-label-md font-semibold active:scale-[0.98] cursor-pointer"
-              type="button"
-              title={`Download filtered list (${filteredStudents.length} students) as CSV`}
-            >
-              <span className="material-symbols-outlined text-[18px] text-primary">download</span>
-              <span className="hidden lg:inline">Export to CSV</span>
-              <span className="font-data-mono text-[11px] px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-bold">
-                {filteredStudents.length}
-              </span>
-            </button>
+            {/* Top Header Export to CSV Dropdown & Modal Trigger */}
+            <div className="relative">
+              <div className="inline-flex rounded-lg shadow-xs border border-outline-variant/40 bg-surface-container-low overflow-hidden">
+                <button
+                  id="topHeaderExportCsvBtn"
+                  onClick={() => {
+                    setExportScope('filtered');
+                    setIsExportModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-on-surface hover:bg-surface-container hover:text-primary transition-all font-label-md text-label-md font-semibold cursor-pointer active:scale-[0.98]"
+                  type="button"
+                  title="Export students to CSV for offline reporting"
+                >
+                  <span className="material-symbols-outlined text-[18px] text-primary">download</span>
+                  <span className="hidden lg:inline">Export to CSV</span>
+                  <span className="font-data-mono text-[11px] px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-bold">
+                    {filteredStudents.length}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExportDropdownLocation(prev => prev === 'header' ? null : 'header')}
+                  className="px-1.5 hover:bg-surface-container border-l border-outline-variant/30 text-on-surface hover:text-primary cursor-pointer flex items-center justify-center transition-colors"
+                  title="Quick CSV Export options"
+                  aria-label="Export options dropdown"
+                >
+                  <span className="material-symbols-outlined text-[16px]">arrow_drop_down</span>
+                </button>
+              </div>
+
+              {exportDropdownLocation === 'header' && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setExportDropdownLocation(null)} />
+                  <div className="absolute right-0 mt-1 w-64 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/40 py-1.5 z-40 text-left text-on-surface animate-in fade-in zoom-in-95">
+                    <div className="px-3 py-1.5 border-b border-outline-variant/20">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-outline">Offline CSV Export</p>
+                    </div>
+                    <button
+                      onClick={() => handleExportCSV('filtered', 'comprehensive', true)}
+                      className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-surface-container text-left transition-colors cursor-pointer group"
+                      type="button"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[16px] text-primary">filter_alt</span>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-on-surface group-hover:text-primary">Current View (Filtered)</span>
+                          <span className="text-[10px] text-outline">Active search & filters</span>
+                        </div>
+                      </div>
+                      <span className="font-data-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-surface-container text-primary">
+                        {filteredStudents.length}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => handleExportCSV('full', 'comprehensive', true)}
+                      className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-surface-container text-left transition-colors cursor-pointer group"
+                      type="button"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[16px] text-secondary">public</span>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-on-surface group-hover:text-primary">Full Directory (All)</span>
+                          <span className="text-[10px] text-outline">Complete roster</span>
+                        </div>
+                      </div>
+                      <span className="font-data-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-surface-container text-secondary">
+                        {students.length}
+                      </span>
+                    </button>
+                    {selectedIds.length > 0 && (
+                      <button
+                        onClick={() => handleExportCSV('selected', 'comprehensive', true)}
+                        className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-surface-container text-left transition-colors cursor-pointer group"
+                        type="button"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[16px] text-amber-600">checklist</span>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-on-surface group-hover:text-primary">Selected Students</span>
+                            <span className="text-[10px] text-outline">Checked rows in table</span>
+                          </div>
+                        </div>
+                        <span className="font-data-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300">
+                          {selectedIds.length}
+                        </span>
+                      </button>
+                    )}
+                    <div className="my-1 border-t border-outline-variant/20"></div>
+                    <button
+                      onClick={() => {
+                        setExportDropdownLocation(null);
+                        setIsExportModalOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-primary hover:bg-primary/10 transition-colors font-medium cursor-pointer"
+                      type="button"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">tune</span>
+                      <span>Custom Report & Columns...</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
 
             <button
               id="topHeaderPrintBtn"
@@ -1215,19 +1436,109 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                     <span className="material-symbols-outlined text-[18px] text-outline">upload_file</span>
                     <span>Import</span>
                   </button>
-                  <button
-                    id="pageExportToCsvBtn"
-                    onClick={handleExportCSV}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container hover:text-primary shadow-sm font-label-md text-label-md font-semibold transition-all cursor-pointer border border-outline-variant/30 hover:border-primary/40 active:scale-[0.98]"
-                    type="button"
-                    title={`Download filtered list (${filteredStudents.length} students) as CSV`}
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-primary">file_download</span>
-                    <span>Export to CSV</span>
-                    <span className="font-data-mono text-[11px] px-1.5 py-0.5 rounded bg-surface-container text-primary font-bold">
-                      {filteredStudents.length}
-                    </span>
-                  </button>
+                  {/* Action Toolbar Export to CSV Dropdown & Modal */}
+                  <div className="relative">
+                    <div className="inline-flex rounded-lg shadow-sm border border-outline-variant/30 bg-surface-container-lowest overflow-hidden hover:border-primary/40">
+                      <button
+                        id="pageExportToCsvBtn"
+                        onClick={() => {
+                          setExportScope('filtered');
+                          setIsExportModalOpen(true);
+                        }}
+                        className="flex items-center gap-1.5 px-3.5 py-2 text-on-surface hover:bg-surface-container hover:text-primary font-label-md text-label-md font-semibold transition-all cursor-pointer active:scale-[0.98]"
+                        type="button"
+                        title="Export students to CSV for offline reporting"
+                      >
+                        <span className="material-symbols-outlined text-[18px] text-primary">file_download</span>
+                        <span>Export to CSV</span>
+                        <span className="font-data-mono text-[11px] px-1.5 py-0.5 rounded bg-surface-container text-primary font-bold">
+                          {filteredStudents.length}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setExportDropdownLocation(prev => prev === 'page' ? null : 'page')}
+                        className="px-1.5 hover:bg-surface-container border-l border-outline-variant/30 text-on-surface hover:text-primary cursor-pointer flex items-center justify-center transition-colors"
+                        title="Quick CSV Export options"
+                        aria-label="Export options dropdown"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">arrow_drop_down</span>
+                      </button>
+                    </div>
+
+                    {exportDropdownLocation === 'page' && (
+                      <>
+                        <div className="fixed inset-0 z-30" onClick={() => setExportDropdownLocation(null)} />
+                        <div className="absolute left-0 sm:right-0 sm:left-auto mt-1 w-64 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/40 py-1.5 z-40 text-left text-on-surface animate-in fade-in zoom-in-95">
+                          <div className="px-3 py-1.5 border-b border-outline-variant/20">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-outline">Offline CSV Export</p>
+                          </div>
+                          <button
+                            onClick={() => handleExportCSV('filtered', 'comprehensive', true)}
+                            className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-surface-container text-left transition-colors cursor-pointer group"
+                            type="button"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="material-symbols-outlined text-[16px] text-primary">filter_alt</span>
+                              <div className="flex flex-col">
+                                <span className="font-semibold text-on-surface group-hover:text-primary">Current View (Filtered)</span>
+                                <span className="text-[10px] text-outline">Active search & filters</span>
+                              </div>
+                            </div>
+                            <span className="font-data-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-surface-container text-primary">
+                              {filteredStudents.length}
+                            </span>
+                          </button>
+                          <button
+                            onClick={() => handleExportCSV('full', 'comprehensive', true)}
+                            className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-surface-container text-left transition-colors cursor-pointer group"
+                            type="button"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="material-symbols-outlined text-[16px] text-secondary">public</span>
+                              <div className="flex flex-col">
+                                <span className="font-semibold text-on-surface group-hover:text-primary">Full Directory (All)</span>
+                                <span className="text-[10px] text-outline">Complete roster</span>
+                              </div>
+                            </div>
+                            <span className="font-data-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-surface-container text-secondary">
+                              {students.length}
+                            </span>
+                          </button>
+                          {selectedIds.length > 0 && (
+                            <button
+                              onClick={() => handleExportCSV('selected', 'comprehensive', true)}
+                              className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-surface-container text-left transition-colors cursor-pointer group"
+                              type="button"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[16px] text-amber-600">checklist</span>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-on-surface group-hover:text-primary">Selected Students</span>
+                                  <span className="text-[10px] text-outline">Checked rows in table</span>
+                                </div>
+                              </div>
+                              <span className="font-data-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300">
+                                {selectedIds.length}
+                              </span>
+                            </button>
+                          )}
+                          <div className="my-1 border-t border-outline-variant/20"></div>
+                          <button
+                            onClick={() => {
+                              setExportDropdownLocation(null);
+                              setIsExportModalOpen(true);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-xs text-primary hover:bg-primary/10 transition-colors font-medium cursor-pointer"
+                            type="button"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">tune</span>
+                            <span>Custom Report & Columns...</span>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                   <button
                     id="pagePrintDirectoryBtn"
                     onClick={handlePrintDirectory}
@@ -1800,16 +2111,107 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                     <span className="font-data-mono text-xs px-2.5 py-1 rounded-md bg-surface-container text-on-surface font-medium">
                       Showing <strong className="text-primary">{filteredStudents.length}</strong> of {students.length} students
                     </span>
-                    <button
-                      id="filterBarExportCsvBtn"
-                      onClick={handleExportCSV}
-                      className="flex items-center gap-1 text-xs text-primary hover:bg-primary/20 px-2.5 py-1 rounded-md bg-primary/10 font-semibold cursor-pointer transition-colors"
-                      type="button"
-                      title="Export this filtered view to CSV"
-                    >
-                      <span className="material-symbols-outlined text-[15px]">download</span>
-                      <span>Export to CSV</span>
-                    </button>
+
+                    {/* Filter bar Export Dropdown & Modal Trigger */}
+                    <div className="relative">
+                      <div className="inline-flex rounded-md bg-primary/10 overflow-hidden border border-primary/20">
+                        <button
+                          id="filterBarExportCsvBtn"
+                          onClick={() => {
+                            setExportScope('filtered');
+                            setIsExportModalOpen(true);
+                          }}
+                          className="flex items-center gap-1 text-xs text-primary hover:bg-primary/20 px-2.5 py-1 font-semibold cursor-pointer transition-colors"
+                          type="button"
+                          title="Export this filtered view to CSV"
+                        >
+                          <span className="material-symbols-outlined text-[15px]">download</span>
+                          <span>Export to CSV</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setExportDropdownLocation(prev => prev === 'filter' ? null : 'filter')}
+                          className="px-1 text-primary hover:bg-primary/20 border-l border-primary/20 cursor-pointer flex items-center justify-center transition-colors"
+                          title="Quick CSV Export options"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">arrow_drop_down</span>
+                        </button>
+                      </div>
+
+                      {exportDropdownLocation === 'filter' && (
+                        <>
+                          <div className="fixed inset-0 z-30" onClick={() => setExportDropdownLocation(null)} />
+                          <div className="absolute right-0 mt-1 w-64 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/40 py-1.5 z-40 text-left text-on-surface animate-in fade-in zoom-in-95">
+                            <div className="px-3 py-1.5 border-b border-outline-variant/20">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-outline">Offline CSV Export</p>
+                            </div>
+                            <button
+                              onClick={() => handleExportCSV('filtered', 'comprehensive', true)}
+                              className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-surface-container text-left transition-colors cursor-pointer group"
+                              type="button"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[16px] text-primary">filter_alt</span>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-on-surface group-hover:text-primary">Current View (Filtered)</span>
+                                  <span className="text-[10px] text-outline">Active search & filters</span>
+                                </div>
+                              </div>
+                              <span className="font-data-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-surface-container text-primary">
+                                {filteredStudents.length}
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => handleExportCSV('full', 'comprehensive', true)}
+                              className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-surface-container text-left transition-colors cursor-pointer group"
+                              type="button"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[16px] text-secondary">public</span>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-on-surface group-hover:text-primary">Full Directory (All)</span>
+                                  <span className="text-[10px] text-outline">Complete roster</span>
+                                </div>
+                              </div>
+                              <span className="font-data-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-surface-container text-secondary">
+                                {students.length}
+                              </span>
+                            </button>
+                            {selectedIds.length > 0 && (
+                              <button
+                                onClick={() => handleExportCSV('selected', 'comprehensive', true)}
+                                className="w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-surface-container text-left transition-colors cursor-pointer group"
+                                type="button"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="material-symbols-outlined text-[16px] text-amber-600">checklist</span>
+                                  <div className="flex flex-col">
+                                    <span className="font-semibold text-on-surface group-hover:text-primary">Selected Students</span>
+                                    <span className="text-[10px] text-outline">Checked rows in table</span>
+                                  </div>
+                                </div>
+                                <span className="font-data-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300">
+                                  {selectedIds.length}
+                                </span>
+                              </button>
+                            )}
+                            <div className="my-1 border-t border-outline-variant/20"></div>
+                            <button
+                              onClick={() => {
+                                setExportDropdownLocation(null);
+                                setIsExportModalOpen(true);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-primary hover:bg-primary/10 transition-colors font-medium cursor-pointer"
+                              type="button"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">tune</span>
+                              <span>Custom Report & Columns...</span>
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
                     <button
                       id="filterBarPrintBtn"
                       onClick={handlePrintDirectory}
@@ -1875,12 +2277,16 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                       <span>Change Batch</span>
                     </button>
                     <button
-                      onClick={handleExportCSV}
+                      onClick={() => {
+                        setExportScope('selected');
+                        setIsExportModalOpen(true);
+                      }}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-label-md text-label-md transition-colors cursor-pointer"
                       type="button"
+                      title="Export selected students to CSV"
                     >
                       <span className="material-symbols-outlined text-[16px]">file_download</span>
-                      <span>Export</span>
+                      <span>Export ({selectedIds.length})</span>
                     </button>
                     <div className="relative">
                       <button
@@ -2806,6 +3212,274 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 6: Export Students Directory to CSV Modal */}
+      {isExportModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-outline-variant/40 animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-outline-variant/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                  <span className="material-symbols-outlined text-[24px]">table_chart</span>
+                </div>
+                <div>
+                  <h3 className="font-headline-md text-headline-md font-bold text-on-surface">
+                    Export Students Directory (CSV)
+                  </h3>
+                  <p className="font-body-sm text-outline">
+                    Offline reporting spreadsheet for Excel, Google Sheets, or school compliance.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsExportModalOpen(false)}
+                className="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container cursor-pointer"
+                aria-label="Close export modal"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="space-y-5 pt-4">
+              {/* 1. Choose Scope */}
+              <div>
+                <label className="block font-label-md text-label-md font-bold text-on-surface mb-2">
+                  1. Choose Export Scope
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {/* Current Filtered View */}
+                  <label
+                    className={`relative flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                      exportScope === 'filtered'
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                        : 'border-outline-variant/50 bg-surface-container-lowest hover:bg-surface-container-low'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="exportScope"
+                      checked={exportScope === 'filtered'}
+                      onChange={() => setExportScope('filtered')}
+                      className="mt-0.5 text-primary focus:ring-primary"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-xs text-on-surface">Current View (Filtered)</span>
+                        <span className="font-data-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                          {filteredStudents.length} records
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-outline mt-1 leading-normal">
+                        Exports the current view based on active search, grade, date, and campus branch filters.
+                      </p>
+                      {/* Active filter summary tag */}
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-medium">
+                          {selectedBranch}
+                        </span>
+                        {selectedGrade !== 'All Grades' && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-medium">
+                            {selectedGrade}
+                          </span>
+                        )}
+                        {searchQuery && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-medium">
+                            &quot;{searchQuery}&quot;
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </label>
+
+                  {/* Full Directory */}
+                  <label
+                    className={`relative flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                      exportScope === 'full'
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                        : 'border-outline-variant/50 bg-surface-container-lowest hover:bg-surface-container-low'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="exportScope"
+                      checked={exportScope === 'full'}
+                      onChange={() => setExportScope('full')}
+                      className="mt-0.5 text-primary focus:ring-primary"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-xs text-on-surface">Full Directory (All)</span>
+                        <span className="font-data-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-secondary-container/60 text-secondary">
+                          {students.length} records
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-outline mt-1 leading-normal">
+                        Exports complete roster across all branches, courses, and batches without filter restrictions.
+                      </p>
+                      <div className="mt-2">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-secondary-container/40 text-on-secondary-container font-medium">
+                          All Batches & Campus HQ
+                        </span>
+                      </div>
+                    </div>
+                  </label>
+
+                  {/* Selected Only (if available) */}
+                  {selectedIds.length > 0 && (
+                    <label
+                      className={`relative flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all sm:col-span-2 ${
+                        exportScope === 'selected'
+                          ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                          : 'border-outline-variant/50 bg-surface-container-lowest hover:bg-surface-container-low'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="exportScope"
+                        checked={exportScope === 'selected'}
+                        onChange={() => setExportScope('selected')}
+                        className="mt-0.5 text-primary focus:ring-primary"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-xs text-on-surface">Selected Students in Table</span>
+                          <span className="font-data-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300">
+                            {selectedIds.length} records
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-outline mt-1 leading-normal">
+                          Exports only the students currently check-marked in the directory table.
+                        </p>
+                      </div>
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* 2. Choose Report Format Profile */}
+              <div>
+                <label className="block font-label-md text-label-md font-bold text-on-surface mb-2">
+                  2. Choose Report Format Profile
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setExportReportFormat('comprehensive')}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      exportReportFormat === 'comprehensive'
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                        : 'border-outline-variant/40 bg-surface-container-low hover:bg-surface-container'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="material-symbols-outlined text-[18px] text-primary">description</span>
+                      <span className="font-bold text-xs text-on-surface">Comprehensive</span>
+                    </div>
+                    <p className="text-[11px] text-outline">14 Columns: IDs, Academics, Batch, Contacts, & Fee ledger.</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setExportReportFormat('academic')}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      exportReportFormat === 'academic'
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                        : 'border-outline-variant/40 bg-surface-container-low hover:bg-surface-container'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="material-symbols-outlined text-[18px] text-secondary">school</span>
+                      <span className="font-bold text-xs text-on-surface">Academic Roster</span>
+                    </div>
+                    <p className="text-[11px] text-outline">11 Columns: Student, Grade, Course, Batch, Enrolled Date & Status.</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setExportReportFormat('financial')}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      exportReportFormat === 'financial'
+                        ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                        : 'border-outline-variant/40 bg-surface-container-low hover:bg-surface-container'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="material-symbols-outlined text-[18px] text-amber-600">payments</span>
+                      <span className="font-bold text-xs text-on-surface">Fee & Ledger</span>
+                    </div>
+                    <p className="text-[11px] text-outline">10 Columns: Fee status, Amounts due, Invoice references, Overdue.</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* 3. Offline Options */}
+              <div className="rounded-xl p-3 bg-surface-container-low border border-outline-variant/30 space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-on-surface">
+                  <input
+                    type="checkbox"
+                    checked={includeMetadataHeader}
+                    onChange={e => setIncludeMetadataHeader(e.target.checked)}
+                    className="rounded text-primary focus:ring-primary"
+                  />
+                  <span>Include Official Report Metadata Header</span>
+                </label>
+                <p className="text-[11px] text-outline pl-6">
+                  Adds institutional audit header lines with generation timestamp, active filters, record counts, and school branch header.
+                </p>
+
+                <div className="flex items-center gap-2 text-[11px] text-outline pl-6 pt-1">
+                  <span className="material-symbols-outlined text-[15px] text-emerald-600">verified</span>
+                  <span>UTF-8 BOM enabled: fully compatible with Microsoft Excel (Windows/Mac), Numbers, and Google Sheets without encoding errors.</span>
+                </div>
+              </div>
+
+              {/* Summary of Action */}
+              <div className="flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs">
+                <div className="flex items-center gap-2 text-on-surface">
+                  <span className="material-symbols-outlined text-[18px] text-primary">download_done</span>
+                  <span>
+                    Ready to export{' '}
+                    <strong className="text-primary font-bold">
+                      {exportScope === 'full'
+                        ? students.length
+                        : exportScope === 'selected'
+                        ? selectedIds.length
+                        : filteredStudents.length}
+                    </strong>{' '}
+                    records ({exportReportFormat} format)
+                  </span>
+                </div>
+                <span className="font-data-mono text-[11px] text-outline">.CSV Spreadsheet</span>
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-2.5 pt-5 border-t border-outline-variant/30 mt-5">
+              <button
+                type="button"
+                onClick={() => setIsExportModalOpen(false)}
+                className="w-full sm:w-auto px-4 py-2 rounded-lg text-outline hover:bg-surface-container transition-colors cursor-pointer font-label-md text-xs font-semibold"
+              >
+                Cancel
+              </button>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => handleExportCSV(exportScope, exportReportFormat, includeMetadataHeader)}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-semibold transition-all shadow-sm cursor-pointer text-xs active:scale-[0.98]"
+                >
+                  <span className="material-symbols-outlined text-[18px]">download</span>
+                  <span>
+                    Download {exportScope === 'full' ? 'Full Directory' : exportScope === 'selected' ? 'Selected' : 'Filtered View'} CSV
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
