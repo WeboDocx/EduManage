@@ -407,17 +407,17 @@ export const ExamsAssessmentsScreen: React.FC<ExamsAssessmentsScreenProps> = ({
       {/* ========================================================================= */}
       {/* 1. FIXED LEFT NAVIGATION SIDEBAR (w-64) */}
       {/* ========================================================================= */}
-      {/* Mobile backdrop overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 lg:hidden transition-opacity"
-          onClick={() => setIsSidebarOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+      {/* Mobile backdrop overlay with smooth fade in/out */}
+      <div
+        className={`fixed inset-0 top-12 bg-black/50 backdrop-blur-xs z-40 lg:hidden transition-all duration-300 ease-out ${
+          isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsSidebarOpen(false)}
+        aria-hidden="true"
+      />
 
       <aside
-        className={`fixed left-0 top-12 bottom-0 w-64 bg-surface-container-lowest shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between overflow-y-auto transition-transform duration-300 ease-in-out border-r border-outline-variant/30 ${
+        className={`fixed left-0 top-12 bottom-0 w-64 max-w-[85vw] bg-surface-container-lowest shadow-2xl lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between overflow-y-auto transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform will-change-transform border-r border-outline-variant/30 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

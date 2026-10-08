@@ -12,7 +12,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       if (window.innerWidth < 1024) {
-        return false; // Always closed by default on mobile/tablet viewports
+        return false; // Always closed by default on mobile/tablet viewports (< 1024px)
       }
       const stored = localStorage.getItem('edumanage_sidebar_open');
       if (stored !== null) {
@@ -23,7 +23,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return false;
   });
 
-  // Automatically close sidebar if window resizes to mobile width
+  // Automatically close sidebar if window resizes to mobile/tablet width (< 1024px)
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 1024) {
@@ -34,7 +34,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Save preference to localStorage (only save preference for desktop)
+  // Save preference to localStorage (only save preference for desktop >= 1024px)
   useEffect(() => {
     try {
       if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
@@ -42,6 +42,21 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
     } catch {
       // ignore storage errors
+    }
+  }, [isSidebarOpen]);
+
+  // Lock background body scroll on mobile/tablet when sidebar is open for smooth drawer experience
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 1024 && isSidebarOpen) {
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+          document.body.style.overflow = originalOverflow;
+        };
+      } else {
+        document.body.style.overflow = '';
+      }
     }
   }, [isSidebarOpen]);
 

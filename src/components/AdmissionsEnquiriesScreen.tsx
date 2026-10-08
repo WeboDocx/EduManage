@@ -271,23 +271,23 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
 
   return (
     <div className="min-h-screen bg-background text-on-surface font-body-md antialiased flex">
-      {/* Mobile backdrop overlay for sidebar */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden backdrop-blur-xs transition-opacity duration-200"
-          onClick={() => setIsSidebarOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+      {/* Mobile backdrop overlay for sidebar with smooth fade in/out */}
+      <div
+        className={`fixed inset-0 top-12 bg-black/50 backdrop-blur-xs z-40 lg:hidden transition-all duration-300 ease-out ${
+          isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsSidebarOpen(false)}
+        aria-hidden="true"
+      />
 
       {/* 1. FIXED LEFT SIDEBAR (260px) */}
       <aside
-        className={`fixed left-0 top-12 bottom-0 bg-surface-container-lowest border-r border-outline-variant/40 z-50 flex flex-col justify-between shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-12 bottom-0 bg-surface-container-lowest border-r border-outline-variant/40 z-50 flex flex-col justify-between shadow-2xl lg:shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform will-change-transform ${
           !isSidebarOpen
-            ? 'w-[260px] -translate-x-full'
+            ? 'w-[260px] max-w-[85vw] -translate-x-full'
             : isSidebarCollapsed
-            ? 'w-[260px] lg:w-[72px] translate-x-0'
-            : 'w-[260px] translate-x-0'
+            ? 'w-[260px] max-w-[85vw] lg:w-[72px] translate-x-0'
+            : 'w-[260px] max-w-[85vw] translate-x-0'
         }`}
       >
         <div className="flex flex-col h-full overflow-hidden">

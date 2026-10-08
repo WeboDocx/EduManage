@@ -1375,20 +1375,28 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
     onShowToast('Filters reset to show all students.');
   };
 
+  // Helper to navigate and close sidebar on mobile/tablet viewports (< 1024px)
+  const handleSidebarNavigate = (screen: ScreenType) => {
+    onNavigate(screen);
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-on-surface font-body-md antialiased flex">
       {/* 1. FIXED LEFT SIDEBAR (260px) */}
-      {/* Mobile backdrop overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 lg:hidden transition-opacity"
-          onClick={() => setIsSidebarOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+      {/* Mobile backdrop overlay with smooth hardware-accelerated fade */}
+      <div
+        className={`fixed inset-0 top-12 bg-black/60 z-40 lg:hidden transition-opacity duration-300 ease-out ${
+          isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsSidebarOpen(false)}
+        aria-hidden="true"
+      />
 
       <aside
-        className={`fixed left-0 top-12 bottom-0 w-[260px] bg-surface-container-lowest border-r border-outline-variant/40 z-50 flex flex-col justify-between shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-12 bottom-0 w-[270px] max-w-[85vw] bg-surface-container-lowest border-r border-outline-variant/40 z-50 flex flex-col justify-between shadow-2xl lg:shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] transform will-change-transform ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -1397,10 +1405,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
           <div className="h-16 px-space-md flex items-center justify-between border-b border-outline-variant/30 flex-shrink-0">
             <div
               className="flex items-center gap-space-xs cursor-pointer"
-              onClick={() => {
-                onNavigate('dashboard');
-                setIsSidebarOpen(false);
-              }}
+              onClick={() => handleSidebarNavigate('dashboard')}
             >
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                 <span className="material-symbols-outlined text-[20px]">school</span>
@@ -1418,11 +1423,11 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
               <button
                 type="button"
                 onClick={() => setIsSidebarOpen(false)}
-                className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer flex items-center justify-center"
-                aria-label="Hide sidebar"
-                title="Hide sidebar"
+                className="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer flex items-center justify-center min-w-[36px] min-h-[36px] transition-colors"
+                aria-label="Close sidebar"
+                title="Close sidebar"
               >
-                <span className="material-symbols-outlined text-[20px]">menu_open</span>
+                <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
           </div>
@@ -1432,7 +1437,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
             {/* Dashboard */}
             <nav className="space-y-0.5">
               <button
-                onClick={() => onNavigate('dashboard')}
+                onClick={() => handleSidebarNavigate('dashboard')}
                 className="w-full flex items-center justify-between px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all group text-left cursor-pointer"
               >
                 <div className="flex items-center gap-space-sm">
@@ -1452,7 +1457,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
               </div>
               <nav className="space-y-0.5">
                 <button
-                  onClick={() => onNavigate('admissions')}
+                  onClick={() => handleSidebarNavigate('admissions')}
                   className="w-full flex items-center justify-between px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
                 >
                   <div className="flex items-center gap-space-sm">
@@ -1464,7 +1469,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                   </span>
                 </button>
                 <button
-                  onClick={() => onNavigate('admissions')}
+                  onClick={() => handleSidebarNavigate('admissions')}
                   className="w-full flex items-center justify-between px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
                 >
                   <div className="flex items-center gap-space-sm">
@@ -1476,7 +1481,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                   </span>
                 </button>
                 <button
-                  onClick={() => onNavigate('admissions')}
+                  onClick={() => handleSidebarNavigate('admissions')}
                   className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-outline">how_to_reg</span>
@@ -1492,14 +1497,17 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
               </div>
               <nav className="space-y-0.5">
                 <button
-                  onClick={() => onNavigate('students-directory')}
+                  onClick={() => handleSidebarNavigate('students-directory')}
                   className="w-full flex items-center gap-space-sm px-space-sm py-1.5 transition-all bg-primary-container text-on-primary-container font-semibold rounded-lg shadow-sm text-left cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-white">group</span>
                   <span className="font-body-md text-body-md">All Students</span>
                 </button>
                 <button
-                  onClick={() => setIsAddStudentModalOpen(true)}
+                  onClick={() => {
+                    setIsAddStudentModalOpen(true);
+                    if (typeof window !== 'undefined' && window.innerWidth < 1024) setIsSidebarOpen(false);
+                  }}
                   className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-outline">person_add</span>
@@ -1507,7 +1515,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 </button>
                 <button
                   onClick={() => {
-                    onNavigate('student-profile');
+                    handleSidebarNavigate('student-profile');
                     onShowToast('Showing Student KYC documents archive.');
                   }}
                   className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
@@ -1518,6 +1526,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 <button
                   onClick={() => {
                     setIsBulkIdModalOpen(true);
+                    if (typeof window !== 'undefined' && window.innerWidth < 1024) setIsSidebarOpen(false);
                   }}
                   className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
                 >
@@ -1534,14 +1543,14 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
               </div>
               <nav className="space-y-0.5">
                 <button
-                  onClick={() => onNavigate('courses-batches')}
+                  onClick={() => handleSidebarNavigate('courses-batches')}
                   className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-outline">menu_book</span>
                   <span className="font-body-md text-body-md">Courses &amp; Batches</span>
                 </button>
                 <button
-                  onClick={() => onNavigate('courses-batches')}
+                  onClick={() => handleSidebarNavigate('courses-batches')}
                   className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-outline">auto_stories</span>
@@ -1656,7 +1665,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
               </div>
               <nav className="space-y-0.5">
                 <button
-                  onClick={() => onNavigate('certificates')}
+                  onClick={() => handleSidebarNavigate('certificates')}
                   className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px] text-outline">workspace_premium</span>
@@ -1709,7 +1718,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
               </button>
             </div>
             <button
-              onClick={() => onNavigate('landing')}
+              onClick={() => handleSidebarNavigate('landing')}
               className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors text-left cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">logout</span>
@@ -1720,7 +1729,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
       </aside>
 
       {/* 2. MAIN WORKSPACE CONTAINER */}
-      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
+      <div className={`flex-1 flex flex-col min-w-0 transition-[padding] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         isSidebarOpen ? 'pl-0 lg:pl-[260px]' : 'pl-0'
       }`}>
         {/* RESPONSIVE TOP HEADER (Sticky below global navigation) */}
@@ -2021,24 +2030,16 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
 
                 {/* Action Toolbar */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => onShowToast('Upload CSV or Excel for bulk student registration.')}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container shadow-sm font-label-md text-label-md transition-all cursor-pointer border border-outline-variant/30"
-                    type="button"
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-outline">upload_file</span>
-                    <span>Import</span>
-                  </button>
                   {/* Action Toolbar Export to CSV Dropdown & Modal */}
-                  <div className="relative">
-                    <div className="inline-flex rounded-lg shadow-sm border border-outline-variant/30 bg-surface-container-lowest overflow-hidden hover:border-primary/40">
+                  <div className="relative flex-1 sm:flex-none">
+                    <div className="inline-flex w-full sm:w-auto rounded-lg shadow-sm border border-outline-variant/30 bg-surface-container-lowest overflow-hidden hover:border-primary/40">
                       <button
                         id="pageExportToCsvBtn"
                         onClick={() => {
                           setExportScope('filtered');
                           setIsExportModalOpen(true);
                         }}
-                        className="flex items-center gap-1.5 px-3.5 py-2 text-on-surface hover:bg-surface-container hover:text-primary font-label-md text-label-md font-semibold transition-all cursor-pointer active:scale-[0.98]"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 text-on-surface hover:bg-surface-container hover:text-primary font-label-md text-label-md font-semibold transition-all cursor-pointer active:scale-[0.98]"
                         type="button"
                         title="Export students to CSV for offline reporting"
                       >
@@ -2051,7 +2052,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                       <button
                         type="button"
                         onClick={() => setExportDropdownLocation(prev => prev === 'page' ? null : 'page')}
-                        className="px-1.5 hover:bg-surface-container border-l border-outline-variant/30 text-on-surface hover:text-primary cursor-pointer flex items-center justify-center transition-colors"
+                        className="px-2 hover:bg-surface-container border-l border-outline-variant/30 text-on-surface hover:text-primary cursor-pointer flex items-center justify-center transition-colors"
                         title="Quick CSV Export options"
                         aria-label="Export options dropdown"
                       >
@@ -2132,31 +2133,43 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                       </>
                     )}
                   </div>
+
+                  <button
+                    onClick={() => setIsAddStudentModalOpen(true)}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container shadow-sm font-label-md text-label-md font-semibold transition-all active:scale-[0.98] cursor-pointer"
+                    type="button"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">person_add</span>
+                    <span>Add Student</span>
+                  </button>
+
+                  <button
+                    onClick={() => onShowToast('Upload CSV or Excel for bulk student registration.')}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container shadow-sm font-label-md text-label-md transition-all cursor-pointer border border-outline-variant/30"
+                    type="button"
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-outline">upload_file</span>
+                    <span>Import</span>
+                  </button>
+
                   <button
                     id="pagePrintDirectoryBtn"
                     onClick={handlePrintDirectory}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container hover:text-primary shadow-sm font-label-md text-label-md font-semibold transition-all cursor-pointer border border-outline-variant/30 hover:border-primary/40 active:scale-[0.98]"
+                    className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container hover:text-primary shadow-sm font-label-md text-label-md font-semibold transition-all cursor-pointer border border-outline-variant/30 hover:border-primary/40 active:scale-[0.98]"
                     type="button"
                     title={`Print clean directory format (${filteredStudents.length} students)`}
                   >
                     <span className="material-symbols-outlined text-[18px] text-outline">print</span>
                     <span>Print Directory</span>
                   </button>
+
                   <button
                     onClick={() => setIsBulkIdModalOpen(true)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container shadow-sm font-label-md text-label-md transition-all cursor-pointer border border-outline-variant/30"
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container shadow-sm font-label-md text-label-md transition-all cursor-pointer border border-outline-variant/30"
                     type="button"
                   >
                     <span className="material-symbols-outlined text-[18px] text-outline">badge</span>
                     <span>Print Batch IDs</span>
-                  </button>
-                  <button
-                    onClick={() => setIsAddStudentModalOpen(true)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container shadow-sm font-label-md text-label-md font-semibold transition-all active:scale-[0.98] cursor-pointer"
-                    type="button"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">person_add</span>
-                    <span>Add Student</span>
                   </button>
                 </div>
               </div>
@@ -2421,7 +2434,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                 </div>
 
                 {/* Second Row: Specific Filter Selectors (Grade, Date, Branch, Course, Status, Reset) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2.5 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2.5 pt-1">
                   {/* 1. Grade Filter */}
                   <div className="relative">
                     <label className="block text-[11px] font-semibold text-outline uppercase tracking-wider mb-1 flex items-center gap-1">
@@ -3081,7 +3094,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
                           </div>
 
                           {/* Details Grid: Grade, Roll/ID, Course, Branch */}
-                          <div className="grid grid-cols-2 gap-2 text-xs py-2 my-2 border-y border-outline-variant/20 bg-surface-container-low/40 -mx-3.5 px-3.5">
+                          <div className="grid grid-cols-2 gap-2 text-xs p-2.5 my-2 rounded-lg border border-outline-variant/20 bg-surface-container-low/50">
                             <div>
                               <span className="text-[10px] text-outline block uppercase font-semibold">Grade / Level</span>
                               <span className="font-medium text-on-surface truncate block">{student.grade}</span>

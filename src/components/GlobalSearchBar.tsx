@@ -779,11 +779,11 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({ onNavigate, on
     <>
       {/* 1. NAVBAR TRIGGER SEARCH BAR (Desktop & Mobile) */}
       <div className="relative flex items-center">
-        {/* Desktop / Laptop Input Trigger */}
+        {/* Desktop / Laptop Input Trigger (Visible only above 1501px with icon + text) */}
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-highest/40 hover:bg-surface-container-highest/75 text-on-surface-variant hover:text-white border border-white/10 hover:border-white/25 text-xs transition-all w-44 lg:w-60 xl:w-72 text-left cursor-pointer group shadow-inner"
+          className="hidden min-[1501px]:flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-surface-container-highest/40 hover:bg-surface-container-highest/75 text-on-surface-variant hover:text-white border border-white/10 hover:border-white/25 text-xs transition-all w-44 xl:w-56 text-left cursor-pointer group shadow-inner"
           title="Global Search (Ctrl+K or /)"
           aria-label="Search students, courses, or admin pages"
         >
@@ -791,18 +791,18 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({ onNavigate, on
             search
           </span>
           <span className="flex-1 truncate text-outline-variant group-hover:text-white/80 select-none">
-            Search students, courses...
+            Search...
           </span>
-          <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-surface-container-highest/70 text-[10px] font-mono text-outline-variant border border-white/10 group-hover:border-white/20 select-none">
+          <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-surface-container-highest/70 text-[10px] font-mono text-outline-variant border border-white/10 group-hover:border-white/20 select-none">
             <span className="text-[9px]">⌘</span>K
           </kbd>
         </button>
 
-        {/* Mobile / Tablet Compact Search Icon Button */}
+        {/* Compact Search Icon Button (Visible on all screens below 1501px) */}
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="md:hidden p-1.5 rounded-lg bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border border-white/20 flex items-center justify-center cursor-pointer transition-colors"
+          className="min-[1501px]:hidden p-1.5 rounded-lg bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border border-white/20 flex items-center justify-center cursor-pointer transition-colors"
           title="Search students, courses, or pages"
           aria-label="Open Global Search"
         >

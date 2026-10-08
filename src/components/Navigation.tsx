@@ -66,6 +66,17 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
     };
   }, []);
 
+  // Lock body scroll when mobile menu is open to ensure smooth drawer experience
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [mobileMenuOpen]);
+
   const handleSelectScreen = (screen: ScreenType) => {
     onNavigate(screen);
     setActiveDropdown(null);
@@ -153,7 +164,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
           aria-expanded={isOpen}
           title={`${title} (${items.length} modules)${currentItem ? ` • Active: ${currentItem.label}` : ''}`}
           aria-label={title}
-          className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none relative ${
+          className={`flex items-center gap-1.5 px-2 min-[1501px]:px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer select-none relative ${
             isActive
               ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
               : isOpen
@@ -162,6 +173,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
           }`}
         >
           <span className="material-symbols-outlined text-[17px]">{icon}</span>
+          <span className="hidden min-[1501px]:inline whitespace-nowrap">{title}</span>
           <span className={`material-symbols-outlined text-[14px] transition-transform duration-200 opacity-80 ${isOpen ? 'rotate-180' : ''}`}>
             expand_more
           </span>
@@ -244,11 +256,11 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
       >
         {/* Left Side: Mobile Menu trigger + Brand + Desktop Sidebar toggle & Dropdowns */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 flex-nowrap min-w-0">
-          {/* Mobile Menu Trigger Button (Visible on mobile & tablet < lg) */}
+          {/* Mobile Menu Trigger Button (Visible on mobile & tablet < 1024px) */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="lg:hidden p-2 rounded-lg bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border border-white/20 flex items-center justify-center cursor-pointer min-w-[38px] min-h-[38px] active:scale-95 transition-all flex-shrink-0"
+            className="min-[1024px]:hidden p-2 rounded-lg bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border border-white/20 flex items-center justify-center cursor-pointer min-w-[38px] min-h-[38px] active:scale-95 transition-all flex-shrink-0"
             aria-label="Open navigation drawer"
             title="Open All Modules Menu"
           >
@@ -262,7 +274,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
                 toggleSidebar();
                 onShowToast?.(isSidebarOpen ? 'Sidebar hide ho gaya' : 'Sidebar show ho gaya');
               }}
-              className={`hidden lg:flex p-1.5 rounded-lg text-xs font-semibold items-center justify-center transition-all cursor-pointer border flex-shrink-0 ${
+              className={`hidden min-[1024px]:flex p-1.5 rounded-lg text-xs font-semibold items-center justify-center transition-all cursor-pointer border flex-shrink-0 ${
                 isSidebarOpen
                   ? 'bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border-white/20'
                   : 'bg-primary text-white border-primary shadow-xs ring-2 ring-primary/40'
@@ -301,10 +313,10 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
             </div>
           </button>
 
-          <div className="h-4 w-[1px] bg-white/15 hidden md:block"></div>
+          <div className="h-4 w-[1px] bg-white/15 hidden min-[1024px]:block"></div>
 
-          {/* MAIN PAGES (Desktop only: Hidden on mobile to keep bar 1-line clean) */}
-          <div className="hidden md:flex items-center gap-1 sm:gap-1.5">
+          {/* MAIN PAGES (Desktop viewports: Icons only below 1501px; Icon + Name above 1501px) */}
+          <div className="hidden min-[1024px]:flex items-center gap-1 sm:gap-1.5">
             {/* 1. Landing Page with #Anchors Dropdown */}
             <div className="relative">
               <div
@@ -318,11 +330,12 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
               >
                 <button
                   onClick={handleSelectLanding}
-                  className="px-2 py-1.5 font-semibold flex items-center justify-center text-xs cursor-pointer select-none"
+                  className="px-2 min-[1501px]:px-2.5 py-1.5 font-semibold flex items-center gap-1.5 justify-center text-xs cursor-pointer select-none"
                   title="Landing Page Overview"
                   aria-label="Landing Page"
                 >
                   <span className="material-symbols-outlined text-[17px]">home</span>
+                  <span className="hidden min-[1501px]:inline whitespace-nowrap">Home</span>
                 </button>
                 <button
                   onClick={() => setActiveDropdown(activeDropdown === 'landing' ? null : 'landing')}
@@ -386,7 +399,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
             {/* 2. Create Institution (Step 1) */}
             <button
               onClick={() => handleSelectScreen('register')}
-              className={`p-1.5 rounded-lg transition-all font-semibold flex items-center justify-center text-xs cursor-pointer ${
+              className={`p-1.5 min-[1501px]:px-2.5 min-[1501px]:py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 justify-center text-xs cursor-pointer ${
                 currentScreen === 'register'
                   ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
                   : 'text-outline-variant hover:text-white hover:bg-surface-container-highest/30'
@@ -395,13 +408,14 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
               aria-label="Create Institution"
             >
               <span className="material-symbols-outlined text-[17px]">add_business</span>
+              <span className="hidden min-[1501px]:inline whitespace-nowrap">Create Institution</span>
             </button>
           </div>
 
-          <div className="h-4 w-[1px] bg-white/15 hidden lg:block"></div>
+          <div className="h-4 w-[1px] bg-white/15 hidden min-[1024px]:block"></div>
 
-          {/* DROPDOWN MENUS (Desktop/Tablet) for Admin, Super Admin, Academics, Portals */}
-          <div className="hidden lg:flex items-center gap-1">
+          {/* DROPDOWN MENUS (Desktop: Icons only below 1501px; Icon + Name above 1501px for Admin, Super Admin, Academics, Portals) */}
+          <div className="hidden min-[1024px]:flex items-center gap-1">
             {/* Admin Pages Dropdown */}
             {renderDropdown('Admin Pages', 'admin', 'admin_panel_settings', adminItems, isAdminActive)}
 
@@ -436,17 +450,18 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
             onToggleCallback={(mode) => onShowToast?.(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode (saved)`)}
           />
 
-          {/* Quick CTA: Start Free Trial / Create Institution (Visible on desktop) */}
+          {/* Quick CTA: Start Free Trial / Create Institution (Visible on desktop >= 1024px) */}
           <button
             onClick={() => {
               handleSelectScreen('register');
               onShowToast?.('Opening Step 1: Create Institution registration');
             }}
-            className="p-1.5 rounded-lg bg-primary-container text-white text-xs font-semibold hover:bg-primary transition-all active:scale-[0.98] shadow-sm cursor-pointer hidden md:flex items-center justify-center"
+            className="p-1.5 min-[1501px]:px-2.5 min-[1501px]:py-1.5 rounded-lg bg-primary-container text-white text-xs font-semibold hover:bg-primary transition-all active:scale-[0.98] shadow-sm cursor-pointer hidden min-[1024px]:flex items-center gap-1.5 justify-center"
             title="Start Free Registration (Step 1)"
             aria-label="Start Free Registration"
           >
             <span className="material-symbols-outlined text-[16px]">rocket_launch</span>
+            <span className="hidden min-[1501px]:inline whitespace-nowrap">Start Free</span>
           </button>
 
           {/* User Profile Avatar with fast tooltip (Desktop/Tablet) */}
@@ -465,23 +480,30 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
         </div>
       </nav>
 
-      {/* MOBILE FULL SLIDE-OVER NAVIGATION DRAWER */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden">
-          {/* Dimmed Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[70] transition-opacity animate-in fade-in duration-200"
-            onClick={() => setMobileMenuOpen(false)}
-            aria-hidden="true"
-          />
+      {/* MOBILE FULL SLIDE-OVER NAVIGATION DRAWER (Visible on < 1024px) */}
+      <div
+        className={`min-[1024px]:hidden fixed inset-0 z-[70] transition-all duration-300 ${
+          mobileMenuOpen ? 'pointer-events-auto visible' : 'pointer-events-none invisible delay-300'
+        }`}
+      >
+        {/* Dimmed Backdrop */}
+        <div
+          className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ease-out ${
+            mobileMenuOpen ? 'opacity-100' : 'opacity-0'
+          }`}
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
 
-          {/* Slide-over Drawer Panel */}
-          <div
-            className="fixed inset-y-0 right-0 w-[88vw] max-w-[350px] bg-surface-container-lowest text-on-surface z-[80] shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 overflow-hidden"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Mobile Navigation Menu"
-          >
+        {/* Slide-over Drawer Panel */}
+        <div
+          className={`fixed inset-y-0 right-0 w-[88vw] max-w-[350px] bg-surface-container-lowest text-on-surface z-[80] shadow-2xl flex flex-col overflow-hidden transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform will-change-transform ${
+            mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile Navigation Menu"
+        >
             {/* Drawer Header */}
             <div className="h-14 px-4 bg-surface-container-low/80 border-b border-outline-variant/20 flex items-center justify-between flex-shrink-0">
               <div
@@ -788,7 +810,6 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
             </div>
           </div>
         </div>
-      )}
 
       {/* MOBILE BOTTOM NAVIGATION DOCK (Native App-Like Ergonomic Thumb Navigation) */}
       <div

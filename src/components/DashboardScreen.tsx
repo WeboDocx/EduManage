@@ -429,17 +429,17 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
   return (
     <div className="min-h-screen bg-background text-on-surface font-sans antialiased flex flex-col lg:flex-row relative selection:bg-primary-fixed selection:text-on-primary-fixed">
       {/* 1. MINIMAL FOCUSED SIDEBAR (Mobile Drawer + Desktop Fixed) */}
-      {/* Mobile backdrop */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 top-12 bg-black/40 backdrop-blur-xs z-40 lg:hidden transition-opacity"
-          onClick={() => setIsSidebarOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+      {/* Mobile backdrop with smooth fade in/out */}
+      <div
+        className={`fixed inset-0 top-12 bg-black/50 backdrop-blur-xs z-40 lg:hidden transition-all duration-300 ease-out ${
+          isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsSidebarOpen(false)}
+        aria-hidden="true"
+      />
 
       <aside
-        className={`fixed left-0 top-12 bottom-0 w-[260px] bg-surface-container-lowest border-r border-outline-variant/30 z-50 flex flex-col justify-between shadow-lg lg:shadow-[0_1px_6px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-12 bottom-0 w-[260px] max-w-[85vw] bg-surface-container-lowest border-r border-outline-variant/30 z-50 flex flex-col justify-between shadow-2xl lg:shadow-[0_1px_6px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] transform will-change-transform ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

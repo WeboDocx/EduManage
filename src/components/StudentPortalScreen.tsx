@@ -52,22 +52,29 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
     }, 1200);
   };
 
+  const handleSidebarNavigate = (screen: ScreenType) => {
+    onNavigate(screen);
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  };
+
   return (
     <div className="bg-background font-body-md text-on-surface antialiased min-h-screen flex">
       {/* ========================================================================= */}
       {/* 1. FIXED LEFT NAVIGATION SIDEBAR (w-[260px]) */}
       {/* ========================================================================= */}
-      {/* Mobile backdrop overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 lg:hidden transition-opacity"
-          onClick={() => setIsSidebarOpen(false)}
-          aria-hidden="true"
-        />
-      )}
+      {/* Mobile backdrop overlay with smooth fade in/out */}
+      <div
+        className={`fixed inset-0 top-12 bg-black/60 z-40 lg:hidden transition-opacity duration-300 ease-out ${
+          isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsSidebarOpen(false)}
+        aria-hidden="true"
+      />
 
       <aside
-        className={`fixed left-0 top-12 bottom-0 w-[260px] bg-surface-container-lowest shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between select-none border-r border-outline-variant/30 transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-12 bottom-0 w-[270px] max-w-[85vw] bg-surface-container-lowest shadow-2xl lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between select-none border-r border-outline-variant/30 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] transform will-change-transform ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -76,10 +83,7 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
           <div className="h-16 px-space-lg flex items-center justify-between bg-surface-container-lowest border-b border-outline-variant/20">
             <div
               className="flex items-center gap-space-sm cursor-pointer"
-              onClick={() => {
-                onNavigate('dashboard');
-                setIsSidebarOpen(false);
-              }}
+              onClick={() => handleSidebarNavigate('dashboard')}
             >
               <img
                 alt="Brand logo"
@@ -99,11 +103,11 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
             <button
               type="button"
               onClick={() => setIsSidebarOpen(false)}
-              className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer flex items-center justify-center"
-              aria-label="Hide sidebar"
-              title="Hide sidebar"
+              className="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer flex items-center justify-center min-w-[36px] min-h-[36px] transition-colors"
+              aria-label="Close sidebar"
+              title="Close sidebar"
             >
-              <span className="material-symbols-outlined text-[20px]">menu_open</span>
+              <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
           </div>
 
@@ -279,7 +283,7 @@ export const StudentPortalScreen: React.FC<StudentPortalScreenProps> = ({
       {/* ========================================================================= */}
       {/* 2. MAIN WORKSPACE CONTAINER (pl-0 lg:pl-[260px]) */}
       {/* ========================================================================= */}
-      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
+      <div className={`flex-1 flex flex-col min-w-0 transition-[padding] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         isSidebarOpen ? 'pl-0 lg:pl-[260px]' : 'pl-0'
       }`}>
         {/* Top Responsive Header (Sticky below global navigation) */}
