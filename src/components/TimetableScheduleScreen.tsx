@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ScreenType } from '../types';
 import { ThemeToggle } from './ThemeToggle';
+import { useSidebar } from '../context/SidebarContext';
 
 interface TimetableScheduleScreenProps {
   onNavigate: (screen: ScreenType) => void;
@@ -24,8 +25,8 @@ export const TimetableScheduleScreen: React.FC<TimetableScheduleScreenProps> = (
   onNavigate,
   onShowToast,
 }) => {
-  // Sidebar visibility state (desktop & mobile toggle support)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // Sidebar visibility state from shared context (desktop & mobile toggle support)
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
 
   // Drawer visibility state
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);

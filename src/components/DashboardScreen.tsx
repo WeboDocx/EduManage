@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ScreenType } from '../types';
 import { BRAND_HOTLINKS } from '../data/mockData';
 import { ThemeToggle } from './ThemeToggle';
+import { useSidebar } from '../context/SidebarContext';
 
 interface DashboardScreenProps {
   onNavigate: (screen: ScreenType) => void;
@@ -31,15 +32,13 @@ interface FeePayment {
   modeBadgeText: string;
   amount: string;
   icon: string;
-  iconBg: string;
-  iconColor: string;
 }
 
 interface StreamEvent {
   id: string;
   dotColor: string;
-  primaryText: React.ReactNode;
-  campusOrSource: string;
+  title: string;
+  detail: string;
   time: string;
 }
 
@@ -48,53 +47,53 @@ const INITIAL_ADMISSIONS: RecentAdmission[] = [
     id: 'adm-1',
     code: '#ADM-8902',
     name: 'Rahul Kumar',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAZ4j1BX2Ij7RwECzpc9QwkSKLvY9P7nuntuO_WhymwFgnrB6GukRKpI07wHx4t0AotZF7ZJ_LG_rTRSB-jSM96AGjDtVovbAFovDMOE9UXD6XFEBB1809_YxnC6bBJ7NkKm9ue8TWp82fS_qwgizrhoqr_Z1gRRPw8rDb5RsAwXTXdudzJzhw_Y9J4TCBonHBfBtjZScOVqoz9qx9Hr-yTic0773zGcmA2ZfYObLrdvcbGgIsAc9Sj',
+    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=120&auto=format&fit=crop&q=80',
     course: 'Web Development',
     campus: 'Siliguri',
     date: 'Today, 10:42 AM',
     status: 'Confirmed',
-    statusBg: 'bg-[#ECFDF5]',
-    statusText: 'text-[#065F46]',
-    statusDot: 'bg-[#10B981]',
+    statusBg: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+    statusText: 'text-emerald-700 dark:text-emerald-400',
+    statusDot: 'bg-emerald-500',
   },
   {
     id: 'adm-2',
     code: '#ADM-8901',
     name: 'Priya Sharma',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBSwJcXMJqmxie-Otn6DJ-zKClChKizPGfMdEADhvg4T6T053Ykud3rVtfTyZuQReciDUOe78rb1ZLtJ0TqyJ6s4nGbnYeawmg0L82SusEbpBB-DP7kmPT0f9QrmaawEC3ukTIOOcozUjEVdnX8gBQ_Clc12853w32EpyK-ZK6i6bChss4GabWiLyrqdYkZTLIoeOGOMjb-CySJhxruL2mj1FPLVv1unYrDnKL615tJcvMU9csmCNhm',
-    course: 'Tally Prime',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80',
+    course: 'Tally Prime & GST',
     campus: 'Binnaguri',
     date: 'Today, 09:15 AM',
     status: 'Provisional',
-    statusBg: 'bg-[#FFFBEB]',
-    statusText: 'text-[#92400E]',
-    statusDot: 'bg-[#F59E0B]',
+    statusBg: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
+    statusText: 'text-amber-700 dark:text-amber-400',
+    statusDot: 'bg-amber-500',
   },
   {
     id: 'adm-3',
     code: '#ADM-8898',
     name: 'Aniket Roy',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuANWmWy-8lWSOqsa3Ckp0KgsgCfLlWoE4ZAZt3ArlbOGJA2ALgycgmNEfd1ZYvJbY8sFaTLCCd3vnKHajuPTCRH39sp1TtE7J6cyC7RohuLTtG7pqbmCEdoK8gWqu2LOtrRlHu6oJhmw84tByG5Y0E3MbAdm5NCUYRYQ0iwXoPGFQ1d1HLw7DQA2kT5n1jJcSTneRXfXZzLgWZJPU8mv_JyVY_QDuzix7K3AwS2rywMN0xpu0fJz2Bz',
-    course: 'Graphic Design',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80',
+    course: 'Graphic & UI Design',
     campus: 'Jalpaiguri',
-    date: 'Yesterday',
+    date: 'Yesterday, 04:30 PM',
     status: 'Docs Pending',
-    statusBg: 'bg-[#FEF2F2]',
-    statusText: 'text-[#991B1B]',
-    statusDot: 'bg-[#EF4444]',
+    statusBg: 'bg-rose-500/10 text-rose-700 dark:text-rose-400',
+    statusText: 'text-rose-700 dark:text-rose-400',
+    statusDot: 'bg-rose-500',
   },
   {
     id: 'adm-4',
     code: '#ADM-8895',
     name: 'Sneha Das',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-GWdKLRtC84WZEWrDyt7fh6W6PYCstcM4HDXupUIKM7cVRUJVwodfuW5Dt1XysaLDM1TqYHAsBdIxkPoBygZ_OHGFcOszcRjDu_A36jDOCOY6FM676k16XpcP5CJkiW4WdUFkwK4RB9H4M640IscJruAftveTzde3SlXG3aHdAcvggzoKqrpbYuicwuY-8bp-M3fA-bzqxXmQ6uiYDcKa0LLEYQG7V0JyYaXVG8UWwgJocZzBMYWI',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
     course: 'Digital Marketing',
     campus: 'Siliguri',
-    date: 'Yesterday',
+    date: 'Yesterday, 02:10 PM',
     status: 'Confirmed',
-    statusBg: 'bg-[#ECFDF5]',
-    statusText: 'text-[#065F46]',
-    statusDot: 'bg-[#10B981]',
+    statusBg: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+    statusText: 'text-emerald-700 dark:text-emerald-400',
+    statusDot: 'bg-emerald-500',
   },
 ];
 
@@ -104,111 +103,80 @@ const INITIAL_FEES: FeePayment[] = [
     code: 'RCP-2025-8812',
     studentName: 'Sneha Das',
     mode: 'UPI / QR',
-    modeBadgeBg: 'bg-surface-container-lowest',
-    modeBadgeText: 'text-secondary',
+    modeBadgeBg: 'bg-emerald-500/10',
+    modeBadgeText: 'text-emerald-700 dark:text-emerald-400',
     amount: '₹12,500',
     icon: 'qr_code_2',
-    iconBg: 'bg-secondary-container/70',
-    iconColor: 'text-secondary',
   },
   {
     id: 'fee-2',
     code: 'RCP-2025-8811',
     studentName: 'Priya Sharma',
     mode: 'NetBanking',
-    modeBadgeBg: 'bg-surface-container-lowest',
-    modeBadgeText: 'text-primary',
+    modeBadgeBg: 'bg-blue-500/10',
+    modeBadgeText: 'text-blue-700 dark:text-blue-400',
     amount: '₹8,000',
     icon: 'account_balance',
-    iconBg: 'bg-primary-fixed',
-    iconColor: 'text-primary',
   },
   {
     id: 'fee-3',
     code: 'RCP-2025-8810',
     studentName: 'Rahul Kumar',
     mode: 'Card / POS',
-    modeBadgeBg: 'bg-surface-container-lowest',
-    modeBadgeText: 'text-on-surface-variant',
+    modeBadgeBg: 'bg-purple-500/10',
+    modeBadgeText: 'text-purple-700 dark:text-purple-400',
     amount: '₹15,000',
     icon: 'credit_card',
-    iconBg: 'bg-surface-container-high',
-    iconColor: 'text-on-surface',
   },
 ];
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, onShowToast }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [distributionTab, setDistributionTab] = useState<'branch' | 'course'>('branch');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCampusScope, setSelectedCampusScope] = useState('All Branches (8 Active)');
-  const [isCampusDropdownOpen, setIsCampusDropdownOpen] = useState(false);
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<RecentAdmission | null>(null);
-  const [isQuickActionModalOpen, setIsQuickActionModalOpen] = useState(false);
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
 
-  // New Student intake modal form
+  // Core interactive states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCampusScope, setSelectedCampusScope] = useState('All Branches (8)');
+  const [isCampusDropdownOpen, setIsCampusDropdownOpen] = useState(false);
+  const [analyticsTab, setAnalyticsTab] = useState<'admissions' | 'revenue'>('admissions');
+  const [distributionTab, setDistributionTab] = useState<'branch' | 'course'>('branch');
+
+  // Interactive metrics & lists
+  const [todayAdmissionsCount, setTodayAdmissionsCount] = useState(38);
+  const [todayCollectionTotal, setTodayCollectionTotal] = useState(84500);
+  const [recentAdmissions, setRecentAdmissions] = useState<RecentAdmission[]>(INITIAL_ADMISSIONS);
+  const [recentFees, setRecentFees] = useState<FeePayment[]>(INITIAL_FEES);
+
+  // Modals
+  const [isQuickActionModalOpen, setIsQuickActionModalOpen] = useState(false);
+  const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<RecentAdmission | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
+  // Form states for Quick Intake
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentCourse, setNewStudentCourse] = useState('Web Development');
   const [newStudentBranch, setNewStudentBranch] = useState('Siliguri');
   const [newStudentFee, setNewStudentFee] = useState('12500');
 
-  // Interactive state lists
-  const [recentAdmissions, setRecentAdmissions] = useState<RecentAdmission[]>(INITIAL_ADMISSIONS);
-  const [recentFees, setRecentFees] = useState<FeePayment[]>(INITIAL_FEES);
-  const [todayAdmissionsCount, setTodayAdmissionsCount] = useState(38);
-  const [todayCollectionTotal, setTodayCollectionTotal] = useState(84500);
+  // Form states for Collect Fee
+  const [feeStudentName, setFeeStudentName] = useState('');
+  const [feeAmount, setFeeAmount] = useState('10000');
+  const [feeMode, setFeeMode] = useState('UPI / QR');
 
-  const [streamEvents, setStreamEvents] = useState<StreamEvent[]>([
-    {
-      id: 'st-1',
-      dotColor: 'bg-primary',
-      primaryText: (
-        <>
-          <strong className="font-semibold">Rahul Kumar</strong> admitted to{' '}
-          <span className="text-primary font-medium">Web Dev Batch 04</span>
-        </>
-      ),
-      campusOrSource: 'Siliguri Campus',
-      time: '10:42 AM',
-    },
-    {
-      id: 'st-2',
-      dotColor: 'bg-secondary',
-      primaryText: (
-        <>
-          Fee payment of <strong className="text-secondary font-semibold font-data-mono">₹12,500</strong> verified for{' '}
-          <strong className="font-semibold">Sneha Das</strong>
-        </>
-      ),
-      campusOrSource: 'HDFC Gateway Auto-Clear',
-      time: '09:55 AM',
-    },
-    {
-      id: 'st-3',
-      dotColor: 'bg-tertiary',
-      primaryText: (
-        <>
-          New faculty <strong className="font-semibold">Sunita Paul</strong> assigned to{' '}
-          <span className="text-on-surface-variant font-medium">Jalpaiguri Branch</span>
-        </>
-      ),
-      campusOrSource: 'HR & Faculty Roster',
-      time: '09:10 AM',
-    },
-    {
-      id: 'st-4',
-      dotColor: 'bg-surface-tint',
-      primaryText: (
-        <>
-          <span className="font-semibold text-primary">QR Certificate</span> batch generated for{' '}
-          <span className="font-data-mono font-medium">Batch 2024-B</span> (118 Issued)
-        </>
-      ),
-      campusOrSource: 'Academic Registry',
-      time: '08:30 AM',
-    },
-  ]);
+  // Filter admissions based on search & branch
+  const filteredAdmissions = useMemo(() => {
+    return recentAdmissions.filter(item => {
+      const matchSearch =
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.campus.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchCampus =
+        selectedCampusScope === 'All Branches (8)' ||
+        item.campus.toLowerCase().includes(selectedCampusScope.toLowerCase().replace(' campus', ''));
+      return matchSearch && matchCampus;
+    });
+  }, [recentAdmissions, searchQuery, selectedCampusScope]);
 
   const handleCreateNewStudent = (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,54 +189,64 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
     const newAdm: RecentAdmission = {
       id: `adm-${Date.now()}`,
       code: admCode,
-      name: newStudentName,
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+      name: newStudentName.trim(),
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80',
       course: newStudentCourse,
       campus: newStudentBranch,
       date: 'Just now',
       status: 'Confirmed',
-      statusBg: 'bg-[#ECFDF5]',
-      statusText: 'text-[#065F46]',
-      statusDot: 'bg-[#10B981]',
+      statusBg: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+      statusText: 'text-emerald-700 dark:text-emerald-400',
+      statusDot: 'bg-emerald-500',
     };
 
-    setRecentAdmissions([newAdm, ...recentAdmissions]);
+    setRecentAdmissions(prev => [newAdm, ...prev]);
     setTodayAdmissionsCount(prev => prev + 1);
 
-    const feeAmountNum = Number(newStudentFee) || 12500;
-    setTodayCollectionTotal(prev => prev + feeAmountNum);
+    const feeNum = Number(newStudentFee) || 12500;
+    setTodayCollectionTotal(prev => prev + feeNum);
 
-    const newFee: FeePayment = {
+    const newFeeItem: FeePayment = {
       id: `fee-${Date.now()}`,
       code: `RCP-2025-${Math.floor(8813 + Math.random() * 80)}`,
-      studentName: newStudentName,
+      studentName: newStudentName.trim(),
       mode: 'UPI / QR',
-      modeBadgeBg: 'bg-surface-container-lowest',
-      modeBadgeText: 'text-secondary',
-      amount: `₹${feeAmountNum.toLocaleString('en-IN')}`,
+      modeBadgeBg: 'bg-emerald-500/10',
+      modeBadgeText: 'text-emerald-700 dark:text-emerald-400',
+      amount: `₹${feeNum.toLocaleString('en-IN')}`,
       icon: 'qr_code_2',
-      iconBg: 'bg-secondary-container/70',
-      iconColor: 'text-secondary',
     };
-    setRecentFees([newFee, ...recentFees.slice(0, 3)]);
-
-    const newEvent: StreamEvent = {
-      id: `st-${Date.now()}`,
-      dotColor: 'bg-primary',
-      primaryText: (
-        <>
-          <strong className="font-semibold">{newStudentName}</strong> admitted to{' '}
-          <span className="text-primary font-medium">{newStudentCourse}</span>
-        </>
-      ),
-      campusOrSource: `${newStudentBranch} Campus`,
-      time: 'Just now',
-    };
-    setStreamEvents([newEvent, ...streamEvents]);
+    setRecentFees(prev => [newFeeItem, ...prev.slice(0, 3)]);
 
     setIsQuickActionModalOpen(false);
-    onShowToast(`Admission confirmed for ${newStudentName} (${admCode})!`);
     setNewStudentName('');
+    onShowToast(`Admission confirmed for ${newAdm.name} (${admCode})!`);
+  };
+
+  const handleQuickCollectFee = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feeStudentName.trim()) {
+      onShowToast('Please enter student name.');
+      return;
+    }
+    const amountNum = Number(feeAmount) || 10000;
+    const rcpCode = `RCP-2025-${Math.floor(8820 + Math.random() * 90)}`;
+    const newFeeItem: FeePayment = {
+      id: `fee-${Date.now()}`,
+      code: rcpCode,
+      studentName: feeStudentName.trim(),
+      mode: feeMode,
+      modeBadgeBg: 'bg-emerald-500/10',
+      modeBadgeText: 'text-emerald-700 dark:text-emerald-400',
+      amount: `₹${amountNum.toLocaleString('en-IN')}`,
+      icon: feeMode === 'UPI / QR' ? 'qr_code_2' : feeMode === 'NetBanking' ? 'account_balance' : 'credit_card',
+    };
+
+    setRecentFees(prev => [newFeeItem, ...prev.slice(0, 3)]);
+    setTodayCollectionTotal(prev => prev + amountNum);
+    setIsFeeModalOpen(false);
+    setFeeStudentName('');
+    onShowToast(`Payment of ₹${amountNum.toLocaleString('en-IN')} recorded for ${feeStudentName}! (${rcpCode})`);
   };
 
   const handleExportData = () => {
@@ -280,1451 +258,903 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `edumanage_executive_data_${Date.now()}.csv`);
+    link.setAttribute('download', `edumanage_summary_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    onShowToast('Exported executive analytics data to CSV.');
+    onShowToast('Exported summary report to CSV.');
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-surface font-body-md antialiased flex">
-      {/* 1. FIXED LEFT SIDEBAR (260px) */}
-      {/* Mobile backdrop overlay */}
+    <div className="min-h-screen bg-background text-on-surface font-sans antialiased flex flex-col lg:flex-row relative selection:bg-primary-fixed selection:text-on-primary-fixed">
+      {/* 1. MINIMAL FOCUSED SIDEBAR (Mobile Drawer + Desktop Fixed) */}
+      {/* Mobile backdrop */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 lg:hidden transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed left-0 top-0 bottom-0 w-[260px] bg-surface-container-lowest border-r border-outline-variant/40 z-50 flex flex-col justify-between shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-0 bottom-0 w-[260px] bg-surface-container-lowest border-r border-outline-variant/30 z-50 flex flex-col justify-between shadow-lg lg:shadow-[0_1px_6px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full overflow-hidden">
-          {/* Header Brand */}
-          <div className="h-16 px-space-md flex items-center justify-between border-b border-outline-variant/30 flex-shrink-0">
+          {/* Brand Header */}
+          <div className="h-16 px-4 flex items-center justify-between border-b border-outline-variant/20 flex-shrink-0">
             <div
-              className="flex items-center gap-space-xs cursor-pointer"
+              className="flex items-center gap-2.5 cursor-pointer"
               onClick={() => {
                 onNavigate('dashboard');
-                setIsSidebarOpen(false);
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
               }}
             >
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">
                 <span className="material-symbols-outlined text-[20px]">school</span>
               </div>
               <div className="flex flex-col">
-                <span className="font-headline-sm text-headline-sm text-on-surface leading-tight font-bold">
+                <span className="font-bold text-sm text-on-surface leading-tight tracking-tight">
                   EduManage
                 </span>
-                <span className="font-label-sm text-[10px] text-primary tracking-wider uppercase font-semibold">
-                  Enterprise HQ
+                <span className="text-[10px] text-primary uppercase font-bold tracking-wider">
+                  Apex Institute
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setIsSidebarOpen(false)}
-                className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer flex items-center justify-center"
-                aria-label="Hide sidebar"
-                title="Hide sidebar"
-              >
-                <span className="material-symbols-outlined text-[20px]">menu_open</span>
-              </button>
-            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen(false)}
+              className="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
+              aria-label="Hide sidebar"
+              title="Close sidebar"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
           </div>
 
-          {/* Navigation Items */}
-          <div className="flex-1 overflow-y-auto px-space-sm py-space-md space-y-space-md">
-            {/* Dashboard Link (ACTIVE) */}
-            <nav className="space-y-0.5">
-              <button
-                onClick={() => onNavigate('dashboard')}
-                className="w-full flex items-center justify-between px-space-sm py-2 rounded-lg bg-primary-container text-on-primary-container font-semibold shadow-sm transition-all text-left cursor-pointer"
-              >
-                <div className="flex items-center gap-space-sm">
-                  <span className="material-symbols-outlined text-[20px] text-white">grid_view</span>
-                  <span className="font-label-lg text-label-lg">Dashboard</span>
-                </div>
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-              </button>
-            </nav>
-
-            {/* Admissions */}
-            <div className="space-y-1">
-              <div className="px-space-sm py-1 font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">
-                Admissions
-              </div>
-              <nav className="space-y-0.5">
-                <button
-                  onClick={() => onNavigate('admissions')}
-                  className="w-full flex items-center justify-between px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <div className="flex items-center gap-space-sm">
-                    <span className="material-symbols-outlined text-[18px] text-outline">contact_support</span>
-                    <span className="font-body-md text-body-md">Enquiries</span>
-                  </div>
-                  <span className="px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-surface-container-high text-primary">
-                    128
-                  </span>
-                </button>
-                <button
-                  onClick={() => onNavigate('admissions')}
-                  className="w-full flex items-center justify-between px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <div className="flex items-center gap-space-sm">
-                    <span className="material-symbols-outlined text-[18px] text-outline">assignment</span>
-                    <span className="font-body-md text-body-md">Applications</span>
-                  </div>
-                  <span className="px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-surface-container-high text-primary">
-                    24
-                  </span>
-                </button>
-                <button
-                  onClick={() => onNavigate('admissions')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">how_to_reg</span>
-                  <span className="font-body-md text-body-md">Admissions</span>
-                </button>
-              </nav>
+          {/* Core Essential Navigation Links */}
+          <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+            <div className="px-2 pb-1.5 text-[10px] uppercase font-bold tracking-wider text-outline">
+              Core Modules
             </div>
 
-            {/* Students */}
-            <div className="space-y-1">
-              <div className="px-space-sm py-1 font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">
-                Students
+            {/* 1. Dashboard (Active) */}
+            <button
+              onClick={() => {
+                onNavigate('dashboard');
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-primary text-on-primary font-semibold shadow-xs transition-colors cursor-pointer text-left text-sm"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-[19px]">dashboard</span>
+                <span>Dashboard</span>
               </div>
-              <nav className="space-y-0.5">
-                <button
-                  onClick={() => onNavigate('students-directory')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">group</span>
-                  <span className="font-body-md text-body-md">All Students</span>
-                </button>
-                <button
-                  onClick={() => setIsQuickActionModalOpen(true)}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">person_add</span>
-                  <span className="font-body-md text-body-md">Add Student</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Student Documents: 100% digital KYC records securely archived.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">folder_shared</span>
-                  <span className="font-body-md text-body-md">Documents</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Student ID Cards: Smart RFID / barcode badges ready for print.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">badge</span>
-                  <span className="font-body-md text-body-md">ID Cards</span>
-                </button>
-              </nav>
-            </div>
+              <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+            </button>
 
-            {/* Academics */}
-            <div className="space-y-1">
-              <div className="px-space-sm py-1 font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">
-                Academics
+            {/* 2. Students */}
+            <button
+              onClick={() => {
+                onNavigate('students-directory');
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer text-left text-sm"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-[19px] text-outline">group</span>
+                <span>Students</span>
               </div>
-              <nav className="space-y-0.5">
-                <button
-                  onClick={() => onNavigate('courses-batches')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">menu_book</span>
-                  <span className="font-body-md text-body-md">Courses &amp; Batches</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Subjects & Curriculum modules.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">auto_stories</span>
-                  <span className="font-body-md text-body-md">Subjects</span>
-                </button>
-                <button
-                  onClick={() => onNavigate('courses-batches')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">calendar_month</span>
-                  <span className="font-body-md text-body-md">Timetable</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Assignments module loaded.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">task</span>
-                  <span className="font-body-md text-body-md">Assignments</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Exams & Grading system active.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">grade</span>
-                  <span className="font-body-md text-body-md">Exams &amp; Results</span>
-                </button>
-              </nav>
-            </div>
+              <span className="text-[11px] font-semibold text-outline px-1.5 py-0.2 rounded bg-surface-container">
+                12.4k
+              </span>
+            </button>
 
-            {/* Attendance */}
-            <div className="space-y-1">
-              <div className="px-space-sm py-1 font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">
-                Attendance
+            {/* 3. Admissions */}
+            <button
+              onClick={() => {
+                onNavigate('admissions');
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer text-left text-sm"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-[19px] text-outline">how_to_reg</span>
+                <span>Admissions</span>
               </div>
-              <nav className="space-y-0.5">
-                <button
-                  onClick={() => onShowToast('Biometric & RFID status: 91% attendance today (11,329 present).')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">fingerprint</span>
-                  <span className="font-body-md text-body-md">Biometric &amp; RFID</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Manual marking roster opened.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">checklist</span>
-                  <span className="font-body-md text-body-md">Manual Marking</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Leave requests queue: 2 faculty on approved leave.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">event_busy</span>
-                  <span className="font-body-md text-body-md">Leave Requests</span>
-                </button>
-              </nav>
-            </div>
+              <span className="text-[11px] font-bold text-primary px-1.5 py-0.2 rounded bg-primary/10">
+                +{todayAdmissionsCount}
+              </span>
+            </button>
 
-            {/* Fees & Finance */}
-            <div className="space-y-1">
-              <div className="px-space-sm py-1 font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">
-                Fees &amp; Finance
-              </div>
-              <nav className="space-y-0.5">
-                <button
-                  onClick={() => onShowToast('Fee Structure matrix.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">account_balance_wallet</span>
-                  <span className="font-body-md text-body-md">Fee Structure</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setIsQuickActionModalOpen(true);
-                  }}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">point_of_sale</span>
-                  <span className="font-body-md text-body-md">Collect Fee</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Payments ledger: ₹42.8L collected this month.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">payments</span>
-                  <span className="font-body-md text-body-md">Payments</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Outstanding Fees: ₹4,82,000 flagged across 142 students.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">pending_actions</span>
-                  <span className="font-body-md text-body-md">Due Fees</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Invoices & Receipts repository.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">receipt_long</span>
-                  <span className="font-body-md text-body-md">Invoices &amp; Receipts</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Operational expenses log.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">request_quote</span>
-                  <span className="font-body-md text-body-md">Expenses</span>
-                </button>
-              </nav>
-            </div>
+            {/* 4. Courses & Batches */}
+            <button
+              onClick={() => {
+                onNavigate('courses-batches');
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer text-left text-sm"
+            >
+              <span className="material-symbols-outlined text-[19px] text-outline">menu_book</span>
+              <span>Courses & Batches</span>
+            </button>
 
-            {/* Teachers & Staff */}
-            <div className="space-y-1">
-              <div className="px-space-sm py-1 font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">
-                Teachers &amp; Staff
-              </div>
-              <nav className="space-y-0.5">
-                <button
-                  onClick={() => onShowToast('Faculty Directory: 86 active faculty members.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">co_present</span>
-                  <span className="font-body-md text-body-md">Faculty Directory</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Staff members directory.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">badge</span>
-                  <span className="font-body-md text-body-md">Staff</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Payroll management.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">price_check</span>
-                  <span className="font-body-md text-body-md">Payroll</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Duty rosters schedule.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">schedule</span>
-                  <span className="font-body-md text-body-md">Duty Rosters</span>
-                </button>
-              </nav>
-            </div>
+            {/* 5. Timetable */}
+            <button
+              onClick={() => {
+                onNavigate('timetable-schedule');
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer text-left text-sm"
+            >
+              <span className="material-symbols-outlined text-[19px] text-outline">calendar_month</span>
+              <span>Timetable</span>
+            </button>
 
-            {/* Operations & Network */}
-            <div className="space-y-1">
-              <div className="px-space-sm py-1 font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">
-                Operations &amp; Network
-              </div>
-              <nav className="space-y-0.5">
-                <button
-                  onClick={() => onNavigate('certificates')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">workspace_premium</span>
-                  <span className="font-body-md text-body-md">Certificates &amp; QR</span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Communication alerts and SMS broadcaster.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">campaign</span>
-                  <span className="font-body-md text-body-md">Communication</span>
-                </button>
-                <button
-                  onClick={() => onNavigate('onboarding')}
-                  className="w-full flex items-center justify-between px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <div className="flex items-center gap-space-sm">
-                    <span className="material-symbols-outlined text-[18px] text-outline">hub</span>
-                    <span className="font-body-md text-body-md">Campuses Topology</span>
-                  </div>
-                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-secondary-container text-on-secondary-container">
-                    8 Active
-                  </span>
-                </button>
-                <button
-                  onClick={() => onShowToast('Reports and ledger export.')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">analytics</span>
-                  <span className="font-body-md text-body-md">Reports &amp; Ledger</span>
-                </button>
-                <button
-                  onClick={() => onNavigate('admin')}
-                  className="w-full flex items-center gap-space-sm px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-left cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">settings</span>
-                  <span className="font-body-md text-body-md">Settings</span>
-                </button>
-              </nav>
-            </div>
+            {/* 6. Certificates & QR */}
+            <button
+              onClick={() => {
+                onNavigate('certificates');
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer text-left text-sm"
+            >
+              <span className="material-symbols-outlined text-[19px] text-outline">workspace_premium</span>
+              <span>Certificates (QR)</span>
+            </button>
+
+            {/* 7. Settings / Admin */}
+            <button
+              onClick={() => {
+                onNavigate('admin');
+                if (window.innerWidth < 1024) setIsSidebarOpen(false);
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer text-left text-sm"
+            >
+              <span className="material-symbols-outlined text-[19px] text-outline">settings</span>
+              <span>Institute Admin</span>
+            </button>
           </div>
 
-          {/* Bottom Institute Switcher */}
-          <div className="p-space-sm border-t border-outline-variant/30 bg-surface-container-low/50 flex-shrink-0">
-            <div className="flex items-center justify-between p-2 rounded-lg bg-surface-container-lowest border border-outline-variant/40 mb-1">
+          {/* Minimal Institute Profile & Logout */}
+          <div className="p-3 border-t border-outline-variant/20 bg-surface-container-low/40 flex-shrink-0">
+            <div className="flex items-center justify-between p-2 rounded-lg bg-surface-container-lowest border border-outline-variant/30 mb-1.5">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-7 h-7 rounded bg-surface-container flex items-center justify-center text-primary font-semibold text-xs flex-shrink-0">
+                <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center text-primary font-bold text-xs flex-shrink-0">
                   AP
                 </div>
                 <div className="min-w-0">
-                  <p className="font-label-sm text-label-sm text-on-surface font-semibold truncate">
-                    Apex Tech Institute
-                  </p>
-                  <p className="font-body-sm text-[11px] text-outline truncate">Branch HQ Network</p>
+                  <p className="text-xs font-semibold text-on-surface truncate">Apex Institute</p>
+                  <p className="text-[10px] text-outline truncate">8 Branches Active</p>
                 </div>
               </div>
-              <button
-                aria-label="Switch institute"
-                className="text-outline hover:text-primary p-1 rounded transition-colors cursor-pointer"
-                type="button"
-                onClick={() => onShowToast('Multi-institution switch panel.')}
-              >
-                <span className="material-symbols-outlined text-[18px]">swap_horiz</span>
-              </button>
+              <span className="w-2 h-2 rounded-full bg-emerald-500" title="Online & Synced"></span>
             </div>
+
             <button
               onClick={() => {
-                onShowToast('Logged out of Institution Admin session.');
+                onShowToast('Logged out of Admin session.');
                 onNavigate('landing');
               }}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors text-left cursor-pointer"
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-medium text-outline hover:text-rose-600 hover:bg-rose-500/10 transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[18px]">logout</span>
-              <span className="font-label-md text-label-md font-medium">Log out</span>
+              <span className="material-symbols-outlined text-[17px]">logout</span>
+              <span>Log out</span>
             </button>
           </div>
         </div>
       </aside>
 
       {/* 2. MAIN WORKSPACE CONTAINER */}
-      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
-        isSidebarOpen ? 'pl-0 lg:pl-[260px]' : 'pl-0'
-      }`}>
-        {/* FIXED TOP HEADER */}
-        <header className={`fixed top-0 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 z-30 flex items-center justify-between px-3 sm:px-space-lg shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? 'left-0 lg:left-[260px]' : 'left-0'
-        }`}>
-          <div className="flex items-center gap-2 sm:gap-space-md min-w-0">
-            {/* Show/Hide Sidebar Toggle Button (Visible on all screens) */}
+      <div
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
+          isSidebarOpen ? 'pl-0 lg:pl-[260px]' : 'pl-0'
+        }`}
+      >
+        {/* FIXED RESPONSIVE TOP HEADER */}
+        <header
+          className={`fixed top-0 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/30 z-30 flex items-center justify-between px-3 sm:px-6 shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out ${
+            isSidebarOpen ? 'left-0 lg:left-[260px]' : 'left-0'
+          }`}
+        >
+          {/* Left: Sidebar Toggle + Brand / Branch */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* Sidebar Toggle Button */}
             <button
               type="button"
               onClick={() => setIsSidebarOpen(prev => !prev)}
-              className="p-2 -ml-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center border border-outline-variant/30 shadow-xs"
+              className="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center border border-outline-variant/30 shadow-xs"
               aria-label="Toggle Navigation Menu"
-              title={isSidebarOpen ? "Hide Sidebar (Maximize workspace)" : "Show Sidebar"}
+              title={isSidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}
             >
-              <span className="material-symbols-outlined text-[22px]">
+              <span className="material-symbols-outlined text-[20px]">
                 {isSidebarOpen ? 'menu_open' : 'menu'}
               </span>
             </button>
 
             {/* Logo & Institute Name */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2">
               <img
                 alt="Brand logo"
-                className="h-8 w-auto object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                className="h-7 w-auto object-contain cursor-pointer hover:opacity-90 transition-opacity hidden sm:block"
                 src={BRAND_HOTLINKS.logo}
                 onClick={() => onNavigate('landing')}
               />
-              <div className="hidden xl:flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-headline-sm text-sm font-semibold text-on-surface tracking-tight truncate max-w-[220px]">
-                    Apex Institute of Technology &amp; Skills
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-data-mono font-medium bg-surface-container text-on-surface-variant">
-                    #INS-7429
-                  </span>
-                </div>
-              </div>
+              <span className="font-bold text-sm sm:text-base text-on-surface tracking-tight truncate">
+                Apex Institute
+              </span>
             </div>
 
-            {/* Campus Selector Dropdown */}
-            <div className="relative flex items-center">
+            {/* Branch Scope Dropdown (Compact) */}
+            <div className="relative">
               <button
-                onClick={() => setIsCampusDropdownOpen(!isCampusDropdownOpen)}
-                className="flex items-center gap-2 px-2.5 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/50 rounded-lg text-left transition-colors cursor-pointer"
                 type="button"
+                onClick={() => setIsCampusDropdownOpen(prev => !prev)}
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 bg-surface-container-low hover:bg-surface-container border border-outline-variant/40 rounded-lg text-xs font-medium text-on-surface transition-colors cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px] text-primary">location_on</span>
-                <div className="flex flex-col text-left">
-                  <span className="font-label-sm text-[10px] text-outline leading-none uppercase">
-                    Campus View
-                  </span>
-                  <span className="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1">
-                    {selectedCampusScope}{' '}
-                    <span className="material-symbols-outlined text-[16px] text-outline">expand_more</span>
-                  </span>
-                </div>
+                <span className="material-symbols-outlined text-[15px] text-primary hidden sm:inline">location_on</span>
+                <span className="truncate max-w-[100px] sm:max-w-none">{selectedCampusScope}</span>
+                <span className="material-symbols-outlined text-[15px] text-outline">expand_more</span>
               </button>
 
               {isCampusDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-56 bg-surface-container-lowest border border-outline-variant/40 rounded-xl shadow-xl z-50 py-1 text-xs">
-                  <div className="px-3 py-1.5 font-bold text-outline text-[10px] uppercase">
-                    Select Branch Scope
+                <div className="absolute top-full left-0 mt-1 w-48 bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-xl z-50 py-1 text-xs">
+                  <div className="px-3 py-1 font-bold text-outline text-[10px] uppercase">
+                    Select Branch
                   </div>
-                  {[
-                    'All Branches (8 Active)',
-                    'Siliguri HQ (Main)',
-                    'Binnaguri Hub',
-                    'Jalpaiguri City',
-                    'Cooch Behar',
-                  ].map(b => (
-                    <button
-                      key={b}
-                      onClick={() => {
-                        setSelectedCampusScope(b);
-                        setIsCampusDropdownOpen(false);
-                        onShowToast(`Campus view changed to: ${b}`);
-                      }}
-                      className={`w-full text-left px-3 py-2 hover:bg-surface-container-low flex items-center justify-between cursor-pointer ${
-                        selectedCampusScope === b ? 'text-primary font-bold bg-primary-fixed/20' : 'text-on-surface'
-                      }`}
-                    >
-                      <span>{b}</span>
-                      {selectedCampusScope === b && (
-                        <span className="material-symbols-outlined text-sm text-primary">check</span>
-                      )}
-                    </button>
-                  ))}
+                  {['All Branches (8)', 'Siliguri HQ', 'Binnaguri Hub', 'Jalpaiguri City', 'Cooch Behar'].map(
+                    b => (
+                      <button
+                        key={b}
+                        onClick={() => {
+                          setSelectedCampusScope(b);
+                          setIsCampusDropdownOpen(false);
+                          onShowToast(`Filtered by ${b}`);
+                        }}
+                        className={`w-full text-left px-3 py-1.5 hover:bg-surface-container flex items-center justify-between cursor-pointer ${
+                          selectedCampusScope === b ? 'text-primary font-bold bg-primary/10' : 'text-on-surface'
+                        }`}
+                      >
+                        <span>{b}</span>
+                        {selectedCampusScope === b && (
+                          <span className="material-symbols-outlined text-sm text-primary">check</span>
+                        )}
+                      </button>
+                    )
+                  )}
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Quick Search */}
-            <div className="relative w-72 lg:w-96">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">
+          {/* Right: Search, Theme Toggle, Primary Action, Profile */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            {/* Clean Search Input (Hidden on extra small screens or collapsed) */}
+            <div className="relative hidden md:block w-48 lg:w-64">
+              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[17px] text-outline">
                 search
               </span>
               <input
-                className="w-full h-9 pl-9 pr-8 bg-surface-container-lowest border border-outline-variant/60 rounded-lg text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
-                placeholder="Search students, admissions, courses, fees (⌘K)..."
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search students..."
+                className="w-full h-8 pl-8 pr-3 bg-surface-container-low border border-outline-variant/40 rounded-lg text-xs text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
               />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded border border-outline-variant/60 text-[10px] font-data-mono text-outline">
-                ⌘K
-              </span>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface"
+                >
+                  <span className="material-symbols-outlined text-[15px]">close</span>
+                </button>
+              )}
             </div>
-          </div>
 
-          {/* Right Header Buttons & Profile */}
-          <div className="flex items-center gap-space-sm flex-shrink-0">
+            {/* Theme Toggle */}
             <ThemeToggle
               variant="pill"
-              onToggleCallback={(mode) => onShowToast(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode`)}
+              onToggleCallback={mode =>
+                onShowToast(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode`)
+              }
             />
+
+            {/* Primary Action Button: Add Student */}
             <button
               onClick={() => setIsQuickActionModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all shadow-sm font-label-md text-label-md font-semibold active:scale-[0.98] cursor-pointer"
+              className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all shadow-xs text-xs font-semibold active:scale-[0.98] cursor-pointer"
               type="button"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
-              <span className="hidden sm:inline">Quick Action</span>
+              <span className="material-symbols-outlined text-[17px]">add</span>
+              <span className="hidden sm:inline">Add Student</span>
             </button>
 
-            <div className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container/40 border border-secondary/20 text-on-secondary-container">
-              <span className="material-symbols-outlined text-[15px] text-secondary">event_repeat</span>
-              <span className="font-label-sm text-label-sm font-semibold">AY 2025-26</span>
-            </div>
-
+            {/* Collect Fee Button */}
             <button
-              aria-label="Notifications"
-              onClick={() => onShowToast('You have 3 operational alerts: 1 waitlist expansion, 2 fee receipts pending verification.')}
-              className="relative p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors cursor-pointer"
+              onClick={() => setIsFeeModalOpen(true)}
+              className="hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant/30 transition-all text-xs font-medium cursor-pointer"
               type="button"
             >
-              <span className="material-symbols-outlined text-[20px]">notifications</span>
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-error text-on-error font-data-mono text-[10px] font-bold flex items-center justify-center leading-none ring-2 ring-surface-container-lowest">
-                3
-              </span>
+              <span className="material-symbols-outlined text-[17px] text-emerald-600">point_of_sale</span>
+              <span>Collect Fee</span>
             </button>
 
-            <button
-              aria-label="Help and documentation"
-              onClick={() => onShowToast('EduManage Executive Knowledge Base & Help Manual')}
-              className="p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors hidden sm:flex cursor-pointer"
-              type="button"
+            {/* Admin Avatar */}
+            <div
+              className="flex items-center gap-1.5 cursor-pointer pl-1"
+              onClick={() => onNavigate('admin')}
+              title="Institution Admin Settings"
             >
-              <span className="material-symbols-outlined text-[20px]">help_outline</span>
-            </button>
-
-            <div className="h-6 w-[1px] bg-outline-variant/40 mx-1"></div>
-
-            <div className="flex items-center gap-2 pl-1 cursor-pointer" onClick={() => onNavigate('admin')}>
               <img
                 alt="Profile"
-                className="w-8 h-8 rounded-full object-cover border border-outline-variant/50 flex-shrink-0"
-                src="https://lh3.googleusercontent.com/aida/AEtjO1WGopkRi0e7RACbAeh9HarEQpgzwV4gII2BBnN0fImO0_ivQuf3D8fWWXjnDa8i7tNyimgkcDUKUpCQ0SbimmA8304zNb8-OtViMqR7RWTsqbRK69ytaSQUrdsT77u80IH5L7DiWTGCwRGcXNmevxS6bfF83aQaWrI7pGS91Kgb52wdoxaqDG5GJfP-jdFHhXzJ-uH663fwJU19MjIi3ZIknbHOIbpbDy0SCYfb9-a95DfMmTqAAIK0TQ"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-outline-variant/40"
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&auto=format&fit=crop&q=80"
               />
-              <div className="hidden xl:flex flex-col text-left">
-                <span className="font-label-md text-label-md font-semibold text-on-surface leading-tight">
-                  Rajesh Sharma
-                </span>
-                <span className="font-body-sm text-[11px] text-outline leading-tight">
-                  Institution Admin / HQ
-                </span>
-              </div>
-              <button aria-label="User menu" className="text-outline hover:text-on-surface cursor-pointer" type="button">
-                <span className="material-symbols-outlined text-[18px]">expand_more</span>
-              </button>
             </div>
           </div>
         </header>
 
-        {/* 3. MAIN DASHBOARD CONTENT */}
-        <main className="w-full pt-16 bg-background min-h-screen">
-          <div className="p-space-lg lg:p-margin-desktop flex flex-col gap-space-lg w-full max-w-[1600px] mx-auto">
-            {/* Top Sub-Header & Breadcrumb Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-space-sm">
-              <div className="flex items-center gap-space-sm">
-                <div className="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
-                  <span className="hover:text-primary cursor-pointer transition-colors" onClick={() => onNavigate('dashboard')}>
-                    Dashboard
-                  </span>
-                  <span className="text-outline">/</span>
-                  <span className="font-semibold text-on-surface">Overview</span>
-                </div>
-                <div className="h-4 w-px bg-surface-container-highest"></div>
-                <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-surface-container-low shadow-sm">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
-                  </span>
-                  <span className="font-label-sm text-label-sm text-secondary font-semibold">
-                    Multi-Branch Sync Active
-                  </span>
-                  <span className="font-data-mono text-[11px] text-outline font-medium">8 / 8 Nodes Online</span>
-                </div>
+        {/* 3. DASHBOARD MAIN CONTENT */}
+        <main className="w-full pt-16 bg-background min-h-[calc(100vh-4rem)]">
+          <div className="p-3 sm:p-5 lg:p-6 flex flex-col gap-5 w-full max-w-[1400px] mx-auto">
+            {/* Top Minimal Greeting & Action Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-on-surface tracking-tight">
+                  Welcome back, Rajesh
+                </h1>
+                <p className="text-xs sm:text-sm text-outline mt-0.5">
+                  Apex Institute • {selectedCampusScope} • All campus registers synchronized
+                </p>
               </div>
 
-              {/* Secondary Action Tools */}
-              <div className="flex items-center gap-space-xs">
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={handleExportData}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container transition-all font-label-md text-label-md font-medium cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/30 text-on-surface shadow-xs hover:bg-surface-container transition-all text-xs font-medium cursor-pointer"
                   type="button"
                 >
                   <span className="material-symbols-outlined text-[16px] text-outline">file_download</span>
-                  <span>Export Data</span>
+                  <span>Export CSV</span>
                 </button>
                 <button
-                  onClick={() => onShowToast('Generated institutional certificates registry.')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container transition-all font-label-md text-label-md font-medium cursor-pointer"
+                  onClick={() => setIsFeeModalOpen(true)}
+                  className="sm:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container text-on-surface text-xs font-semibold cursor-pointer"
                   type="button"
                 >
-                  <span className="material-symbols-outlined text-[16px] text-tertiary">workspace_premium</span>
-                  <span>Generate Certificate</span>
+                  <span className="material-symbols-outlined text-[16px] text-emerald-600">point_of_sale</span>
+                  <span>Collect Fee</span>
+                </button>
+                <button
+                  onClick={() => onNavigate('admissions')}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-primary text-on-primary shadow-xs hover:bg-primary-container transition-all text-xs font-semibold cursor-pointer"
+                  type="button"
+                >
+                  <span className="material-symbols-outlined text-[16px]">how_to_reg</span>
+                  <span>All Admissions</span>
                 </button>
               </div>
             </div>
 
-            {/* Architectural Welcome & Primary CTA Banner */}
-            <div className="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
-              <div className="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-primary-fixed/30 blur-3xl pointer-events-none"></div>
-              <div className="absolute right-64 -bottom-16 w-64 h-64 rounded-full bg-secondary-fixed/20 blur-2xl pointer-events-none"></div>
-              <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-space-lg">
-                <div className="flex flex-col gap-1 max-w-2xl">
-                  <div className="flex items-center gap-2">
-                    <span className="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">
-                      Central Executive Console
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container text-on-surface-variant font-data-mono">
-                      AY 2025-26
-                    </span>
-                  </div>
-                  <h1 className="font-display text-display text-on-surface font-bold tracking-tight">
-                    Good morning, Rajesh
-                  </h1>
-                  <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                    Here is an overview of <span className="font-semibold text-on-surface">Apex Institute of Technology &amp; Skills</span> across all 8 branches. All campus ledger records and RFID terminal streams are reconciled.
-                  </p>
-                </div>
-
-                {/* Quick Primary Action Group */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => setIsQuickActionModalOpen(true)}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container shadow-sm transition-all font-label-lg text-label-lg font-semibold active:scale-[0.98] cursor-pointer"
-                    type="button"
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-primary">person_add</span>
-                    <span>Add Student</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setIsQuickActionModalOpen(true);
-                      setNewStudentName('Direct Counter Receipt');
-                      onShowToast('Opened fast fee collection terminal.');
-                    }}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-secondary-container text-on-secondary-container hover:bg-secondary-fixed-dim shadow-sm transition-all font-label-lg text-label-lg font-semibold active:scale-[0.98] cursor-pointer"
-                    type="button"
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-secondary">point_of_sale</span>
-                    <span>Collect Fee</span>
-                  </button>
-
-                  <button
-                    onClick={() => onNavigate('admissions')}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-on-primary hover:bg-primary-container shadow-sm transition-all font-label-lg text-label-lg font-semibold active:scale-[0.98] cursor-pointer"
-                    type="button"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
-                    <span>New Admission</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* 8 High-Density Key Metric KPI Cards (4x2 Grid) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-              {/* KPI 1: Total Students */}
-              <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="flex items-start justify-between">
-                  <div className="flex flex-col">
-                    <span className="font-label-sm text-label-sm text-outline uppercase font-semibold">
-                      Total Students
-                    </span>
-                    <span className="font-headline-lg text-headline-lg font-bold text-on-surface mt-1 group-hover:text-primary transition-colors">
-                      12,450
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-[20px]">groups</span>
-                  </div>
-                </div>
-                <div className="mt-3 pt-2.5 flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-secondary font-label-sm text-label-sm font-semibold">
-                    <span className="material-symbols-outlined text-[15px]">trending_up</span>
-                    <span>+8.4%</span>
-                    <span className="text-outline font-normal">MoM growth</span>
-                  </div>
-                  <span className="font-data-mono text-[11px] text-outline font-medium">8 Campuses</span>
-                </div>
-              </div>
-
-              {/* KPI 2: Active Courses */}
+            {/* 4 CORE ESSENTIAL KPI METRICS (Clean 4-Card Responsive Grid) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {/* Metric 1: Total Students */}
               <div
-                onClick={() => onNavigate('courses-batches')}
-                className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer"
+                onClick={() => onNavigate('students-directory')}
+                className="bg-surface-container-lowest p-3.5 sm:p-4 rounded-xl border border-outline-variant/20 shadow-xs hover:border-primary/40 transition-all cursor-pointer flex flex-col justify-between group"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex flex-col">
-                    <span className="font-label-sm text-label-sm text-outline uppercase font-semibold">
-                      Active Courses
-                    </span>
-                    <span className="font-headline-lg text-headline-lg font-bold text-on-surface mt-1 group-hover:text-primary transition-colors">
-                      24
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-lg bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed-variant">
-                    <span className="material-symbols-outlined text-[20px]">menu_book</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-outline">
+                    Total Students
+                  </span>
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+                    <span className="material-symbols-outlined text-[18px]">groups</span>
                   </div>
                 </div>
-                <div className="mt-3 pt-2.5 flex items-center justify-between">
-                  <span className="font-body-sm text-body-sm text-on-surface-variant font-medium">
-                    Across <strong className="text-on-surface">68 Batches</strong>
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-surface-container-low text-primary">
-                    12 Voc / 12 Pro
-                  </span>
+                <div className="mt-2">
+                  <span className="text-xl sm:text-2xl font-bold text-on-surface">12,450</span>
+                  <div className="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium">
+                    <span className="material-symbols-outlined text-[14px]">trending_up</span>
+                    <span>+8.4% this month</span>
+                  </div>
                 </div>
               </div>
 
-              {/* KPI 3: Teachers & Staff */}
-              <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="flex items-start justify-between">
-                  <div className="flex flex-col">
-                    <span className="font-label-sm text-label-sm text-outline uppercase font-semibold">
-                      Teachers &amp; Staff
-                    </span>
-                    <span className="font-headline-lg text-headline-lg font-bold text-on-surface mt-1 group-hover:text-primary transition-colors">
-                      86
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-[20px]">co_present</span>
-                  </div>
-                </div>
-                <div className="mt-3 pt-2.5 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-secondary"></span>
-                    <span className="font-label-sm text-label-sm text-on-surface-variant font-semibold">
-                      98% Active Today
-                    </span>
-                  </div>
-                  <span className="font-data-mono text-[11px] text-outline">2 on Approved Leave</span>
-                </div>
-              </div>
-
-              {/* KPI 4: Campuses */}
-              <div
-                onClick={() => onNavigate('onboarding')}
-                className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex flex-col">
-                    <span className="font-label-sm text-label-sm text-outline uppercase font-semibold">
-                      Campuses
-                    </span>
-                    <span className="font-headline-lg text-headline-lg font-bold text-on-surface mt-1 group-hover:text-primary transition-colors">
-                      8 / 8
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-lg bg-secondary-container/40 flex items-center justify-center text-secondary">
-                    <span className="material-symbols-outlined text-[20px]">hub</span>
-                  </div>
-                </div>
-                <div className="mt-3 pt-2.5 flex items-center justify-between">
-                  <span className="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[15px]">chevron_forward</span>
-                    All Realtime Synced
-                  </span>
-                  <span className="font-data-mono text-[11px] text-outline">0 Errors</span>
-                </div>
-              </div>
-
-              {/* KPI 5: Today's Admissions */}
+              {/* Metric 2: Today's Admissions */}
               <div
                 onClick={() => onNavigate('admissions')}
-                className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer"
+                className="bg-surface-container-lowest p-3.5 sm:p-4 rounded-xl border border-outline-variant/20 shadow-xs hover:border-primary/40 transition-all cursor-pointer flex flex-col justify-between group"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex flex-col">
-                    <span className="font-label-sm text-label-sm text-outline uppercase font-semibold">
-                      Today's Admissions
-                    </span>
-                    <span className="font-headline-lg text-headline-lg font-bold text-on-surface mt-1 group-hover:text-primary transition-colors">
-                      {todayAdmissionsCount}
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center text-on-primary-fixed">
-                    <span className="material-symbols-outlined text-[20px]">how_to_reg</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-outline">
+                    Today's Admissions
+                  </span>
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
+                    <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
                   </div>
                 </div>
-                <div className="mt-3 pt-2.5 flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between font-label-sm text-label-sm">
-                    <span className="text-outline font-medium">Target: 45 Enrolls</span>
-                    <span className="font-semibold text-primary">84% Met</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full transition-all" style={{ width: '84%' }}></div>
+                <div className="mt-2">
+                  <span className="text-xl sm:text-2xl font-bold text-on-surface">{todayAdmissionsCount}</span>
+                  <div className="text-[11px] text-outline mt-1">
+                    Target: 45 daily enrolls (84% reached)
                   </div>
                 </div>
               </div>
 
-              {/* KPI 6: Today's Collection */}
-              <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="flex items-start justify-between">
-                  <div className="flex flex-col">
-                    <span className="font-label-sm text-label-sm text-outline uppercase font-semibold">
-                      Today's Collection
-                    </span>
-                    <span className="font-headline-lg text-headline-lg font-bold text-on-surface mt-1 group-hover:text-secondary transition-colors">
-                      ₹{todayCollectionTotal.toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-lg bg-secondary-container/60 flex items-center justify-center text-secondary">
-                    <span className="material-symbols-outlined text-[20px]">payments</span>
+              {/* Metric 3: Today's Collection */}
+              <div
+                onClick={() => setIsFeeModalOpen(true)}
+                className="bg-surface-container-lowest p-3.5 sm:p-4 rounded-xl border border-outline-variant/20 shadow-xs hover:border-emerald-500/40 transition-all cursor-pointer flex flex-col justify-between group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-outline">
+                    Today's Collection
+                  </span>
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
+                    <span className="material-symbols-outlined text-[18px]">payments</span>
                   </div>
                 </div>
-                <div className="mt-3 pt-2.5 flex items-center justify-between">
-                  <span className="font-body-sm text-body-sm text-on-surface-variant">
-                    <strong className="font-semibold text-on-surface">{recentFees.length + 11}</strong> Transactions
+                <div className="mt-2">
+                  <span className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                    ₹{todayCollectionTotal.toLocaleString('en-IN')}
                   </span>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-surface-container-low text-secondary font-data-mono">
-                    UPI: 78%
-                  </span>
+                  <div className="text-[11px] text-outline mt-1 font-mono">
+                    {recentFees.length + 11} Receipts Reconciled
+                  </div>
                 </div>
               </div>
 
-              {/* KPI 7: Outstanding Fees */}
-              <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="flex items-start justify-between">
-                  <div className="flex flex-col">
-                    <span className="font-label-sm text-label-sm text-outline uppercase font-semibold">
-                      Outstanding Fees
-                    </span>
-                    <span className="font-headline-lg text-headline-lg font-bold text-error mt-1">₹4,82,000</span>
-                  </div>
-                  <div className="w-10 h-10 rounded-lg bg-error-container/40 flex items-center justify-center text-error">
-                    <span className="material-symbols-outlined text-[20px]">pending_actions</span>
-                  </div>
-                </div>
-                <div className="mt-3 pt-2.5 flex items-center justify-between">
-                  <div className="flex items-center gap-1 font-label-sm text-label-sm text-error font-semibold">
-                    <span className="material-symbols-outlined text-[15px]">warning</span>
-                    <span>142 Flagged</span>
-                  </div>
-                  <button
-                    onClick={() => onShowToast('Automated fee reminders dispatched to 142 students via WhatsApp & SMS!')}
-                    className="text-[11px] font-semibold text-primary hover:underline cursor-pointer"
-                    type="button"
-                  >
-                    Send Reminders
-                  </button>
-                </div>
-              </div>
-
-              {/* KPI 8: Attendance Today */}
-              <div className="bg-surface-container-lowest p-space-md rounded-xl shadow-sm hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="flex items-start justify-between">
-                  <div className="flex flex-col">
-                    <span className="font-label-sm text-label-sm text-outline uppercase font-semibold">
-                      Attendance Today
-                    </span>
-                    <span className="font-headline-lg text-headline-lg font-bold text-on-surface mt-1 group-hover:text-primary transition-colors">
-                      91%
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined text-[20px]">fingerprint</span>
-                  </div>
-                </div>
-                <div className="mt-3 pt-2.5 flex items-center justify-between">
-                  <span className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[15px] text-secondary">verified</span>
-                    Biometric &amp; RFID
+              {/* Metric 4: Attendance Today */}
+              <div className="bg-surface-container-lowest p-3.5 sm:p-4 rounded-xl border border-outline-variant/20 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-outline">
+                    Attendance Today
                   </span>
-                  <span className="font-data-mono text-[11px] text-outline font-medium">11,329 Present</span>
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
+                    <span className="material-symbols-outlined text-[18px]">fingerprint</span>
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <span className="text-xl sm:text-2xl font-bold text-on-surface">91.4%</span>
+                  <div className="text-[11px] text-outline mt-1">
+                    11,329 Present across 8 branches
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Section: Analytics & Visual Intelligence (3 Asymmetric Cards) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
-              {/* Card 1: Admissions Overview (6 Columns) */}
-              <div className="lg:col-span-6 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
-                <div className="flex flex-wrap items-center justify-between gap-space-sm pb-space-sm">
+            {/* 5. MINIMAL ANALYTICS & DISTRIBUTION (2 Clean Balanced Cards) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              {/* Card 1: Trajectory Trend (7 Cols) */}
+              <div className="lg:col-span-7 bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-outline-variant/20 shadow-xs flex flex-col justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2">
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="font-headline-md text-headline-md font-bold text-on-surface">
-                        Admissions Overview
-                      </h2>
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-primary-fixed text-on-primary-fixed font-data-mono">
-                        +32% vs Last Term
-                      </span>
-                    </div>
-                    <p className="font-body-sm text-body-sm text-outline mt-0.5">
-                      Monthly trajectory across Jan - May with top branch cohorts
-                    </p>
+                    <h2 className="font-bold text-sm sm:text-base text-on-surface">
+                      Performance Trajectory
+                    </h2>
+                    <p className="text-xs text-outline">Monthly progression across Jan - May</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 font-label-sm text-[11px] text-on-surface-variant font-medium">
-                      <span className="w-2.5 h-2.5 rounded-full bg-primary"></span> Siliguri
-                    </div>
-                    <div className="flex items-center gap-1.5 font-label-sm text-[11px] text-on-surface-variant font-medium">
-                      <span className="w-2.5 h-2.5 rounded-full bg-secondary"></span> Binnaguri
-                    </div>
-                    <div className="flex items-center gap-1.5 font-label-sm text-[11px] text-on-surface-variant font-medium">
-                      <span className="w-2.5 h-2.5 rounded-full bg-tertiary"></span> Jalpaiguri
-                    </div>
+                  {/* Clean Tab Switcher */}
+                  <div className="flex bg-surface-container p-0.5 rounded-lg text-xs font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => setAnalyticsTab('admissions')}
+                      className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                        analyticsTab === 'admissions'
+                          ? 'bg-surface-container-lowest text-primary shadow-xs font-bold'
+                          : 'text-outline hover:text-on-surface'
+                      }`}
+                    >
+                      Admissions
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAnalyticsTab('revenue')}
+                      className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                        analyticsTab === 'revenue'
+                          ? 'bg-surface-container-lowest text-primary shadow-xs font-bold'
+                          : 'text-outline hover:text-on-surface'
+                      }`}
+                    >
+                      Revenue (₹)
+                    </button>
                   </div>
                 </div>
 
-                {/* Custom Inline Architectural SVG Chart for Admissions */}
-                <div className="w-full pt-4 pb-2">
-                  <svg aria-label="Admissions trajectory chart" className="w-full h-44 overflow-visible" viewBox="0 0 540 180">
+                {/* Clean SVG Trend Chart */}
+                <div className="w-full pt-3 pb-1">
+                  <svg
+                    aria-label="Trajectory chart"
+                    className="w-full h-36 sm:h-40 overflow-visible"
+                    viewBox="0 0 500 140"
+                  >
                     <defs>
-                      <linearGradient id="dashPrimaryArea" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#004ac6" stopOpacity="0.22"></stop>
+                      <linearGradient id="minimalAreaGrad" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#004ac6" stopOpacity="0.2"></stop>
                         <stop offset="100%" stopColor="#004ac6" stopOpacity="0.0"></stop>
                       </linearGradient>
                     </defs>
-                    {/* Horizontal Grid lines */}
-                    <line stroke="#eaedff" strokeDasharray="3 3" strokeWidth="1" x1="0" x2="540" y1="30" y2="30"></line>
-                    <line stroke="#eaedff" strokeDasharray="3 3" strokeWidth="1" x1="0" x2="540" y1="80" y2="80"></line>
-                    <line stroke="#eaedff" strokeDasharray="3 3" strokeWidth="1" x1="0" x2="540" y1="130" y2="130"></line>
-                    {/* Siliguri Primary Trend Area & Curve */}
-                    <path
-                      d="M 30 140 C 90 125, 140 100, 200 85 C 260 70, 320 75, 380 45 C 440 20, 480 30, 520 18 L 520 160 L 30 160 Z"
-                      fill="url(#dashPrimaryArea)"
-                    ></path>
-                    <path
-                      d="M 30 140 C 90 125, 140 100, 200 85 C 260 70, 320 75, 380 45 C 440 20, 480 30, 520 18"
-                      fill="none"
-                      stroke="#004ac6"
-                      strokeLinecap="round"
-                      strokeWidth="3"
-                    ></path>
-                    {/* Binnaguri Trend */}
-                    <path
-                      d="M 30 150 C 90 140, 150 120, 210 115 C 280 110, 340 90, 400 80 C 460 70, 490 62, 520 54"
-                      fill="none"
-                      stroke="#006a61"
-                      strokeDasharray="2 1"
-                      strokeLinecap="round"
-                      strokeWidth="2.5"
-                    ></path>
-                    {/* Jalpaiguri Trend */}
-                    <path
-                      d="M 30 155 C 100 150, 160 140, 220 135 C 300 130, 360 120, 420 105 C 470 95, 500 88, 520 82"
-                      fill="none"
-                      stroke="#4338d9"
-                      strokeLinecap="round"
-                      strokeWidth="2"
-                    ></path>
-                    {/* Interactive Marker Node at Peak */}
-                    <circle cx="520" cy="18" fill="#004ac6" r="5" stroke="#ffffff" strokeWidth="2"></circle>
-                    <circle cx="520" cy="54" fill="#006a61" r="4" stroke="#ffffff" strokeWidth="1.5"></circle>
-                    <circle cx="520" cy="82" fill="#4338d9" r="4" stroke="#ffffff" strokeWidth="1.5"></circle>
-                    {/* Axis Labels */}
-                    <text fill="#737686" fontFamily="Inter" fontSize="11" textAnchor="middle" x="30" y="175">
-                      Jan
-                    </text>
-                    <text fill="#737686" fontFamily="Inter" fontSize="11" textAnchor="middle" x="150" y="175">
-                      Feb
-                    </text>
-                    <text fill="#737686" fontFamily="Inter" fontSize="11" textAnchor="middle" x="270" y="175">
-                      Mar
-                    </text>
-                    <text fill="#737686" fontFamily="Inter" fontSize="11" textAnchor="middle" x="390" y="175">
-                      Apr
-                    </text>
-                    <text fill="#737686" fontFamily="Inter" fontSize="11" textAnchor="middle" x="510" y="175">
-                      May
-                    </text>
+                    {/* Subtle horizontal grid lines */}
+                    <line stroke="#80808020" strokeDasharray="3 3" x1="0" x2="500" y1="20" y2="20"></line>
+                    <line stroke="#80808020" strokeDasharray="3 3" x1="0" x2="500" y1="65" y2="65"></line>
+                    <line stroke="#80808020" strokeDasharray="3 3" x1="0" x2="500" y1="110" y2="110"></line>
+
+                    {analyticsTab === 'admissions' ? (
+                      <>
+                        <path
+                          d="M 30 100 C 90 90, 150 75, 230 60 C 310 45, 390 35, 470 15 L 470 120 L 30 120 Z"
+                          fill="url(#minimalAreaGrad)"
+                        />
+                        <path
+                          d="M 30 100 C 90 90, 150 75, 230 60 C 310 45, 390 35, 470 15"
+                          fill="none"
+                          stroke="#004ac6"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                        />
+                        <circle cx="470" cy="15" r="4.5" fill="#004ac6" stroke="#ffffff" strokeWidth="2" />
+                      </>
+                    ) : (
+                      <>
+                        <path
+                          d="M 30 105 C 90 95, 160 80, 240 65 C 320 50, 400 30, 470 20 L 470 120 L 30 120 Z"
+                          fill="url(#minimalAreaGrad)"
+                        />
+                        <path
+                          d="M 30 105 C 90 95, 160 80, 240 65 C 320 50, 400 30, 470 20"
+                          fill="none"
+                          stroke="#10B981"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                        />
+                        <circle cx="470" cy="20" r="4.5" fill="#10B981" stroke="#ffffff" strokeWidth="2" />
+                      </>
+                    )}
+
+                    {/* Month labels */}
+                    <text fill="#888888" fontSize="10" textAnchor="middle" x="30" y="132">Jan</text>
+                    <text fill="#888888" fontSize="10" textAnchor="middle" x="140" y="132">Feb</text>
+                    <text fill="#888888" fontSize="10" textAnchor="middle" x="250" y="132">Mar</text>
+                    <text fill="#888888" fontSize="10" textAnchor="middle" x="360" y="132">Apr</text>
+                    <text fill="#888888" fontSize="10" textAnchor="middle" x="470" y="132">May</text>
                   </svg>
                 </div>
 
-                <div className="mt-3 pt-3 flex items-center justify-between bg-surface-container-low p-3 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-primary text-[18px]">insights</span>
-                    <span className="font-body-sm text-body-sm text-on-surface font-medium">
-                      May Peak Enrollment: <strong className="font-semibold">Siliguri leads with 482 admissions</strong> this cycle.
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => onNavigate('admissions')}
-                    className="font-label-sm text-label-sm font-semibold text-primary hover:underline cursor-pointer"
-                    type="button"
-                  >
-                    Cohort Details
-                  </button>
-                </div>
-              </div>
-
-              {/* Card 2: Fee Collection & Cashflow vs Target (3 Columns) */}
-              <div className="lg:col-span-3 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">
-                      Cashflow Matrix
-                    </span>
-                    <h2 className="font-headline-sm text-headline-sm font-bold text-on-surface mt-0.5">
-                      Collection vs Target
-                    </h2>
-                  </div>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-secondary-container text-on-secondary-container font-data-mono">
-                    INR (₹)
+                <div className="pt-2 text-xs text-outline flex items-center justify-between border-t border-outline-variant/10 mt-1">
+                  <span>
+                    {analyticsTab === 'admissions'
+                      ? 'Peak intake in May: +32% growth compared to Q1'
+                      : 'Fee Collections: ₹42.8 Lakhs realized in May (95% target met)'}
+                  </span>
+                  <span className="text-primary font-semibold cursor-pointer" onClick={() => onNavigate('admissions')}>
+                    Details →
                   </span>
                 </div>
-
-                <div className="my-4">
-                  <div className="flex items-baseline justify-between">
-                    <span className="font-headline-lg text-headline-lg font-bold text-on-surface">₹42.8 L</span>
-                    <span className="font-label-sm text-label-sm text-outline">Target ₹45.0 L</span>
-                  </div>
-                  <div className="mt-2 w-full h-3 bg-surface-container-high rounded-full overflow-hidden flex">
-                    <div className="h-full bg-secondary rounded-l-full" style={{ width: '82%' }}></div>
-                    <div className="h-full bg-primary" style={{ width: '13%' }}></div>
-                  </div>
-                  <div className="flex items-center justify-between mt-2 font-label-sm text-label-sm">
-                    <span className="text-secondary font-semibold">95.1% Realized</span>
-                    <span className="text-error font-medium">₹2.2L Gap</span>
-                  </div>
-                </div>
-
-                {/* Mini Bar Graph Representation (Monthly ₹ Collection) */}
-                <div className="space-y-2 pt-2">
-                  <div className="flex items-center justify-between font-label-sm text-[11px]">
-                    <span className="text-outline w-8">Mar</span>
-                    <div className="flex-1 mx-2 h-2 bg-surface-container rounded-full overflow-hidden">
-                      <div className="bg-primary-container h-full rounded-full" style={{ width: '78%' }}></div>
-                    </div>
-                    <span className="font-data-mono font-medium text-on-surface">₹36.2L</span>
-                  </div>
-                  <div className="flex items-center justify-between font-label-sm text-[11px]">
-                    <span className="text-outline w-8">Apr</span>
-                    <div className="flex-1 mx-2 h-2 bg-surface-container rounded-full overflow-hidden">
-                      <div className="bg-primary-container h-full rounded-full" style={{ width: '88%' }}></div>
-                    </div>
-                    <span className="font-data-mono font-medium text-on-surface">₹39.8L</span>
-                  </div>
-                  <div className="flex items-center justify-between font-label-sm text-[11px]">
-                    <span className="text-outline w-8">May</span>
-                    <div className="flex-1 mx-2 h-2 bg-surface-container rounded-full overflow-hidden">
-                      <div className="bg-secondary h-full rounded-full" style={{ width: '95%' }}></div>
-                    </div>
-                    <span className="font-data-mono font-bold text-secondary">₹42.8L</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-3 flex items-center justify-between">
-                  <span className="font-body-sm text-body-sm text-outline">Reconciliation: Daily Auto-Settled</span>
-                  <span className="material-symbols-outlined text-[18px] text-secondary">check_circle</span>
-                </div>
               </div>
 
-              {/* Card 3: Student Distribution (3 Columns with Dynamic Toggle) */}
-              <div className="lg:col-span-3 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between" id="distribution-card">
+              {/* Card 2: Distribution Overview (5 Cols) */}
+              <div className="lg:col-span-5 bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-outline-variant/20 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between pb-2">
                   <div>
-                    <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">
-                      Demographics
-                    </span>
-                    <h2 className="font-headline-sm text-headline-sm font-bold text-on-surface mt-0.5">
-                      Student Share
+                    <h2 className="font-bold text-sm sm:text-base text-on-surface">
+                      Distribution
                     </h2>
+                    <p className="text-xs text-outline">Enrollment share</p>
                   </div>
-                  {/* Pill Toggle Switch */}
-                  <div className="flex p-0.5 bg-surface-container rounded-lg">
+                  <div className="flex bg-surface-container p-0.5 rounded-lg text-xs font-semibold">
                     <button
+                      type="button"
                       onClick={() => setDistributionTab('branch')}
-                      className={`px-2 py-1 rounded-md text-[11px] font-label-sm font-semibold transition-all cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                         distributionTab === 'branch'
-                          ? 'bg-surface-container-lowest text-primary shadow-sm'
+                          ? 'bg-surface-container-lowest text-primary shadow-xs font-bold'
                           : 'text-outline hover:text-on-surface'
                       }`}
-                      type="button"
                     >
                       Branch
                     </button>
                     <button
+                      type="button"
                       onClick={() => setDistributionTab('course')}
-                      className={`px-2 py-1 rounded-md text-[11px] font-label-sm font-semibold transition-all cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                         distributionTab === 'course'
-                          ? 'bg-surface-container-lowest text-primary shadow-sm'
+                          ? 'bg-surface-container-lowest text-primary shadow-xs font-bold'
                           : 'text-outline hover:text-on-surface'
                       }`}
-                      type="button"
                     >
                       Course
                     </button>
                   </div>
                 </div>
 
-                {/* Branch View Panel (Default) */}
+                {/* Progress breakdown */}
                 {distributionTab === 'branch' ? (
-                  <div className="flex flex-col gap-3 py-2">
-                    <div className="flex items-center justify-center py-1">
-                      {/* Inline SVG Donut Chart for Branch Breakdown */}
-                      <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
-                        {/* Background Ring */}
-                        <circle cx="18" cy="18" fill="none" r="15.915" stroke="#eaedff" strokeWidth="3.8"></circle>
-                        {/* Siliguri (38%) */}
-                        <circle
-                          cx="18"
-                          cy="18"
-                          fill="none"
-                          r="15.915"
-                          stroke="#004ac6"
-                          strokeDasharray="38 62"
-                          strokeDashoffset="25"
-                          strokeWidth="3.8"
-                        ></circle>
-                        {/* Binnaguri (24%) */}
-                        <circle
-                          cx="18"
-                          cy="18"
-                          fill="none"
-                          r="15.915"
-                          stroke="#006a61"
-                          strokeDasharray="24 76"
-                          strokeDashoffset="87"
-                          strokeWidth="3.8"
-                        ></circle>
-                        {/* Jalpaiguri (18%) */}
-                        <circle
-                          cx="18"
-                          cy="18"
-                          fill="none"
-                          r="15.915"
-                          stroke="#4338d9"
-                          strokeDasharray="18 82"
-                          strokeDashoffset="63"
-                          strokeWidth="3.8"
-                        ></circle>
-                        {/* Others (20%) */}
-                        <circle
-                          cx="18"
-                          cy="18"
-                          fill="none"
-                          r="15.915"
-                          stroke="#c3c6d7"
-                          strokeDasharray="20 80"
-                          strokeDashoffset="45"
-                          strokeWidth="3.8"
-                        ></circle>
-                      </svg>
+                  <div className="space-y-2.5 py-2">
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="font-medium text-on-surface">Siliguri HQ</span>
+                        <span className="font-bold text-on-surface">38% (4,731)</span>
+                      </div>
+                      <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                        <div className="h-full bg-primary rounded-full" style={{ width: '38%' }}></div>
+                      </div>
                     </div>
-                    <div className="space-y-1.5 font-label-sm text-[12px]">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-primary"></span>
-                          <span>Siliguri Campus</span>
-                        </div>
-                        <span className="font-data-mono font-bold text-on-surface">38% (4,731)</span>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="font-medium text-on-surface">Binnaguri Hub</span>
+                        <span className="font-bold text-on-surface">24% (2,988)</span>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-secondary"></span>
-                          <span>Binnaguri Campus</span>
-                        </div>
-                        <span className="font-data-mono font-bold text-on-surface">24% (2,988)</span>
+                      <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-600 rounded-full" style={{ width: '24%' }}></div>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-tertiary"></span>
-                          <span>Jalpaiguri Campus</span>
-                        </div>
-                        <span className="font-data-mono font-bold text-on-surface">18% (2,241)</span>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="font-medium text-on-surface">Jalpaiguri City</span>
+                        <span className="font-bold text-on-surface">18% (2,241)</span>
                       </div>
-                      <div className="flex items-center justify-between text-outline">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-outline-variant"></span>
-                          <span>Other 5 Branches</span>
-                        </div>
-                        <span className="font-data-mono font-medium">20% (2,490)</span>
+                      <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-600 rounded-full" style={{ width: '18%' }}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="font-medium text-outline">Other 5 Branches</span>
+                        <span className="font-medium text-outline">20% (2,490)</span>
+                      </div>
+                      <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                        <div className="h-full bg-outline-variant rounded-full" style={{ width: '20%' }}></div>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  /* Course View Panel */
-                  <div className="flex flex-col gap-3 py-2">
-                    <div className="space-y-2.5 pt-1 font-label-sm text-[12px]">
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="font-medium text-on-surface">Web Full-Stack Dev</span>
-                          <span className="font-data-mono font-bold text-primary">34% (4,233)</span>
-                        </div>
-                        <div className="h-1.5 bg-surface-container rounded-full overflow-hidden">
-                          <div className="h-full bg-primary rounded-full" style={{ width: '34%' }}></div>
-                        </div>
+                  <div className="space-y-2.5 py-2">
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="font-medium text-on-surface">Web Full-Stack</span>
+                        <span className="font-bold text-primary">34% (4,233)</span>
                       </div>
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="font-medium text-on-surface">Tally Prime &amp; Taxation</span>
-                          <span className="font-data-mono font-bold text-secondary">28% (3,486)</span>
-                        </div>
-                        <div className="h-1.5 bg-surface-container rounded-full overflow-hidden">
-                          <div className="h-full bg-secondary rounded-full" style={{ width: '28%' }}></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="font-medium text-on-surface">Digital Marketing &amp; SEO</span>
-                          <span className="font-data-mono font-bold text-tertiary">22% (2,739)</span>
-                        </div>
-                        <div className="h-1.5 bg-surface-container rounded-full overflow-hidden">
-                          <div className="h-full bg-tertiary rounded-full" style={{ width: '22%' }}></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="font-medium text-on-surface">Graphic &amp; Motion Design</span>
-                          <span className="font-data-mono font-bold text-outline">16% (1,992)</span>
-                        </div>
-                        <div className="h-1.5 bg-surface-container rounded-full overflow-hidden">
-                          <div className="h-full bg-outline-variant rounded-full" style={{ width: '16%' }}></div>
-                        </div>
+                      <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                        <div className="h-full bg-primary rounded-full" style={{ width: '34%' }}></div>
                       </div>
                     </div>
-                    <div className="mt-2 text-center">
-                      <span className="font-label-sm text-[11px] text-outline">68 Batches Active Across Domains</span>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="font-medium text-on-surface">Tally Prime & Tax</span>
+                        <span className="font-bold text-emerald-600">28% (3,486)</span>
+                      </div>
+                      <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-600 rounded-full" style={{ width: '28%' }}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="font-medium text-on-surface">Digital Marketing</span>
+                        <span className="font-bold text-purple-600">22% (2,739)</span>
+                      </div>
+                      <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                        <div className="h-full bg-purple-600 rounded-full" style={{ width: '22%' }}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="font-medium text-outline">Design & Others</span>
+                        <span className="font-medium text-outline">16% (1,992)</span>
+                      </div>
+                      <div className="h-2 bg-surface-container rounded-full overflow-hidden">
+                        <div className="h-full bg-outline-variant rounded-full" style={{ width: '16%' }}></div>
+                      </div>
                     </div>
                   </div>
                 )}
 
-                <div className="pt-2 text-right">
-                  <button
-                    onClick={() => {
-                      onNavigate('courses-batches');
-                      onShowToast('Opened multi-campus discipline distribution matrix.');
-                    }}
-                    className="font-label-sm text-label-sm font-semibold text-primary hover:underline cursor-pointer"
-                    type="button"
+                <div className="pt-2 text-xs text-right border-t border-outline-variant/10">
+                  <span
+                    className="text-primary font-semibold cursor-pointer"
+                    onClick={() => onNavigate('courses-batches')}
                   >
-                    View Matrix Map
-                  </button>
+                    View All 24 Courses →
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Data Grid: 2 Column Asymmetric Workspace */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
-              {/* Left Column: Recent Admissions High-Density Table (7 Columns) */}
-              <div className="lg:col-span-7 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+            {/* 6. ESSENTIAL DATA: RECENT ADMISSIONS & RECENT COLLECTIONS (100% RESPONSIVE) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              {/* Left: Recent Admissions (7 cols on lg, fully responsive on mobile) */}
+              <div className="lg:col-span-7 bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-outline-variant/20 shadow-xs flex flex-col justify-between">
                 <div>
-                  <div className="flex flex-wrap items-center justify-between gap-space-sm pb-space-md">
+                  <div className="flex items-center justify-between pb-3">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="font-headline-md text-headline-md font-bold text-on-surface">
-                          Recent Admissions
-                        </h2>
-                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container text-primary font-data-mono">
-                          Live Stream
-                        </span>
-                      </div>
-                      <p className="font-body-sm text-body-sm text-outline mt-0.5">
-                        Latest enrollments across branches with verification stages
-                      </p>
+                      <h2 className="font-bold text-sm sm:text-base text-on-surface">
+                        Recent Admissions
+                      </h2>
+                      <p className="text-xs text-outline">Verified enrollments stream</p>
                     </div>
                     <button
                       onClick={() => onNavigate('admissions')}
-                      className="flex items-center gap-1 font-label-md text-label-md font-semibold text-primary hover:underline cursor-pointer"
+                      className="text-xs font-semibold text-primary hover:underline cursor-pointer flex items-center gap-1"
                     >
                       <span>View All</span>
-                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
                     </button>
                   </div>
 
-                  {/* Table Container */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                  {/* Desktop Table View (hidden on sm/mobile) */}
+                  <div className="hidden sm:block overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
                       <thead>
-                        <tr className="bg-surface-container-low text-outline font-label-sm text-label-sm">
-                          <th className="py-2.5 px-3 rounded-l-lg font-semibold">Student</th>
-                          <th className="py-2.5 px-3 font-semibold">Course</th>
-                          <th className="py-2.5 px-3 font-semibold">Campus</th>
-                          <th className="py-2.5 px-3 font-semibold">Date</th>
-                          <th className="py-2.5 px-3 font-semibold">Status</th>
-                          <th className="py-2.5 px-3 rounded-r-lg text-right font-semibold">Action</th>
+                        <tr className="border-b border-outline-variant/20 text-outline">
+                          <th className="py-2.5 font-semibold">Student</th>
+                          <th className="py-2.5 font-semibold">Course</th>
+                          <th className="py-2.5 font-semibold">Campus</th>
+                          <th className="py-2.5 font-semibold">Status</th>
+                          <th className="py-2.5 text-right font-semibold">Action</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y-0">
-                        {recentAdmissions.map(adm => (
-                          <tr key={adm.id} className="hover:bg-surface-container-low/60 transition-colors group">
-                            <td className="py-3 px-3">
-                              <div className="flex items-center gap-2.5">
-                                <img
-                                  className="w-8 h-8 rounded-full object-cover"
-                                  alt={adm.name}
-                                  src={adm.avatar}
-                                />
-                                <div className="flex flex-col min-w-0">
-                                  <span className="font-label-md text-label-md font-semibold text-on-surface truncate">
-                                    {adm.name}
-                                  </span>
-                                  <span className="font-data-mono text-[10px] text-outline">{adm.code}</span>
+                      <tbody className="divide-y divide-outline-variant/10">
+                        {filteredAdmissions.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="py-6 text-center text-outline">
+                              No student matching "{searchQuery}"
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredAdmissions.map(adm => (
+                            <tr key={adm.id} className="hover:bg-surface-container-low/50 transition-colors">
+                              <td className="py-2.5">
+                                <div className="flex items-center gap-2">
+                                  <img
+                                    className="w-7 h-7 rounded-full object-cover"
+                                    alt={adm.name}
+                                    src={adm.avatar}
+                                  />
+                                  <div>
+                                    <div className="font-semibold text-on-surface">{adm.name}</div>
+                                    <div className="font-mono text-[10px] text-outline">{adm.code}</div>
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                            <td className="py-3 px-3 font-body-sm text-body-sm text-on-surface font-medium">
-                              {adm.course}
-                            </td>
-                            <td className="py-3 px-3 font-body-sm text-body-sm text-on-surface-variant">
-                              {adm.campus}
-                            </td>
-                            <td className="py-3 px-3 font-data-mono text-[11px] text-outline">
-                              {adm.date}
-                            </td>
-                            <td className="py-3 px-3">
-                              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold ${adm.statusBg} ${adm.statusText}`}>
-                                <span className={`w-1.5 h-1.5 rounded-full ${adm.statusDot}`}></span> {adm.status}
-                              </span>
-                            </td>
-                            <td className="py-3 px-3 text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                <button
-                                  aria-label={`Open Profile for ${adm.name}`}
-                                  title="View Full Student Profile"
-                                  onClick={() => onNavigate('student-profile')}
-                                  className="p-1 rounded hover:bg-primary-fixed/20 text-primary transition-colors cursor-pointer"
-                                  type="button"
+                              </td>
+                              <td className="py-2.5 text-on-surface">{adm.course}</td>
+                              <td className="py-2.5 text-outline">{adm.campus}</td>
+                              <td className="py-2.5">
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${adm.statusBg}`}
                                 >
-                                  <span className="material-symbols-outlined text-[18px]">badge</span>
-                                </button>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${adm.statusDot}`}></span>
+                                  <span>{adm.status}</span>
+                                </span>
+                              </td>
+                              <td className="py-2.5 text-right">
                                 <button
-                                  aria-label={`Review ${adm.name}`}
-                                  title="Quick Review Modal"
+                                  type="button"
                                   onClick={() => {
                                     setSelectedStudent(adm);
                                     setIsReviewModalOpen(true);
                                   }}
-                                  className="p-1 rounded hover:bg-surface-container text-outline hover:text-primary transition-colors cursor-pointer"
-                                  type="button"
+                                  className="px-2 py-1 rounded bg-surface-container hover:bg-primary hover:text-white transition-colors text-[11px] font-medium cursor-pointer"
                                 >
-                                  <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                  Review
                                 </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
+
+                  {/* Mobile Touch Cards View (visible on < sm so no horizontal scroll cut) */}
+                  <div className="sm:hidden space-y-2.5">
+                    {filteredAdmissions.length === 0 ? (
+                      <p className="text-center py-4 text-xs text-outline">No student matching "{searchQuery}"</p>
+                    ) : (
+                      filteredAdmissions.map(adm => (
+                        <div
+                          key={adm.id}
+                          className="p-3 rounded-lg bg-surface-container-low border border-outline-variant/30 flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <img
+                              className="w-8 h-8 rounded-full object-cover"
+                              alt={adm.name}
+                              src={adm.avatar}
+                            />
+                            <div className="min-w-0">
+                              <p className="font-semibold text-xs text-on-surface truncate">{adm.name}</p>
+                              <p className="text-[11px] text-outline truncate">{adm.course}</p>
+                              <p className="text-[10px] text-outline font-mono">{adm.campus} • {adm.date}</p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                            <span
+                              className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[10px] font-semibold ${adm.statusBg}`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${adm.statusDot}`}></span>
+                              <span>{adm.status}</span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedStudent(adm);
+                                setIsReviewModalOpen(true);
+                              }}
+                              className="px-2 py-0.5 rounded bg-surface-container-high text-[11px] font-semibold text-primary cursor-pointer"
+                            >
+                              View
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
 
-                <div className="pt-3 mt-2 flex items-center justify-between">
-                  <span className="font-body-sm text-body-sm text-outline">
-                    Showing {recentAdmissions.length} of {todayAdmissionsCount} today's enrollments
+                <div className="pt-3 text-[11px] text-outline flex items-center justify-between border-t border-outline-variant/10 mt-2">
+                  <span>Showing {filteredAdmissions.length} of {todayAdmissionsCount} enrollments today</span>
+                  <span className="text-primary font-medium cursor-pointer" onClick={() => onNavigate('admissions')}>
+                    Manage all records →
                   </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      aria-label="Previous Page"
-                      className="p-1 rounded hover:bg-surface-container text-outline disabled:opacity-40"
-                      disabled
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-                    </button>
-                    <button
-                      aria-label="Next Page"
-                      onClick={() => onShowToast('Showing page 2 of verified enrollments.')}
-                      className="p-1 rounded hover:bg-surface-container text-on-surface cursor-pointer"
-                      type="button"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-                    </button>
-                  </div>
                 </div>
               </div>
 
-              {/* Right Column: Recent Collections & Live Institution Feed (5 Columns) */}
-              <div className="lg:col-span-5 flex flex-col gap-space-lg">
-                {/* Right Top: Recent Fee Payments List */}
-                <div className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
-                  <div className="flex items-center justify-between pb-space-sm">
+              {/* Right: Recent Collections & Live Alerts (5 cols on lg) */}
+              <div className="lg:col-span-5 flex flex-col gap-4">
+                {/* Recent Collections */}
+                <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-outline-variant/20 shadow-xs">
+                  <div className="flex items-center justify-between pb-3">
                     <div>
-                      <h2 className="font-headline-sm text-headline-sm font-bold text-on-surface">
-                        Recent Fee Payments
+                      <h2 className="font-bold text-sm sm:text-base text-on-surface">
+                        Recent Collections
                       </h2>
-                      <p className="font-body-sm text-body-sm text-outline">
-                        Reconciled gateway &amp; branch counter receipts
-                      </p>
+                      <p className="text-xs text-outline">Counter & UPI receipts</p>
                     </div>
                     <button
-                      onClick={() => onShowToast('Full finance payments ledger opened.')}
-                      className="font-label-md text-label-md font-semibold text-primary hover:underline cursor-pointer"
+                      onClick={() => setIsFeeModalOpen(true)}
+                      className="text-xs font-semibold text-emerald-600 hover:underline cursor-pointer"
                     >
-                      Ledger
+                      + Collect Fee
                     </button>
                   </div>
 
-                  <div className="space-y-2 pt-2">
+                  <div className="space-y-2">
                     {recentFees.map(fee => (
                       <div
                         key={fee.id}
                         className="p-2.5 rounded-lg bg-surface-container-low flex items-center justify-between hover:bg-surface-container transition-colors"
                       >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className={`w-9 h-9 rounded-lg ${fee.iconBg} flex items-center justify-center ${fee.iconColor} flex-shrink-0`}>
-                            <span className="material-symbols-outlined text-[18px]">{fee.icon}</span>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 flex-shrink-0">
+                            <span className="material-symbols-outlined text-[17px]">{fee.icon}</span>
                           </div>
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-label-md text-label-md font-semibold text-on-surface truncate">
-                                {fee.studentName}
-                              </span>
-                              <span className={`px-1.5 py-0.2 rounded text-[10px] font-semibold ${fee.modeBadgeBg} ${fee.modeBadgeText}`}>
-                                {fee.mode}
-                              </span>
-                            </div>
-                            <span className="font-data-mono text-[11px] text-outline truncate block">
-                              {fee.code}
-                            </span>
+                            <p className="font-semibold text-xs text-on-surface truncate">
+                              {fee.studentName}
+                            </p>
+                            <p className="text-[10px] text-outline font-mono">
+                              {fee.code} • {fee.mode}
+                            </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0 pl-2">
-                          <span className="font-data-mono font-bold text-on-surface text-label-lg">
+
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="font-bold text-xs sm:text-sm text-on-surface font-mono">
                             {fee.amount}
                           </span>
                           <button
-                            aria-label={`Download Receipt ${fee.code}`}
-                            onClick={() => onShowToast(`Receipt ${fee.code} for ${fee.studentName} downloaded (PDF).`)}
-                            className="p-1 rounded hover:bg-surface-container-lowest text-outline hover:text-primary transition-colors cursor-pointer"
                             type="button"
+                            onClick={() =>
+                              onShowToast(`Receipt ${fee.code} for ${fee.studentName} downloaded.`)
+                            }
+                            className="p-1 rounded text-outline hover:text-primary transition-colors cursor-pointer"
+                            title="Download Receipt"
                           >
-                            <span className="material-symbols-outlined text-[18px]">receipt</span>
+                            <span className="material-symbols-outlined text-[17px]">receipt</span>
                           </button>
                         </div>
                       </div>
@@ -1732,33 +1162,36 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
                   </div>
                 </div>
 
-                {/* Right Bottom: Live Institution Activity Feed */}
-                <div className="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
-                  <div className="flex items-center justify-between pb-space-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                      </span>
-                      <h2 className="font-headline-sm text-headline-sm font-bold text-on-surface">
-                        Institution Stream
-                      </h2>
-                    </div>
-                    <span className="font-data-mono text-[11px] text-outline">Live Broadcast</span>
+                {/* System Activity (Minimal 3 Items) */}
+                <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-outline-variant/20 shadow-xs">
+                  <div className="flex items-center gap-1.5 pb-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <h2 className="font-bold text-xs uppercase tracking-wider text-outline">
+                      Live Stream
+                    </h2>
                   </div>
-
-                  <div className="relative pl-6 space-y-4 pt-2 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-surface-container-high">
-                    {streamEvents.map(evt => (
-                      <div key={evt.id} className="relative flex flex-col gap-0.5">
-                        <span className={`absolute -left-6 top-1 w-3 h-3 rounded-full ${evt.dotColor} ring-4 ring-surface-container-lowest`}></span>
-                        <p className="font-body-md text-body-md text-on-surface">{evt.primaryText}</p>
-                        <div className="flex items-center gap-2 font-data-mono text-[11px] text-outline">
-                          <span>{evt.campusOrSource}</span>
-                          <span>•</span>
-                          <span>{evt.time}</span>
-                        </div>
+                  <div className="space-y-2.5 text-xs">
+                    <div className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0"></span>
+                      <div>
+                        <span className="font-semibold text-on-surface">Rahul Kumar</span> admitted to Web Dev Batch 04
+                        <span className="text-[10px] text-outline block">Siliguri • 10:42 AM</span>
                       </div>
-                    ))}
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0"></span>
+                      <div>
+                        Fee payment of <strong className="text-emerald-600">₹12,500</strong> verified for Sneha Das
+                        <span className="text-[10px] text-outline block">UPI Gateway • 09:55 AM</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0"></span>
+                      <div>
+                        QR Certificate batch issued for Batch 2024-B (118 Issued)
+                        <span className="text-[10px] text-outline block">Academic Registry • 08:30 AM</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1767,118 +1200,28 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
         </main>
       </div>
 
-      {/* MODAL: Review Student Admission Dossier */}
-      {isReviewModalOpen && selectedStudent && (
-        <div className="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/50 max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-6 py-4 border-b border-outline-variant/30 flex items-center justify-between bg-surface-container-low/50">
-              <div className="flex items-center gap-3">
-                <img
-                  src={selectedStudent.avatar}
-                  alt={selectedStudent.name}
-                  className="w-10 h-10 rounded-full object-cover border border-outline-variant"
-                />
-                <div>
-                  <h3 className="font-headline-sm font-bold text-on-surface leading-tight">
-                    {selectedStudent.name}
-                  </h3>
-                  <p className="text-xs text-outline">{selectedStudent.code} • {selectedStudent.campus} Branch</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsReviewModalOpen(false)}
-                className="p-1 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[20px]">close</span>
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4 text-sm">
-              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-surface-container-low">
-                <div>
-                  <span className="text-xs text-outline block">Enrolled Program</span>
-                  <span className="font-semibold text-on-surface">{selectedStudent.course}</span>
-                </div>
-                <div>
-                  <span className="text-xs text-outline block">Campus Location</span>
-                  <span className="font-semibold text-on-surface">{selectedStudent.campus} Campus</span>
-                </div>
-                <div>
-                  <span className="text-xs text-outline block">Enrollment Timestamp</span>
-                  <span className="font-semibold text-on-surface">{selectedStudent.date}</span>
-                </div>
-                <div>
-                  <span className="text-xs text-outline block">Registration Status</span>
-                  <span className="font-semibold text-primary">{selectedStudent.status}</span>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl border border-outline-variant/60 space-y-2">
-                <span className="text-xs font-semibold text-on-surface uppercase tracking-wider block">
-                  Mandatory Verification Checklist
-                </span>
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex items-center gap-2 text-secondary font-medium">
-                    <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                    Aadhaar / National Identity Document Vaulted
-                  </div>
-                  <div className="flex items-center gap-2 text-secondary font-medium">
-                    <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                    10th &amp; 12th Academic Marks Ledger Verified
-                  </div>
-                  <div className="flex items-center gap-2 text-primary font-medium">
-                    <span className="material-symbols-outlined text-[16px]">verified_user</span>
-                    Biometric RFID Card Provisioned (#RFID-9812)
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  onClick={() => {
-                    onShowToast(`Official fee challan downloaded for ${selectedStudent.name}.`);
-                    setIsReviewModalOpen(false);
-                  }}
-                  className="px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-xs transition-colors cursor-pointer"
-                >
-                  Print Challan
-                </button>
-                <button
-                  onClick={() => {
-                    onShowToast(`Student dossier for ${selectedStudent.name} verified and locked.`);
-                    setIsReviewModalOpen(false);
-                  }}
-                  className="px-4 py-2 rounded-lg bg-primary text-on-primary font-semibold text-xs shadow-sm hover:bg-primary-container cursor-pointer"
-                >
-                  Confirm Verification
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: Quick Student Admission & Fee Counter */}
+      {/* MODAL 1: QUICK ADMISSION INTAKE */}
       {isQuickActionModalOpen && (
-        <div className="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/50 max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-6 py-4 border-b border-outline-variant/30 flex items-center justify-between bg-surface-container-low/50">
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/40 max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-5 py-3.5 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container-low/40">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[22px]">person_add</span>
-                <h3 className="font-headline-sm font-bold text-on-surface">Quick Admission &amp; Intake</h3>
+                <span className="material-symbols-outlined text-primary text-[20px]">person_add</span>
+                <h3 className="font-bold text-sm sm:text-base text-on-surface">Quick Student Admission</h3>
               </div>
               <button
+                type="button"
                 onClick={() => setIsQuickActionModalOpen(false)}
-                className="p-1 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container cursor-pointer"
+                className="p-1 rounded-lg text-outline hover:text-on-surface cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[20px]">close</span>
+                <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
 
-            <form onSubmit={handleCreateNewStudent} className="p-6 space-y-4 text-sm">
+            <form onSubmit={handleCreateNewStudent} className="p-5 space-y-3.5 text-xs">
               <div>
-                <label className="block text-xs font-semibold uppercase text-outline mb-1">
-                  Student Full Name
+                <label className="block font-semibold uppercase text-[10px] text-outline mb-1">
+                  Student Full Name *
                 </label>
                 <input
                   type="text"
@@ -1886,35 +1229,35 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
                   placeholder="e.g. Subhashish Roy"
                   value={newStudentName}
                   onChange={e => setNewStudentName(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg bg-surface-container-low border border-outline-variant/50 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="w-full h-9 px-3 rounded-lg bg-surface-container-low border border-outline-variant/40 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary text-xs"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold uppercase text-outline mb-1">
+                  <label className="block font-semibold uppercase text-[10px] text-outline mb-1">
                     Course Program
                   </label>
                   <select
                     value={newStudentCourse}
                     onChange={e => setNewStudentCourse(e.target.value)}
-                    className="w-full h-10 px-2 rounded-lg bg-surface-container-low border border-outline-variant/50 text-on-surface text-xs focus:outline-none cursor-pointer"
+                    className="w-full h-9 px-2 rounded-lg bg-surface-container-low border border-outline-variant/40 text-on-surface text-xs focus:outline-none cursor-pointer"
                   >
                     <option>Web Development</option>
-                    <option>Tally Prime</option>
-                    <option>Graphic Design</option>
+                    <option>Tally Prime & GST</option>
+                    <option>Graphic & UI Design</option>
                     <option>Digital Marketing</option>
                     <option>Spoken English</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase text-outline mb-1">
-                    Campus Branch
+                  <label className="block font-semibold uppercase text-[10px] text-outline mb-1">
+                    Branch Campus
                   </label>
                   <select
                     value={newStudentBranch}
                     onChange={e => setNewStudentBranch(e.target.value)}
-                    className="w-full h-10 px-2 rounded-lg bg-surface-container-low border border-outline-variant/50 text-on-surface text-xs focus:outline-none cursor-pointer"
+                    className="w-full h-9 px-2 rounded-lg bg-surface-container-low border border-outline-variant/40 text-on-surface text-xs focus:outline-none cursor-pointer"
                   >
                     <option>Siliguri</option>
                     <option>Binnaguri</option>
@@ -1925,34 +1268,201 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, on
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase text-outline mb-1">
-                  Immediate Collection Amount (₹)
+                <label className="block font-semibold uppercase text-[10px] text-outline mb-1">
+                  Initial Fee Collection (₹)
                 </label>
                 <input
                   type="number"
                   value={newStudentFee}
                   onChange={e => setNewStudentFee(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg bg-surface-container-low border border-outline-variant/50 text-on-surface font-data-mono focus:outline-none"
+                  className="w-full h-9 px-3 rounded-lg bg-surface-container-low border border-outline-variant/40 text-on-surface font-mono text-xs focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/10">
                 <button
                   type="button"
                   onClick={() => setIsQuickActionModalOpen(false)}
-                  className="px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container text-xs cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-lg text-outline hover:text-on-surface text-xs cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-primary text-on-primary font-semibold text-xs shadow-sm hover:bg-primary-container flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-1.5 rounded-lg bg-primary text-on-primary font-semibold text-xs shadow-xs hover:bg-primary-container transition-all cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[16px]">how_to_reg</span>
-                  <span>Confirm Enrollment</span>
+                  Confirm Admission
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: QUICK COLLECT FEE */}
+      {isFeeModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/40 max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-5 py-3.5 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container-low/40">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-emerald-600 text-[20px]">point_of_sale</span>
+                <h3 className="font-bold text-sm sm:text-base text-on-surface">Collect Counter Fee</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsFeeModalOpen(false)}
+                className="p-1 rounded-lg text-outline hover:text-on-surface cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleQuickCollectFee} className="p-5 space-y-3.5 text-xs">
+              <div>
+                <label className="block font-semibold uppercase text-[10px] text-outline mb-1">
+                  Student Name or ID *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Priya Sharma / #ADM-8901"
+                  value={feeStudentName}
+                  onChange={e => setFeeStudentName(e.target.value)}
+                  className="w-full h-9 px-3 rounded-lg bg-surface-container-low border border-outline-variant/40 text-on-surface focus:outline-none focus:ring-1 focus:ring-primary text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold uppercase text-[10px] text-outline mb-1">
+                    Amount (₹) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={feeAmount}
+                    onChange={e => setFeeAmount(e.target.value)}
+                    className="w-full h-9 px-3 rounded-lg bg-surface-container-low border border-outline-variant/40 text-on-surface font-mono text-xs focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold uppercase text-[10px] text-outline mb-1">
+                    Payment Mode
+                  </label>
+                  <select
+                    value={feeMode}
+                    onChange={e => setFeeMode(e.target.value)}
+                    className="w-full h-9 px-2 rounded-lg bg-surface-container-low border border-outline-variant/40 text-on-surface text-xs focus:outline-none cursor-pointer"
+                  >
+                    <option>UPI / QR</option>
+                    <option>Cash / Counter</option>
+                    <option>Card / POS</option>
+                    <option>NetBanking</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/10">
+                <button
+                  type="button"
+                  onClick={() => setIsFeeModalOpen(false)}
+                  className="px-3.5 py-1.5 rounded-lg text-outline hover:text-on-surface text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold text-xs shadow-xs hover:bg-emerald-700 transition-all cursor-pointer"
+                >
+                  Issue Receipt
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: REVIEW STUDENT DOSSIER */}
+      {isReviewModalOpen && selectedStudent && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/40 max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-5 py-4 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container-low/40">
+              <div className="flex items-center gap-2.5">
+                <img
+                  src={selectedStudent.avatar}
+                  alt={selectedStudent.name}
+                  className="w-9 h-9 rounded-full object-cover border border-outline-variant"
+                />
+                <div>
+                  <h3 className="font-bold text-sm text-on-surface">{selectedStudent.name}</h3>
+                  <p className="text-[11px] text-outline font-mono">
+                    {selectedStudent.code} • {selectedStudent.campus} Campus
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsReviewModalOpen(false)}
+                className="p-1 rounded-lg text-outline hover:text-on-surface cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <div className="p-5 space-y-3.5 text-xs">
+              <div className="grid grid-cols-2 gap-2.5 p-3 rounded-lg bg-surface-container-low">
+                <div>
+                  <span className="text-[10px] text-outline uppercase block">Program</span>
+                  <span className="font-semibold text-on-surface">{selectedStudent.course}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-outline uppercase block">Campus</span>
+                  <span className="font-semibold text-on-surface">{selectedStudent.campus} HQ</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-outline uppercase block">Enrolled</span>
+                  <span className="font-semibold text-on-surface">{selectedStudent.date}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-outline uppercase block">Status</span>
+                  <span className="font-bold text-primary">{selectedStudent.status}</span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 p-3 rounded-lg border border-outline-variant/30 text-[11px]">
+                <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                  <span className="material-symbols-outlined text-[15px]">check_circle</span>
+                  <span>Identity Documents Verified</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                  <span className="material-symbols-outlined text-[15px]">check_circle</span>
+                  <span>Fee Clearance Registered</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-1 border-t border-outline-variant/10">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onShowToast(`Downloaded challan for ${selectedStudent.name}`);
+                    setIsReviewModalOpen(false);
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-semibold cursor-pointer"
+                >
+                  Download Challan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsReviewModalOpen(false);
+                    onNavigate('student-profile');
+                  }}
+                  className="px-3.5 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container cursor-pointer"
+                >
+                  Full Profile
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

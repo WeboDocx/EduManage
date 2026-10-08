@@ -2,6 +2,7 @@ import React from 'react';
 import { ScreenType } from '../types';
 import { BRAND_HOTLINKS } from '../data/mockData';
 import { ThemeToggle } from './ThemeToggle';
+import { useSidebar } from '../context/SidebarContext';
 
 interface NavigationProps {
   currentScreen: ScreenType;
@@ -10,16 +11,43 @@ interface NavigationProps {
 }
 
 export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigate, onShowToast }) => {
+  const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const hasSidebarScreen = !['landing', 'register', 'onboarding'].includes(currentScreen);
+
   return (
     <>
       {/* Top Screen Selector Floating Bar for convenient testing & demo */}
-      <div className="bg-inverse-surface text-inverse-on-surface text-xs py-1.5 px-4 sticky top-0 z-[60] border-b border-surface-container-highest/20 flex flex-wrap items-center justify-between gap-2 shadow-sm">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 font-semibold text-secondary-fixed">
+      <div className="bg-inverse-surface text-inverse-on-surface text-xs py-1.5 px-3 sm:px-4 sticky top-0 z-[60] border-b border-surface-container-highest/20 flex items-center justify-between gap-3 shadow-sm overflow-x-auto">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Quick Sidebar Toggle on left */}
+          {hasSidebarScreen && (
+            <button
+              onClick={() => {
+                toggleSidebar();
+                onShowToast?.(isSidebarOpen ? 'Sidebar hide ho gaya (Full Workspace)' : 'Sidebar show ho gaya');
+              }}
+              className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border flex-shrink-0 ${
+                isSidebarOpen
+                  ? 'bg-surface-container-highest/40 hover:bg-surface-container-highest/70 text-white border-white/20'
+                  : 'bg-primary text-white border-primary shadow-xs ring-2 ring-primary/40'
+              }`}
+              title={isSidebarOpen ? 'Sidebar Hide karein (Shortcut: Ctrl+B / Cmd+B)' : 'Sidebar Show karein (Shortcut: Ctrl+B / Cmd+B)'}
+            >
+              <span className="material-symbols-outlined text-[15px]">
+                {isSidebarOpen ? 'left_panel_close' : 'left_panel_open'}
+              </span>
+              <span className="hidden sm:inline">{isSidebarOpen ? 'Hide Sidebar' : 'Show Sidebar'}</span>
+              <kbd className="hidden md:inline-block px-1 py-0.2 rounded bg-black/30 text-[9px] font-mono text-white/70">
+                ⌘B
+              </kbd>
+            </button>
+          )}
+
+          <span className="hidden md:inline-flex items-center gap-1 font-semibold text-secondary-fixed flex-shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-secondary-fixed animate-pulse"></span>
             EduManage Screens:
           </span>
-          <div className="flex items-center bg-surface-container-highest/20 rounded-lg p-0.5">
+          <div className="flex items-center bg-surface-container-highest/20 rounded-lg p-0.5 overflow-x-auto max-w-[calc(100vw-180px)] sm:max-w-none">
             <button
               onClick={() => onNavigate('certificates')}
               className={`px-3 py-1 rounded-md transition-all font-semibold flex items-center gap-1.5 ${

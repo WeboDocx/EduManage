@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ScreenType } from '../types';
 import { ThemeToggle } from './ThemeToggle';
+import { useSidebar } from '../context/SidebarContext';
 
 interface TeacherPortalScreenProps {
   onNavigate: (screen: ScreenType) => void;
@@ -72,7 +73,7 @@ export const TeacherPortalScreen: React.FC<TeacherPortalScreenProps> = ({
     },
   ]);
 
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const [isRegisterLocked, setIsRegisterLocked] = useState(false);
   const [isSpeedGraderOpen, setIsSpeedGraderOpen] = useState(false);
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
@@ -122,17 +123,17 @@ export const TeacherPortalScreen: React.FC<TeacherPortalScreenProps> = ({
       {/* 1. FIXED LEFT NAVIGATION SIDEBAR (w-[260px]) */}
       {/* ========================================================================= */}
       {/* Mobile backdrop overlay */}
-      {isMobileSidebarOpen && (
+      {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 lg:hidden transition-opacity"
-          onClick={() => setIsMobileSidebarOpen(false)}
+          onClick={() => setIsSidebarOpen(false)}
           aria-hidden="true"
         />
       )}
 
       <aside
         className={`fixed left-0 top-0 h-full w-[260px] bg-surface-container-lowest shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between select-none border-r border-outline-variant/30 transition-transform duration-300 ease-in-out ${
-          isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full">
@@ -142,7 +143,7 @@ export const TeacherPortalScreen: React.FC<TeacherPortalScreenProps> = ({
               className="flex items-center gap-space-sm cursor-pointer"
               onClick={() => {
                 onNavigate('dashboard');
-                setIsMobileSidebarOpen(false);
+                setIsSidebarOpen(false);
               }}
             >
               <img
@@ -162,11 +163,12 @@ export const TeacherPortalScreen: React.FC<TeacherPortalScreenProps> = ({
             </div>
             <button
               type="button"
-              onClick={() => setIsMobileSidebarOpen(false)}
-              className="lg:hidden p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer"
-              aria-label="Close sidebar"
+              onClick={() => setIsSidebarOpen(false)}
+              className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer flex items-center justify-center"
+              aria-label="Hide sidebar"
+              title="Hide sidebar"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <span className="material-symbols-outlined text-[20px]">menu_open</span>
             </button>
           </div>
 
@@ -342,21 +344,25 @@ export const TeacherPortalScreen: React.FC<TeacherPortalScreenProps> = ({
       {/* ========================================================================= */}
       {/* 2. MAIN WORKSPACE CONTAINER (pl-0 lg:pl-[260px]) */}
       {/* ========================================================================= */}
-      <div className="pl-0 lg:pl-[260px] flex-1 flex flex-col min-w-0">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
+        isSidebarOpen ? 'pl-0 lg:pl-[260px]' : 'pl-0'
+      }`}>
         {/* Fixed Top Header */}
-        <header className="fixed top-0 left-0 lg:left-[260px] right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-4 sm:px-space-xl border-b border-outline-variant/20">
+        <header className={`fixed top-0 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-4 sm:px-space-xl border-b border-outline-variant/20 transition-all duration-300 ease-in-out ${
+          isSidebarOpen ? 'left-0 lg:left-[260px]' : 'left-0'
+        }`}>
           {/* Breadcrumbs */}
           <div className="flex items-center gap-space-md">
-            {/* Mobile Sidebar Hamburger Toggle */}
+            {/* Sidebar Toggle Button (Desktop & Mobile) */}
             <button
               type="button"
-              onClick={() => setIsMobileSidebarOpen(prev => !prev)}
-              className="lg:hidden p-2 -ml-1 mr-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer"
+              onClick={() => setIsSidebarOpen(prev => !prev)}
+              className="p-2 -ml-1 mr-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer border border-outline-variant/30 shadow-xs flex items-center justify-center"
               aria-label="Toggle Sidebar Menu"
-              title="Toggle Menu"
+              title={isSidebarOpen ? "Hide Sidebar (Maximize workspace)" : "Show Sidebar"}
             >
               <span className="material-symbols-outlined text-[22px]">
-                {isMobileSidebarOpen ? 'close' : 'menu'}
+                {isSidebarOpen ? 'menu_open' : 'menu'}
               </span>
             </button>
 

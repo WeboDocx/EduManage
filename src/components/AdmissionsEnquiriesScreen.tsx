@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { ScreenType, LeadApplicant, CounsellorNote } from '../types';
 import { INITIAL_LEADS } from '../data/mockLeads';
 import { BRAND_HOTLINKS } from '../data/mockData';
+import { useSidebar } from '../context/SidebarContext';
 
 interface AdmissionsEnquiriesScreenProps {
   onNavigate: (screen: ScreenType) => void;
@@ -12,6 +13,7 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
   onNavigate,
   onShowToast,
 }) => {
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const [leads, setLeads] = useState<LeadApplicant[]>(INITIAL_LEADS);
   const [selectedLeadId, setSelectedLeadId] = useState<string>(INITIAL_LEADS[0]?.id || '');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -266,8 +268,12 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
     <div className="min-h-screen bg-background text-on-surface font-body-md antialiased flex">
       {/* 1. FIXED LEFT SIDEBAR (260px) */}
       <aside
-        className={`fixed left-0 top-0 bottom-0 bg-surface-container-lowest border-r border-outline-variant/40 z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-all duration-200 ${
-          isSidebarCollapsed ? 'w-[72px]' : 'w-[260px]'
+        className={`fixed left-0 top-0 bottom-0 bg-surface-container-lowest border-r border-outline-variant/40 z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out ${
+          !isSidebarOpen
+            ? 'w-[260px] -translate-x-full'
+            : isSidebarCollapsed
+            ? 'w-[72px] translate-x-0'
+            : 'w-[260px] translate-x-0'
         }`}
       >
         <div className="flex flex-col h-full overflow-hidden">
@@ -288,17 +294,28 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
                 </div>
               )}
             </div>
-            <button
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              aria-label="Collapse navigation"
-              className="text-on-surface-variant hover:text-on-surface p-1 rounded hover:bg-surface-container transition-colors"
-              type="button"
-              title={isSidebarCollapsed ? 'Expand navigation' : 'Collapse navigation'}
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                {isSidebarCollapsed ? 'menu' : 'menu_open'}
-              </span>
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                aria-label="Collapse navigation"
+                className="text-on-surface-variant hover:text-on-surface p-1 rounded hover:bg-surface-container transition-colors"
+                type="button"
+                title={isSidebarCollapsed ? 'Expand navigation' : 'Compact navigation'}
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  {isSidebarCollapsed ? 'chevron_right' : 'chevron_left'}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(false)}
+                className="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer flex items-center justify-center"
+                aria-label="Hide sidebar"
+                title="Hide sidebar"
+              >
+                <span className="material-symbols-outlined text-[18px]">menu_open</span>
+              </button>
+            </div>
           </div>
 
           {/* Nav Items */}
@@ -689,14 +706,14 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
 
       {/* 2. MAIN WORKSPACE CONTAINER */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-200 ${
-          isSidebarCollapsed ? 'pl-[72px]' : 'pl-[260px]'
+        className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
+          !isSidebarOpen ? 'pl-0' : isSidebarCollapsed ? 'pl-[72px]' : 'pl-[260px]'
         }`}
       >
         {/* TOP FIXED HEADER */}
         <header
-          className={`fixed top-0 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 z-30 flex items-center justify-between px-space-lg shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-200 ${
-            isSidebarCollapsed ? 'left-[72px]' : 'left-[260px]'
+          className={`fixed top-0 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 z-30 flex items-center justify-between px-space-lg shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out ${
+            !isSidebarOpen ? 'left-0' : isSidebarCollapsed ? 'left-[72px]' : 'left-[260px]'
           }`}
         >
           {/* Left Brand / Campus View / Search */}
@@ -704,13 +721,20 @@ export const AdmissionsEnquiriesScreen: React.FC<AdmissionsEnquiriesScreenProps>
             {/* Show/Hide Sidebar Toggle Button */}
             <button
               type="button"
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              onClick={() => {
+                if (!isSidebarOpen) {
+                  setIsSidebarOpen(true);
+                  setIsSidebarCollapsed(false);
+                } else {
+                  setIsSidebarOpen(false);
+                }
+              }}
               className="p-2 -ml-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer flex items-center justify-center border border-outline-variant/30 shadow-xs"
               aria-label="Toggle Navigation Menu"
-              title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+              title={isSidebarOpen ? "Hide Sidebar (Maximize workspace)" : "Show Sidebar"}
             >
               <span className="material-symbols-outlined text-[22px]">
-                {isSidebarCollapsed ? 'menu' : 'menu_open'}
+                {isSidebarOpen ? 'menu_open' : 'menu'}
               </span>
             </button>
 

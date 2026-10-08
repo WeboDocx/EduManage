@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ScreenType } from '../types';
+import { useSidebar } from '../context/SidebarContext';
 
 interface MarksEntryConsoleScreenProps {
   onNavigate: (screen: ScreenType) => void;
@@ -100,7 +101,7 @@ export const MarksEntryConsoleScreen: React.FC<MarksEntryConsoleScreenProps> = (
 }) => {
   const [records, setRecords] = useState<StudentGradeRecord[]>(INITIAL_RECORDS);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const [currentPage, setCurrentPage] = useState(1);
   const [isLocked, setIsLocked] = useState(false);
   const [isLocking, setIsLocking] = useState(false);
@@ -224,17 +225,17 @@ export const MarksEntryConsoleScreen: React.FC<MarksEntryConsoleScreenProps> = (
       {/* 1. FIXED LEFT NAVIGATION SIDEBAR (w-64) */}
       {/* ========================================================================= */}
       {/* Mobile backdrop overlay */}
-      {isMobileSidebarOpen && (
+      {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 lg:hidden transition-opacity"
-          onClick={() => setIsMobileSidebarOpen(false)}
+          onClick={() => setIsSidebarOpen(false)}
           aria-hidden="true"
         />
       )}
 
       <aside
-        className={`fixed left-0 top-0 h-full w-64 bg-surface-container-lowest shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between overflow-y-auto transition-transform duration-300 ease-in-out ${
-          isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        className={`fixed left-0 top-0 h-full w-64 bg-surface-container-lowest shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between overflow-y-auto transition-transform duration-300 ease-in-out border-r border-outline-variant/30 ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col">
@@ -244,7 +245,7 @@ export const MarksEntryConsoleScreen: React.FC<MarksEntryConsoleScreenProps> = (
               className="flex items-center gap-space-sm cursor-pointer"
               onClick={() => {
                 onNavigate('dashboard');
-                setIsMobileSidebarOpen(false);
+                setIsSidebarOpen(false);
               }}
             >
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary font-headline-sm text-headline-sm font-bold shadow-xs">
@@ -261,11 +262,12 @@ export const MarksEntryConsoleScreen: React.FC<MarksEntryConsoleScreenProps> = (
             </div>
             <button
               type="button"
-              onClick={() => setIsMobileSidebarOpen(false)}
-              className="lg:hidden p-1 rounded hover:bg-surface-container text-on-surface-variant cursor-pointer"
-              aria-label="Close sidebar"
+              onClick={() => setIsSidebarOpen(false)}
+              className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer flex items-center justify-center"
+              aria-label="Hide sidebar"
+              title="Hide sidebar"
             >
-              <span className="material-symbols-outlined text-[18px]">close</span>
+              <span className="material-symbols-outlined text-[20px]">menu_open</span>
             </button>
           </div>
 
@@ -414,20 +416,24 @@ export const MarksEntryConsoleScreen: React.FC<MarksEntryConsoleScreenProps> = (
       {/* ========================================================================= */}
       {/* 2. MAIN WORKSPACE CONTAINER (pl-0 lg:pl-64) */}
       {/* ========================================================================= */}
-      <div className="pl-0 lg:pl-64 flex-1 flex flex-col min-w-0">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
+        isSidebarOpen ? 'pl-0 lg:pl-64' : 'pl-0'
+      }`}>
         {/* Top Floating App Bar */}
-        <header className="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-4 sm:px-gutter-desktop flex items-center justify-between gap-space-md border-b border-outline-variant/20">
+        <header className={`fixed top-0 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-4 sm:px-gutter-desktop flex items-center justify-between gap-space-md border-b border-outline-variant/20 transition-all duration-300 ease-in-out ${
+          isSidebarOpen ? 'left-0 lg:left-64' : 'left-0'
+        }`}>
           <div className="flex items-center gap-space-md flex-1 max-w-2xl">
-            {/* Mobile Sidebar Hamburger Toggle */}
+            {/* Sidebar Toggle Button (Desktop & Mobile) */}
             <button
               type="button"
-              onClick={() => setIsMobileSidebarOpen(prev => !prev)}
-              className="lg:hidden p-2 -ml-1 mr-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer"
+              onClick={() => setIsSidebarOpen(prev => !prev)}
+              className="p-2 -ml-1 mr-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer border border-outline-variant/30 shadow-xs flex items-center justify-center"
               aria-label="Toggle Sidebar Menu"
-              title="Toggle Menu"
+              title={isSidebarOpen ? "Hide Sidebar (Maximize workspace)" : "Show Sidebar"}
             >
               <span className="material-symbols-outlined text-[22px]">
-                {isMobileSidebarOpen ? 'close' : 'menu'}
+                {isSidebarOpen ? 'menu_open' : 'menu'}
               </span>
             </button>
 

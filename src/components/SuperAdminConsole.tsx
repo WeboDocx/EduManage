@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ScreenType, Institution, AuditEvent } from '../types';
 import { BRAND_HOTLINKS, INITIAL_INSTITUTIONS, INITIAL_AUDIT_EVENTS } from '../data/mockData';
+import { useSidebar } from '../context/SidebarContext';
 
 interface SuperAdminConsoleProps {
   onNavigate: (screen: ScreenType) => void;
@@ -8,6 +9,7 @@ interface SuperAdminConsoleProps {
 }
 
 export const SuperAdminConsole: React.FC<SuperAdminConsoleProps> = ({ onNavigate, onShowToast }) => {
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const [institutions, setInstitutions] = useState<Institution[]>(INITIAL_INSTITUTIONS);
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>(INITIAL_AUDIT_EVENTS);
   const [searchQuery, setSearchQuery] = useState('');
@@ -107,7 +109,7 @@ export const SuperAdminConsole: React.FC<SuperAdminConsoleProps> = ({ onNavigate
   return (
     <div className="min-h-screen bg-background text-on-surface flex flex-col lg:flex-row">
       {/* 1. FIXED SUPER ADMIN SIDEBAR */}
-      <aside className="w-full lg:w-72 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col justify-between shrink-0">
+      <aside className={`${isSidebarOpen ? 'w-full lg:w-72' : 'hidden'} bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col justify-between shrink-0 transition-all duration-300`}>
         <div>
           {/* Logo Brand Header */}
           <div className="p-5 border-b border-outline-variant/30 flex items-center justify-between">
@@ -126,9 +128,20 @@ export const SuperAdminConsole: React.FC<SuperAdminConsoleProps> = ({ onNavigate
                 </span>
               </div>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary-fixed text-primary font-data-mono font-bold">
-              ROOT
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary-fixed text-primary font-data-mono font-bold">
+                ROOT
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(false)}
+                className="p-1 rounded text-on-surface-variant hover:bg-surface-container hover:text-on-surface cursor-pointer flex items-center justify-center"
+                aria-label="Hide sidebar"
+                title="Hide sidebar"
+              >
+                <span className="material-symbols-outlined text-[18px]">menu_open</span>
+              </button>
+            </div>
           </div>
 
           {/* Global Multi-Tenant Org Switcher */}
@@ -320,6 +333,18 @@ export const SuperAdminConsole: React.FC<SuperAdminConsoleProps> = ({ onNavigate
         {/* Top Header Bar */}
         <header className="h-16 px-4 md:px-8 border-b border-outline-variant/30 bg-surface-container-lowest flex items-center justify-between gap-4 sticky top-7 z-40">
           <div className="flex items-center gap-2 text-xs">
+            {/* Sidebar Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen(prev => !prev)}
+              className="p-1.5 -ml-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer border border-outline-variant/30 shadow-xs flex items-center justify-center"
+              aria-label="Toggle Sidebar Menu"
+              title={isSidebarOpen ? "Hide Sidebar (Maximize workspace)" : "Show Sidebar"}
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {isSidebarOpen ? 'menu_open' : 'menu'}
+              </span>
+            </button>
             <span className="text-outline">Platform</span>
             <span className="text-outline">/</span>
             <span className="font-bold text-on-surface">Global Orchestration Hub</span>

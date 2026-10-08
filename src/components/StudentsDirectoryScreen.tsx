@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ScreenType } from '../types';
+import { useSidebar } from '../context/SidebarContext';
 
 interface StudentsDirectoryScreenProps {
   onNavigate: (screen: ScreenType) => void;
@@ -374,7 +375,7 @@ export const StudentsDirectoryScreen: React.FC<StudentsDirectoryScreenProps> = (
   onNavigate,
   onShowToast,
 }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const [students, setStudents] = useState<StudentItem[]>(INITIAL_STUDENTS);
   const [selectedIds, setSelectedIds] = useState<string[]>(['std-1', 'std-2', 'std-3']);
   

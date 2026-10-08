@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { ScreenType, BatchItem } from '../types';
 import { BRAND_HOTLINKS } from '../data/mockData';
+import { useSidebar } from '../context/SidebarContext';
 
 interface CoursesBatchesScreenProps {
   onNavigate: (screen: ScreenType) => void;
@@ -131,7 +132,7 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
   const [activeTab, setActiveTab] = useState<'courses' | 'batches' | 'subjects' | 'classrooms'>('batches');
   const [selectedCampusScope, setSelectedCampusScope] = useState('All Branches (8 Active)');
   const [isCampusDropdownOpen, setIsCampusDropdownOpen] = useState(false);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
 
   // Quick Batch form state
   const [batchIdentifier, setBatchIdentifier] = useState('WD Weekend Fast-Track');
@@ -281,17 +282,17 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
     <div className="min-h-screen bg-background text-on-surface font-body-md antialiased flex">
       {/* 1. FIXED LEFT SIDEBAR (260px) */}
       {/* Mobile backdrop overlay */}
-      {isMobileSidebarOpen && (
+      {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 lg:hidden transition-opacity"
-          onClick={() => setIsMobileSidebarOpen(false)}
+          onClick={() => setIsSidebarOpen(false)}
           aria-hidden="true"
         />
       )}
 
       <aside
         className={`fixed left-0 top-0 bottom-0 w-[260px] bg-surface-container-lowest border-r border-outline-variant/40 z-50 flex flex-col justify-between shadow-lg lg:shadow-[0_1px_8px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${
-          isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full overflow-hidden">
@@ -301,7 +302,7 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
               className="flex items-center gap-space-xs cursor-pointer"
               onClick={() => {
                 onNavigate('dashboard');
-                setIsMobileSidebarOpen(false);
+                setIsSidebarOpen(false);
               }}
             >
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -317,12 +318,13 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
               </div>
             </div>
             <button
-              aria-label="Close navigation"
-              className="lg:hidden text-on-surface-variant hover:text-on-surface p-1 rounded hover:bg-surface-container transition-colors cursor-pointer"
+              aria-label="Hide sidebar"
+              title="Hide sidebar"
+              className="text-on-surface-variant hover:text-on-surface p-1.5 rounded-lg hover:bg-surface-container transition-colors cursor-pointer flex items-center justify-center"
               type="button"
-              onClick={() => setIsMobileSidebarOpen(false)}
+              onClick={() => setIsSidebarOpen(false)}
             >
-              <span className="material-symbols-outlined text-[18px]">close</span>
+              <span className="material-symbols-outlined text-[20px]">menu_open</span>
             </button>
           </div>
 
@@ -671,20 +673,24 @@ export const CoursesBatchesScreen: React.FC<CoursesBatchesScreenProps> = ({
       </aside>
 
       {/* 2. MAIN WORKSPACE CONTAINER */}
-      <div className="pl-0 lg:pl-[260px] flex-1 flex flex-col">
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
+        isSidebarOpen ? 'pl-0 lg:pl-[260px]' : 'pl-0'
+      }`}>
         {/* FIXED TOP HEADER */}
-        <header className="fixed top-0 left-0 lg:left-[260px] right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 z-30 flex items-center justify-between px-4 sm:px-space-lg shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+        <header className={`fixed top-0 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/40 z-30 flex items-center justify-between px-4 sm:px-space-lg shadow-[0_1px_4px_rgba(0,0,0,0.02)] transition-all duration-300 ease-in-out ${
+          isSidebarOpen ? 'left-0 lg:left-[260px]' : 'left-0'
+        }`}>
           <div className="flex items-center gap-space-md min-w-0">
-            {/* Mobile Sidebar Hamburger Toggle */}
+            {/* Sidebar Toggle Button (Desktop & Mobile) */}
             <button
               type="button"
-              onClick={() => setIsMobileSidebarOpen(prev => !prev)}
-              className="lg:hidden p-2 -ml-1 mr-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer"
+              onClick={() => setIsSidebarOpen(prev => !prev)}
+              className="p-2 -ml-1 mr-1 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer border border-outline-variant/30 shadow-xs flex items-center justify-center"
               aria-label="Toggle Sidebar Menu"
-              title="Toggle Menu"
+              title={isSidebarOpen ? "Hide Sidebar (Maximize workspace)" : "Show Sidebar"}
             >
               <span className="material-symbols-outlined text-[22px]">
-                {isMobileSidebarOpen ? 'close' : 'menu'}
+                {isSidebarOpen ? 'menu_open' : 'menu'}
               </span>
             </button>
 

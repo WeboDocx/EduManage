@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ScreenType } from '../types';
 import { BRAND_HOTLINKS } from '../data/mockData';
+import { useSidebar } from '../context/SidebarContext';
 
 interface StudentProfileScreenProps {
   onNavigate: (screen: ScreenType) => void;
@@ -21,7 +22,7 @@ export const StudentProfileScreen: React.FC<StudentProfileScreenProps> = ({
   onNavigate,
   onShowToast,
 }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
   // Student dynamic state
