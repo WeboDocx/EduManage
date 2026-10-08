@@ -22,7 +22,7 @@ import { TeacherPortalScreen } from './components/TeacherPortalScreen';
 import { TimetableScheduleScreen } from './components/TimetableScheduleScreen';
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>('dashboard');
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>('landing');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const [registrationData, setRegistrationData] = useState<RegistrationFormData>({

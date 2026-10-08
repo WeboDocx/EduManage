@@ -36,7 +36,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onShowToas
   return (
     <div className="min-h-screen bg-background text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed">
       {/* 1. HERO SECTION */}
-      <section className="pt-12 pb-16 px-4 md:px-8 max-w-7xl mx-auto">
+      <section id="hero" className="pt-12 pb-16 px-4 md:px-8 max-w-7xl mx-auto">
         <div className="text-center max-w-4xl mx-auto space-y-6">
           {/* Trust Badges Bar */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-high/80 border border-outline-variant/30 text-xs font-semibold text-primary shadow-xs">
@@ -440,7 +440,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onShowToas
       </section>
 
       {/* 3. SOCIAL PROOF LOGOS BAND */}
-      <section className="py-10 border-y border-outline-variant/20 bg-surface-container-low/50">
+      <section id="solutions" className="py-10 border-y border-outline-variant/20 bg-surface-container-low/50">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <p className="text-center text-xs font-semibold uppercase tracking-widest text-on-surface-variant mb-6">
             POWERS CENTRALIZED OPERATIONS FOR 1,200+ REPUTED ACADEMIES & INSTITUTIONS
@@ -951,7 +951,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onShowToas
       </section>
 
       {/* 7. HIGH IMPACT CONVERSION CTA BANNER */}
-      <section className="py-16 px-4 md:px-8 max-w-7xl mx-auto">
+      <section id="cta" className="py-16 px-4 md:px-8 max-w-7xl mx-auto">
         <div className="rounded-3xl bg-gradient-to-br from-primary via-primary-container to-tertiary text-white p-8 md:p-14 shadow-2xl relative overflow-hidden text-center">
           <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
           <div className="relative z-10 max-w-2xl mx-auto space-y-5">

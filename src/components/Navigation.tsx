@@ -3,6 +3,7 @@ import { ScreenType } from '../types';
 import { BRAND_HOTLINKS } from '../data/mockData';
 import { ThemeToggle } from './ThemeToggle';
 import { useSidebar } from '../context/SidebarContext';
+import { GlobalSearchBar } from './GlobalSearchBar';
 
 interface NavigationProps {
   currentScreen: ScreenType;
@@ -18,12 +19,28 @@ interface NavItem {
   badge?: string;
 }
 
+interface AnchorItem {
+  id: string;
+  label: string;
+  icon: string;
+  description: string;
+}
+
+const LANDING_ANCHORS: AnchorItem[] = [
+  { id: 'hero', label: 'Overview & Hero', icon: 'vertical_align_top', description: 'Hero banner, trust metrics & quick demo' },
+  { id: 'solutions', label: 'Solutions & Repute', icon: 'verified', description: '1,200+ partner schools and academies' },
+  { id: 'features', label: '12 Platform Modules', icon: 'apps', description: 'Students, admissions, fees, RFID & certs' },
+  { id: 'multi-branch', label: 'Multi-Branch Topology', icon: 'hub', description: 'HQ command & satellite campus synchronization' },
+  { id: 'branch-finder', label: 'Campus Locator & Map', icon: 'map', description: 'Interactive metro map & seat vacancy check' },
+  { id: 'cta', label: 'Instant Free Trial', icon: 'rocket_launch', description: 'Quick onboarding & architecture review' },
+];
+
 export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigate, onShowToast }) => {
   const { isSidebarOpen, toggleSidebar } = useSidebar();
   const hasSidebarScreen = !['landing', 'register', 'onboarding'].includes(currentScreen);
 
   // Dropdown states
-  const [activeDropdown, setActiveDropdown] = useState<'admin' | 'super-admin' | 'academics' | 'portals' | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<'landing' | 'admin' | 'super-admin' | 'academics' | 'portals' | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navContainerRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +69,34 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
     onNavigate(screen);
     setActiveDropdown(null);
     setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSelectLanding = () => {
+    onNavigate('landing');
+    setActiveDropdown(null);
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSelectAnchor = (anchorId: string) => {
+    setActiveDropdown(null);
+    setMobileMenuOpen(false);
+
+    if (currentScreen !== 'landing') {
+      onNavigate('landing');
+      setTimeout(() => {
+        const el = document.getElementById(anchorId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 150);
+    } else {
+      const el = document.getElementById(anchorId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
   };
 
   // Group definitions
@@ -89,7 +134,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
   const isAcademicsActive = academicItems.some(i => i.id === currentScreen);
   const isPortalsActive = portalItems.some(i => i.id === currentScreen);
 
-  // Helper to render dropdown menu
+  // Helper to render general dropdown menu
   const renderDropdown = (
     title: string,
     key: 'admin' | 'super-admin' | 'academics' | 'portals',
@@ -190,14 +235,15 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
 
   return (
     <>
-      {/* Top Main Navigation Bar (Clean, NO horizontal scrollbar, clear layout) */}
-      <div
+      {/* SINGLE PRIMARY TOP NAVIGATION BAR (Consolidated, No Secondary Navbar, No Horizontal Scrollbar) */}
+      <nav
         ref={navContainerRef}
-        className="bg-inverse-surface text-inverse-on-surface text-xs py-2 px-3 sm:px-5 sticky top-0 z-[60] border-b border-surface-container-highest/20 flex items-center justify-between gap-3 shadow-md"
+        className="bg-inverse-surface text-inverse-on-surface text-xs py-2 px-3 sm:px-5 sticky top-0 z-[60] border-b border-surface-container-highest/20 flex items-center justify-between gap-2 sm:gap-3 shadow-md"
+        aria-label="Main Navigation"
       >
-        {/* Left Side: Sidebar toggle + Brand + Main Direct Links & Dropdowns */}
-        <div className="flex items-center gap-2 lg:gap-3 flex-wrap">
-          {/* Quick Sidebar Toggle on left */}
+        {/* Left Side: Sidebar toggle + Brand + Landing with #anchors dropdown + Create Institution + Dropdowns */}
+        <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 flex-wrap">
+          {/* Quick Sidebar Toggle on left (only visible on dashboard/admin screens) */}
           {hasSidebarScreen && (
             <button
               onClick={() => {
@@ -218,14 +264,17 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
             </button>
           )}
 
-          {/* Logo / Brandmark */}
+          {/* Logo / Brandmark with EduManage branding */}
           <button
-            onClick={() => handleSelectScreen('landing')}
-            className="flex items-center gap-1.5 text-white font-bold tracking-tight hover:opacity-90 transition-opacity cursor-pointer mr-1"
+            onClick={handleSelectLanding}
+            className="flex items-center gap-1.5 text-white font-bold tracking-tight hover:opacity-90 transition-opacity cursor-pointer mr-0.5"
+            title="EduManage Home"
           >
-            <div className="w-5 h-5 rounded bg-primary flex items-center justify-center text-white">
-              <span className="material-symbols-outlined text-[13px]">school</span>
-            </div>
+            <img
+              alt="EduManage Logo"
+              className="h-6 w-auto object-contain"
+              src={BRAND_HOTLINKS.logo}
+            />
             <span className="hidden sm:inline font-headline-sm text-xs font-bold tracking-tight">
               EduManage
             </span>
@@ -233,21 +282,85 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
 
           <div className="h-4 w-[1px] bg-white/15 hidden sm:block"></div>
 
-          {/* MAIN PAGES (Direct in Navbar as requested: Landing, Create Institution, etc.) */}
+          {/* MAIN PAGES */}
           <div className="flex items-center gap-1 sm:gap-1.5">
-            {/* 1. Landing Page */}
-            <button
-              onClick={() => handleSelectScreen('landing')}
-              className={`px-2.5 py-1.5 rounded-lg transition-all font-semibold flex items-center gap-1.5 text-xs cursor-pointer ${
-                currentScreen === 'landing'
-                  ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
-                  : 'text-outline-variant hover:text-white hover:bg-surface-container-highest/30'
-              }`}
-              title="Landing Showcase Page"
-            >
-              <span className="material-symbols-outlined text-[15px]">home</span>
-              <span>Landing</span>
-            </button>
+            {/* 1. Landing Page with #Anchors Dropdown */}
+            <div className="relative">
+              <div
+                className={`inline-flex items-center rounded-lg transition-all ${
+                  currentScreen === 'landing'
+                    ? 'bg-primary-container text-white shadow-sm ring-1 ring-white/20'
+                    : activeDropdown === 'landing'
+                    ? 'bg-surface-container-highest/60 text-white'
+                    : 'text-outline-variant hover:text-white hover:bg-surface-container-highest/30'
+                }`}
+              >
+                <button
+                  onClick={handleSelectLanding}
+                  className="px-2.5 py-1.5 font-semibold flex items-center gap-1.5 text-xs cursor-pointer select-none"
+                  title="Landing Page Overview"
+                >
+                  <span className="material-symbols-outlined text-[15px]">home</span>
+                  <span>Landing</span>
+                </button>
+                <button
+                  onClick={() => setActiveDropdown(activeDropdown === 'landing' ? null : 'landing')}
+                  aria-expanded={activeDropdown === 'landing'}
+                  className={`pr-1.5 pl-0.5 py-1.5 text-xs cursor-pointer flex items-center justify-center transition-opacity hover:opacity-80 ${
+                    currentScreen === 'landing' ? 'border-l border-white/20' : ''
+                  }`}
+                  title="Landing Page Section #Anchors"
+                  aria-label="Toggle Landing page section links"
+                >
+                  <span className={`material-symbols-outlined text-[14px] transition-transform duration-200 ${activeDropdown === 'landing' ? 'rotate-180' : ''}`}>
+                    expand_more
+                  </span>
+                </button>
+              </div>
+
+              {/* Landing Anchors Dropdown Menu */}
+              {activeDropdown === 'landing' && (
+                <div
+                  className="absolute left-0 mt-2 w-72 rounded-xl bg-surface-container-lowest text-on-surface border border-outline-variant/30 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 backdrop-blur-md"
+                  style={{ minWidth: '270px' }}
+                >
+                  <div className="px-3 py-1.5 border-b border-surface-container-low mb-1 flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-outline-variant flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[13px]">tag</span>
+                      Landing Sections
+                    </span>
+                    <span className="text-[10px] text-outline-variant font-mono">#anchors</span>
+                  </div>
+
+                  <div className="max-h-[360px] overflow-y-auto py-1">
+                    {LANDING_ANCHORS.map((anchor) => (
+                      <button
+                        key={anchor.id}
+                        onClick={() => handleSelectAnchor(anchor.id)}
+                        className="w-full text-left px-3 py-2 flex items-start gap-2.5 hover:bg-surface-container text-xs transition-colors group cursor-pointer text-on-surface-variant"
+                      >
+                        <div className="p-1.5 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors bg-surface-container-high text-on-surface-variant group-hover:bg-primary group-hover:text-white">
+                          <span className="material-symbols-outlined text-[15px]">{anchor.icon}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="truncate text-xs font-semibold text-on-surface group-hover:text-primary transition-colors">
+                              {anchor.label}
+                            </span>
+                            <span className="text-[10px] font-mono text-outline opacity-80 bg-surface-container-high px-1 py-0.5 rounded">
+                              #{anchor.id}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-outline line-clamp-1 leading-snug mt-0.5">
+                            {anchor.description}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* 2. Create Institution (Step 1) */}
             <button
@@ -283,23 +396,60 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
           </div>
         </div>
 
-        {/* Right Side: Active view indicator + Theme Toggle + Mobile Menu Trigger */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        {/* Right Side: Global Search Bar + Quick Action CTA + Admin Hub + Theme Toggle + Sarah Profile + Mobile Menu */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+          {/* Global Search Bar (Quick jump to students, courses, or admin pages) */}
+          <GlobalSearchBar
+            onNavigate={handleSelectScreen}
+            onShowToast={onShowToast}
+          />
+
+          {/* Quick CTA: Start Free Trial / Create Institution */}
+          <button
+            onClick={() => {
+              handleSelectScreen('register');
+              onShowToast?.('Opening Step 1: Create Institution registration');
+            }}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary-container text-white text-xs font-semibold hover:bg-primary transition-all active:scale-[0.98] shadow-sm cursor-pointer"
+            title="Start Free Registration"
+          >
+            <span className="material-symbols-outlined text-[14px]">rocket_launch</span>
+            <span>Start Free</span>
+          </button>
+
+          {/* Quick Hub shortcut: If not on dashboard/admin, allow 1-click switch to Admin Hub */}
+          {currentScreen !== 'dashboard' && currentScreen !== 'admin' && (
+            <button
+              onClick={() => handleSelectScreen('dashboard')}
+              className="hidden lg:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-outline-variant hover:text-white hover:bg-surface-container-highest/30 text-xs font-semibold transition-all cursor-pointer"
+              title="Open Admin Dashboard"
+            >
+              <span className="material-symbols-outlined text-[14px]">dashboard</span>
+              <span>Dashboard</span>
+            </button>
+          )}
+
+          {/* Theme Toggle (Dark / Light) */}
           <ThemeToggle
             variant="compact"
             onToggleCallback={(mode) => onShowToast?.(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode (saved)`)}
           />
 
-          {/* Active Screen Indicator (Pill badge) */}
-          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 text-white text-[11px] font-medium border border-white/10">
-            <span className="w-1.5 h-1.5 rounded-full bg-secondary-fixed animate-pulse"></span>
-            <span className="text-white/70">Current:</span>
-            <span className="font-semibold text-white truncate max-w-[120px]">
-              {currentScreen.replace('-', ' ')}
-            </span>
-          </div>
+          {/* User Profile Avatar with fast tooltip */}
+          <button
+            onClick={() => handleSelectScreen('admin')}
+            title="Dr. Sarah Jenkins (Super Admin) - Click for Admin Console"
+            className="relative ring-2 ring-transparent hover:ring-primary rounded-full transition-all cursor-pointer flex-shrink-0 ml-0.5"
+          >
+            <img
+              alt="Dr. Sarah Jenkins"
+              className="w-7 h-7 rounded-full object-cover border border-white/20"
+              src={BRAND_HOTLINKS.profileSarah}
+            />
+            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-secondary ring-1 ring-inverse-surface"></span>
+          </button>
 
-          {/* Mobile Screen Selector Trigger (Visible on small screens where dropdowns wrap) */}
+          {/* Mobile Screen Selector Trigger (Pages Menu) */}
           <div className="md:hidden relative">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -324,21 +474,41 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
                   <span className="text-[10px] text-outline font-mono">Mobile View</span>
                 </div>
 
-                {/* Main Pages */}
+                {/* Landing Showcase & Anchors */}
                 <div className="mb-3">
-                  <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1">Main Pages</div>
+                  <div className="text-[10px] font-bold uppercase text-outline tracking-wider px-2 py-1 flex items-center justify-between">
+                    <span>Landing Showcase</span>
+                    <span className="text-[9px] font-mono">#anchors</span>
+                  </div>
                   <button
-                    onClick={() => handleSelectScreen('landing')}
+                    onClick={handleSelectLanding}
                     className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium flex items-center gap-2 mb-1 ${
                       currentScreen === 'landing' ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[16px]">home</span>
-                    Landing Showcase
+                    <span className="font-bold">Landing Home (Top)</span>
                   </button>
+
+                  <div className="pl-2 space-y-0.5 border-l-2 border-surface-container ml-2 my-1">
+                    {LANDING_ANCHORS.map((anchor) => (
+                      <button
+                        key={anchor.id}
+                        onClick={() => handleSelectAnchor(anchor.id)}
+                        className="w-full text-left px-2 py-1 rounded text-[11px] flex items-center justify-between hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[13px]">{anchor.icon}</span>
+                          <span>{anchor.label}</span>
+                        </span>
+                        <span className="text-[9px] font-mono text-outline">#{anchor.id}</span>
+                      </button>
+                    ))}
+                  </div>
+
                   <button
                     onClick={() => handleSelectScreen('register')}
-                    className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium flex items-center gap-2 ${
+                    className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium flex items-center gap-2 mt-1 ${
                       currentScreen === 'register' ? 'bg-primary text-white' : 'hover:bg-surface-container text-on-surface'
                     }`}
                   >
@@ -419,130 +589,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentScreen, onNavigat
             )}
           </div>
         </div>
-      </div>
-
-      {/* Main Header (Rendered on Landing screen) */}
-      {currentScreen === 'landing' && (
-        <header className="sticky top-0 w-full z-50 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(15,23,42,0.04)]">
-          <div className="h-16 max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <button
-                onClick={() => onNavigate('landing')}
-                className="flex items-center gap-2 text-left group"
-              >
-                <img
-                  alt="EduManage Brandmark"
-                  className="h-8 w-auto object-contain transition-transform group-hover:scale-105"
-                  src={BRAND_HOTLINKS.logo}
-                />
-                <span className="font-headline-md text-lg tracking-tight text-on-surface font-bold">
-                  EduManage
-                </span>
-              </button>
-              <nav className="hidden lg:flex items-center gap-6 ml-2">
-                <a
-                  href="#features"
-                  className="font-label-md text-sm text-on-surface-variant hover:text-primary transition-colors"
-                >
-                  Features
-                </a>
-                <a
-                  href="#solutions"
-                  className="font-label-md text-sm text-on-surface-variant hover:text-primary transition-colors"
-                >
-                  Solutions
-                </a>
-                <a
-                  href="#multi-branch"
-                  className="font-label-md text-sm text-on-surface-variant hover:text-primary transition-colors"
-                >
-                  Multi-Branch
-                </a>
-                <a
-                  href="#branch-finder"
-                  className="font-label-md text-sm text-on-surface-variant hover:text-primary transition-colors"
-                >
-                  Find Branch
-                </a>
-                <button
-                  onClick={() => onNavigate('admin')}
-                  className="font-label-md text-sm text-on-surface-variant hover:text-primary transition-colors"
-                >
-                  Admin Hub
-                </button>
-              </nav>
-            </div>
-            <div className="flex items-center gap-3">
-              <ThemeToggle
-                variant="compact"
-                onToggleCallback={(mode) => onShowToast?.(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode`)}
-              />
-              <button
-                onClick={() => onNavigate('admin')}
-                className="hidden sm:inline-flex items-center justify-center h-10 px-4 rounded-lg font-label-md text-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors"
-              >
-                Login
-              </button>
-              <button
-                onClick={() => onNavigate('register')}
-                className="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-primary-container text-white font-label-md text-sm hover:bg-primary transition-all active:scale-[0.98] shadow-sm"
-              >
-                Start Free
-              </button>
-              <button
-                onClick={() => onNavigate('admin')}
-                title="Super Admin Profile"
-                className="relative ring-2 ring-transparent hover:ring-primary rounded-full transition-all"
-              >
-                <img
-                  alt="Profile"
-                  className="w-8 h-8 rounded-full object-cover ml-1"
-                  src={BRAND_HOTLINKS.profileSarah}
-                />
-              </button>
-            </div>
-          </div>
-        </header>
-      )}
-
-      {/* Simplified Auth Header for Step 1 and Step 2 */}
-      {(currentScreen === 'register' || currentScreen === 'onboarding') && (
-        <header className="h-16 w-full max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between border-b border-surface-container-low">
-          <button
-            onClick={() => onNavigate('landing')}
-            className="flex items-center gap-2 text-left group"
-          >
-            <img
-              alt="EduManage Brandmark"
-              className="h-8 w-auto object-contain transition-transform group-hover:scale-105"
-              src={BRAND_HOTLINKS.logo}
-            />
-            <span className="font-headline-sm text-base text-on-surface font-bold">
-              EduManage
-            </span>
-          </button>
-          <div className="flex items-center gap-4">
-            <ThemeToggle
-              variant="compact"
-              onToggleCallback={(mode) => onShowToast?.(`Switched to ${mode === 'dark' ? 'Dark' : 'Light'} Mode`)}
-            />
-            <button
-              onClick={() => onNavigate('landing')}
-              className="inline-flex items-center gap-1 font-label-md text-sm text-on-surface-variant hover:text-primary transition-colors"
-            >
-              <span className="material-symbols-outlined text-lg">arrow_back</span>
-              Back to Overview
-            </button>
-            <a
-              href="mailto:support@edumanage.io"
-              className="inline-flex items-center gap-1 font-label-md text-sm text-on-surface-variant hover:text-primary transition-colors"
-            >
-              <span className="material-symbols-outlined text-lg">support_agent</span>
-              Contact Support
-            </a>
-          </div>
-        </header>
-      )}
+      </nav>
     </>
   );
 };
